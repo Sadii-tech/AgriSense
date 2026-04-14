@@ -1,0 +1,1226 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover" name="viewport"/>
+<title>AgriSense – Dashboard</title>
+<script src="{% static 'js/tailwind.min.js' %}"></script>
+<link href="{% static 'css/inter.css' %}" rel="stylesheet"/>
+<link href="{% static 'css/material-symbols.css' %}" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script id="tailwind-config">
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        colors: {
+          "primary": "#10b981",
+          "primary-dark": "#059669",
+          "primary-light": "#34d399",
+          "background-dark": "#0a0f0a",
+          "surface-dark": "#121a12",
+          "surface-darker": "#0d130d",
+          "surface-accent": "#1a241a",
+          "glass": "rgba(255, 255, 255, 0.03)",
+          "glass-edge": "rgba(255, 255, 255, 0.08)",
+        },
+        fontFamily: { 
+          "display": ["'Inter'", "sans-serif"], 
+          "body": ["'Inter'", "sans-serif"] 
+        },
+        boxShadow: {
+          "premium": "0 10px 30px -10px rgba(0, 0, 0, 0.5)",
+          "glow-primary": "0 0 20px rgba(16, 185, 129, 0.15)",
+        }
+      },
+    },
+  }
+</script>
+<style type="text/tailwindcss">
+  /* RESET & BASE */
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  
+  html, body {
+    overflow-x: hidden !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+  
+  /* LIGHT THEME OVERRIDES - White/Mint Background, Deep Green Navbar, Light Sage Cards */
+  body { 
+    font-family: 'Inter', sans-serif; 
+    background: #f0f7f0 !important;
+    color-scheme: light;
+    color: #1a2c1e !important;
+  }
+  
+  /* Override dark class behavior */
+  .dark body, body.dark {
+    background: #f0f7f0 !important;
+  }
+  
+  .glass-card { 
+    background: #ffffff !important;
+    backdrop-filter: none !important;
+    border: 1px solid #d4e8ce !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+  }
+  .glass-card:hover {
+    background: #ffffff !important;
+    border-color: #bcddae !important;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+  }
+  
+  /* Sidebar - Light Sage */
+  aside.hidden {
+    background: #e8f0e5 !important;
+    border-right-color: #c8dbc2 !important;
+  }
+  
+  .sidebar-link { 
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.6rem 1rem;
+    border-radius: 1rem;
+    font-weight: 500;
+    font-size: 0.875rem;
+    transition: all 0.2s ease;
+    width: 100%;
+    color: #2d3e2d !important;
+  }
+  .sidebar-link:hover { 
+    background: #d9ecd2 !important;
+    color: #1a3a1a !important;
+  }
+  .sidebar-link.active { 
+    background: #d0e8c8 !important;
+    color: #0f5c2f !important;
+    border: 1px solid #9bc48f !important;
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.1);
+  }
+  
+  .stat-badge { font-size: 0.65rem; font-weight: 700; padding: 0.2rem 0.65rem; border-radius: 999px; text-transform: uppercase; letter-spacing: 0.03em; border-width: 1px; }
+  .stat-badge-good  { background: #e0f2e0 !important; color: #166534 !important; border-color: #bbf7d0 !important; }
+  .stat-badge-warn  { background: #fffbeb !important; color: #b45309 !important; border-color: #fed7aa !important; }
+  .stat-badge-danger { background: #fee2e2 !important; color: #b91c1c !important; border-color: #fecaca !important; }
+  
+  .fade-in { animation: fadeIn 0.6s ease-out forwards; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  
+  @keyframes fillGauge { from { stroke-dasharray: 0, 100; } to { stroke-dasharray: 91, 100; } }
+  .gauge-fill { animation: fillGauge 2s ease-out forwards; }
+
+  .live-indicator {
+    position: relative; display: inline-block; width: 8px; height: 8px;
+    background-color: #10b981; border-radius: 50%; margin-right: 6px;
+  }
+  .live-indicator::after {
+    content: ''; position: absolute; top: -2px; left: -2px;
+    width: 12px; height: 12px; background-color: rgba(16, 185, 129, 0.3);
+    border-radius: 50%; animation: pulse-ring 1.5s infinite;
+  }
+  @keyframes pulse-ring {
+    0% { transform: scale(0.8); opacity: 0.7; }
+    70% { transform: scale(1.4); opacity: 0; }
+    100% { transform: scale(1.4); opacity: 0; }
+  }
+
+  /* Top bar - Deep Green Navbar */
+  header.sticky {
+    background: #307150 !important;
+    backdrop-filter: none !important;
+    border-bottom-color: #2d5a3d !important;
+  }
+  
+  /* Header text colors */
+  header h1, header .font-bold.text-white, header .text-white {
+    color: white !important;
+  }
+  
+  header .bg-primary\/10 {
+    background: rgba(255,255,255,0.15) !important;
+    border-color: rgba(255,255,255,0.25) !important;
+  }
+  header .text-primary {
+    color: #34d399 !important;
+  }
+  
+  /* Search input */
+  #dashboard-search {
+    background: rgba(255,255,255,0.12) !important;
+    border-color: rgba(255,255,255,0.2) !important;
+    color: white !important;
+  }
+  #dashboard-search::placeholder {
+    color: rgba(255,255,255,0.5) !important;
+  }
+  #dashboard-search:focus {
+    border-color: #10b981 !important;
+    box-shadow: 0 0 0 3px rgba(16,185,129,0.2);
+  }
+  
+  /* Bell icon */
+  #notifications-btn {
+    background: rgba(255,255,255,0.12) !important;
+    border-color: rgba(255,255,255,0.2) !important;
+    color: white !important;
+  }
+  
+  /* Quick Scan button */
+  a.bg-primary {
+    background: #2f8b5c !important;
+    color: white !important;
+  }
+  
+  /* Notification dropdown */
+  #notification-dropdown {
+    background: #ffffff !important;
+    border-color: #d4e8ce !important;
+    position: fixed !important;
+    top: 70px !important;
+    right: 20px !important;
+    left: auto !important;
+    width: 380px !important;
+    max-width: calc(100vw - 40px) !important;
+    z-index: 1000 !important;
+  }
+  
+  @media (max-width: 640px) {
+    #notification-dropdown {
+      right: 10px !important;
+      left: 10px !important;
+      width: auto !important;
+      max-width: calc(100vw - 20px) !important;
+    }
+  }
+  
+  #notification-dropdown .text-white {
+    color: #2d3e2d !important;
+  }
+  #notification-dropdown .bg-white\/5 {
+    background: #e8f4e4 !important;
+  }
+  
+  /* Mobile menu - Fixed */
+  #mobileMenu {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    background: #f0f7f0 !important;
+    z-index: 1000 !important;
+    overflow-y: auto !important;
+    display: none;
+  }
+  
+  #mobileMenu.show {
+    display: flex !important;
+    flex-direction: column;
+  }
+  
+  #mobileMenu .text-white, #mobileMenu .sidebar-link {
+    color: #2d3e2d !important;
+  }
+  #mobileMenu .sidebar-link.active {
+    background: #d0e8c8 !important;
+    color: #0f5c2f !important;
+  }
+  
+  /* Mobile menu logout section */
+  .mobile-logout-section {
+    margin-top: auto;
+    padding: 1rem;
+  }
+  
+  /* Text colors */
+  .text-white, .text-gray-300, .text-gray-400 {
+    color: #2d3e2d !important;
+  }
+  .text-gray-500, .text-gray-600 {
+    color: #6b8c68 !important;
+  }
+  .text-primary {
+    color: #10b981 !important;
+  }
+  .text-emerald-500 {
+    color: #10b981 !important;
+  }
+  .text-rose-500, .text-rose-400 {
+    color: #e53e3e !important;
+  }
+  .text-indigo-400 {
+    color: #6366f1 !important;
+  }
+  .text-blue-400 {
+    color: #3b82f6 !important;
+  }
+  
+  /* Border colors */
+  .border-white\/5, .border-white\/10, .border-white\/20 {
+    border-color: #d4e8ce !important;
+  }
+  .border-primary\/20, .border-primary\/10 {
+    border-color: #9bc48f !important;
+  }
+  .border-rose-500\/20 {
+    border-color: #fecaca !important;
+  }
+  .border-emerald-500\/20 {
+    border-color: #bbf7d0 !important;
+  }
+  .border-indigo-500\/20 {
+    border-color: #c7d2fe !important;
+  }
+  
+  /* Background colors */
+  .bg-primary\/10, .bg-primary\/20 {
+    background-color: rgba(16, 185, 129, 0.1) !important;
+  }
+  .bg-rose-500\/10 {
+    background-color: rgba(229, 62, 62, 0.1) !important;
+  }
+  .bg-emerald-500\/10 {
+    background-color: rgba(16, 185, 129, 0.1) !important;
+  }
+  .bg-indigo-500\/10 {
+    background-color: rgba(99, 102, 241, 0.1) !important;
+  }
+  .bg-white\/5 {
+    background: rgba(0, 0, 0, 0.03) !important;
+  }
+  
+  /* Gauge stroke */
+  svg path:first-child {
+    stroke: #d4e8ce !important;
+  }
+  
+  /* Chart colors */
+  canvas + div {
+    color: #2d3e2d !important;
+  }
+  
+  /* Search highlight */
+  .search-highlight {
+    background-color: rgba(16, 185, 129, 0.08);
+    border-left: 3px solid #10b981;
+  }
+  
+  /* Recent scans hover */
+  .group:hover .border-transparent {
+    border-color: #d4e8ce !important;
+  }
+  
+  /* Bottom mobile nav */
+  nav.lg\:hidden.fixed {
+    background: #1a3a2a !important;
+    backdrop-filter: none !important;
+    border-top-color: #2d5a3d !important;
+  }
+  nav.lg\:hidden.fixed .text-gray-500 {
+    color: #9bc48f !important;
+  }
+  nav.lg\:hidden.fixed .text-primary {
+    color: #34d399 !important;
+  }
+  nav.lg\:hidden.fixed .bg-primary {
+    background: #2f8b5c !important;
+  }
+  nav.lg\:hidden.fixed .border-background-dark {
+    border-color: #1a3a2a !important;
+  }
+  
+  /* Ensure header elements stay white */
+  header .text-white, header span[style*="color: white"], 
+  header .font-bold[style*="color: white"], header button .text-white {
+    color: white !important;
+  }
+  
+  /* Location card */
+  .glass-card.px-6.py-4 .text-white {
+    color: #2d3e2d !important;
+  }
+  
+  /* Health bar colors */
+  .bg-white\/5 {
+    background: #e8f4e4 !important;
+  }
+  .bg-primary {
+    background: #10b981 !important;
+  }
+  .bg-rose-500 {
+    background: #e53e3e !important;
+  }
+  
+  /* Logout button in mobile menu */
+  .logout-mobile-btn {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 0.5rem !important;
+    width: 100% !important;
+    padding: 0.75rem !important;
+    border-radius: 0.75rem !important;
+    font-weight: 700 !important;
+    font-size: 0.875rem !important;
+    text-align: center !important;
+    transition: all 0.2s !important;
+    background: #fee2e2 !important;
+    border: 1px solid #fecaca !important;
+    color: #b91c1c !important;
+  }
+  
+  .logout-mobile-btn:hover {
+    background: #fecaca !important;
+    transform: translateY(-1px);
+  }
+  
+  .logout-mobile-btn .material-symbols-outlined {
+    font-size: 1.25rem !important;
+  }
+</style>
+</head>
+
+<body class="min-h-screen flex" id="app" 
+      data-user-id="{{ user.id }}"
+      data-username="{{ user.username }}"
+      data-total-scans="{{ total_scans }}"
+      data-healthy-count="{{ healthy_count }}"
+      data-disease-count="{{ disease_count }}"
+      data-avg-confidence="{{ avg_confidence }}">
+
+<!-- SIDEBAR (DESKTOP) - Light Sage -->
+<aside class="hidden lg:flex flex-col w-64 xl:w-72 min-h-screen sticky top-0 shrink-0" style="background: #e8f0e5; border-right: 1px solid #c8dbc2;">
+  <div class="flex items-center gap-3 px-6 py-6 border-b" style="border-color: #c8dbc2;">
+    <div class="w-9 h-9 rounded-xl bg-primary/20 border border-primary/30 flex items-center justify-center">
+      <span class="material-symbols-outlined text-primary text-xl">eco</span>
+    </div>
+    <div class="flex flex-col">
+      <span class="font-bold text-xl tracking-tight leading-none" style="color: #2d3e2d;">{{ branding.app_name|default:"AgriSense" }}</span>
+      <span class="text-[10px] text-primary/60 uppercase tracking-[0.2em] font-bold mt-1.5" style="color: #10b981 !important;">
+        {{ branding.app_subtitle|default:"Edge Intelligence" }}
+      </span>
+    </div>
+  </div>
+  <nav class="flex-1 px-3 py-5 flex flex-col gap-1">
+    <a href="{% url 'dashboard' %}" class="sidebar-link active"><span class="material-symbols-outlined text-xl">dashboard</span>Dashboard</a>
+    <a href="{% url 'scanner' %}" class="sidebar-link"><span class="material-symbols-outlined text-xl">center_focus_strong</span>New Scan</a>
+    <a href="{% url 'history' %}" class="sidebar-link"><span class="material-symbols-outlined text-xl">history</span>History</a>
+    <div class="pt-6 pb-2 px-3 text-[10px] font-bold uppercase tracking-widest" style="color: #6b8c68;">Management</div>
+    <a href="{% url 'setting' %}" class="sidebar-link">
+      <span class="material-symbols-outlined text-[20px]">settings</span> Settings
+    </a>
+    <a href="{% url 'about' %}" class="sidebar-link">
+      <span class="material-symbols-outlined">info</span> About Us
+    </a>
+  </nav>
+  
+  <!-- User profile with Logout button (DESKTOP) -->
+  <div class="p-4 border-t" style="border-color: #c8dbc2;">
+    <div class="glass-card p-3 rounded-2xl flex items-center gap-3">
+      <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/20 flex items-center justify-center shrink-0">
+        <span class="material-symbols-outlined text-primary text-xl">account_circle</span>
+      </div>
+      <div class="flex-1 min-w-0">
+        <p class="text-sm font-bold truncate line-clamp-1" style="color: #2d3e2d;">{{ user.get_full_name|default:user.username }}</p>
+        <p class="text-[10px] truncate uppercase tracking-tighter" style="color: #6b8c68;">{{ user.email|default:"AgriSense User" }}</p>
+      </div>
+      <a href="{% url 'logout' %}" class="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-rose-500/10 transition-colors" style="color: #6b8c68;" title="Logout">
+        <span class="material-symbols-outlined text-sm">logout</span>
+      </a>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN CONTENT -->
+<div class="flex-1 flex flex-col min-h-screen overflow-y-auto">
+
+  <!-- Top bar - Deep Green -->
+  <header class="sticky top-0 z-30 px-4 lg:px-8 py-4 flex items-center justify-between gap-4" style="background: #1a3a2a; border-bottom: 1px solid #2d5a3d;">
+    <!-- Mobile logo -->
+    <div class="flex items-center gap-2.5 lg:hidden">
+      <div class="w-9 h-9 rounded-xl bg-white/15 border border-white/25 flex items-center justify-center">
+        <span class="material-symbols-outlined text-primary text-xl">eco</span>
+      </div>
+      <span class="font-bold text-lg tracking-tight" style="color: white;">{{ branding.app_name|default:"AgriSense" }}</span>
+    </div>
+
+    <!-- Search with active functionality -->
+    <div class="hidden md:flex items-center flex-1 max-w-lg">
+      <div class="relative w-full group">
+        <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-white/40 text-[20px]">search</span>
+        <input id="dashboard-search" type="text" placeholder="Search insights, diseases, or sectors..." 
+               onkeyup="searchDashboard()"
+               class="w-full pl-12 pr-4 py-2.5 rounded-2xl text-white placeholder-white/40 text-sm focus:outline-none transition-all" style="background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.2);"/>
+      </div>
+    </div>
+
+    <!-- Live indicator -->
+    <div class="flex items-center gap-2 px-3 py-1.5 rounded-full border" style="background: rgba(255,255,255,0.12); border-color: rgba(255,255,255,0.25);">
+      <span class="live-indicator"></span>
+      <span class="text-[10px] font-bold uppercase tracking-wider" style="color: #34d399;">Live Data</span>
+    </div>
+
+    <!-- Right actions -->
+    <div class="flex items-center gap-3 relative">
+      <!-- BELL -->
+      <button id="notifications-btn" class="w-10 h-10 flex items-center justify-center rounded-xl transition-all relative" style="background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.2); color: white;">
+        <span class="material-symbols-outlined text-[22px]">notifications</span>
+        <span id="notification-count" class="absolute -top-1 -right-1 bg-rose-500 text-white text-[10px] font-bold min-w-[18px] h-[18px] flex items-center justify-center rounded-full px-1 shadow-glow-primary border-2 border-[#1a3a2a] transition-all hidden">0</span>
+      </button>
+
+      <!-- DROPDOWN -->
+      <div id="notification-dropdown" class="hidden rounded-3xl shadow-premium p-5 z-50" style="background: #ffffff; border: 1px solid #d4e8ce;">
+        <div class="flex items-center justify-between mb-4">
+          <div class="flex items-center gap-2" style="color: #e53e3e;">
+            <span class="material-symbols-outlined">warning</span>
+            <span class="font-bold text-sm">Disease Alerts</span>
+          </div>
+          <span id="alert-count-in-dropdown" class="text-xs font-bold" style="color: #e53e3e;"></span>
+        </div>
+        <div id="alert-list" class="space-y-4 max-h-80 overflow-y-auto pr-2"></div>
+        <button id="mark-all-read-btn" class="mt-6 w-full py-3 font-bold text-sm rounded-2xl flex items-center justify-center gap-2 transition-all" style="background: #2f8b5c; color: white;">
+          <span class="material-symbols-outlined text-lg">done_all</span>
+          Mark All as Read
+        </button>
+      </div>
+
+      <a href="{% url 'scanner' %}" class="hidden sm:flex items-center gap-2.5 font-bold text-sm px-5 py-2.5 rounded-xl transition-all shadow-premium hover:shadow-glow-primary active:scale-95" style="background: #2f8b5c; color: white;">
+        <span class="material-symbols-outlined text-[20px]">add_a_photo</span>
+        <span>Quick Scan</span>
+      </a>
+      <button id="mobileMenuBtn" class="lg:hidden w-10 h-10 flex items-center justify-center rounded-xl transition-all" style="background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.2); color: white;">
+        <span class="material-symbols-outlined">menu</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Mobile menu overlay -->
+  <div id="mobileMenu" class="lg:hidden">
+    <div class="flex flex-col h-full p-6">
+      <div class="flex items-center justify-between mb-8">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center">
+            <span class="material-symbols-outlined text-primary text-2xl">eco</span>
+          </div>
+          <span class="font-bold text-xl tracking-tight" style="color: #2d3e2d;">{{ branding.app_name|default:"AgriSense" }}</span>
+        </div>
+        <button id="closeMenu" class="w-10 h-10 flex items-center justify-center rounded-2xl transition-all" style="background: rgba(0,0,0,0.05); border: 1px solid #d4e8ce; color: #2d3e2d;">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+      
+      <nav class="flex flex-col gap-2 flex-1">
+        <a href="{% url 'dashboard' %}" class="sidebar-link active" style="background: #d0e8c8; color: #0f5c2f;">
+          <span class="material-symbols-outlined">grid_view</span> Dashboard
+        </a>
+        <a href="{% url 'scanner' %}" class="sidebar-link">
+          <span class="material-symbols-outlined">filter_center_focus</span> Smart Scan
+        </a>
+        <a href="{% url 'history' %}" class="sidebar-link">
+          <span class="material-symbols-outlined">restore</span> History
+        </a>
+        <div class="pt-6 pb-2 px-3 text-[10px] font-bold uppercase tracking-widest" style="color: #6b8c68;">Management</div>
+        <a href="{% url 'setting' %}" class="sidebar-link">
+          <span class="material-symbols-outlined text-[20px]">settings</span> Settings
+        </a>
+        <a href="{% url 'about' %}" class="sidebar-link">
+          <span class="material-symbols-outlined">info</span> About Us
+        </a>
+      </nav>
+      
+      <!-- Mobile User Profile and Logout Section - FIXED -->
+      <div class="mt-auto pt-6 border-t" style="border-color: #c8dbc2;">
+        <div class="glass-card p-4 rounded-2xl mb-4" style="background: white; border-color: #d4e8ce;">
+          <div class="flex items-center gap-4">
+            <div class="w-12 h-12 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0">
+              <span class="material-symbols-outlined text-primary text-2xl">person</span>
+            </div>
+            <div class="flex-1 min-w-0">
+              <p class="font-bold truncate" style="color: #2d3e2d;">{{ user.get_full_name|default:user.username }}</p>
+              <p class="text-xs truncate" style="color: #6b8c68;">{{ user.email|default:"AgriSense User" }}</p>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Logout Button - Clearly visible -->
+        <a href="{% url 'logout' %}" class="logout-mobile-btn">
+          <span class="material-symbols-outlined">logout</span>
+          <span>Log Out</span>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Page Content -->
+  <main class="flex-1 p-4 lg:p-8 max-w-screen-2xl mx-auto w-full">
+
+    <!-- Heading -->
+    <div class="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-6 fade-in">
+      <div>
+        <h1 class="text-3xl lg:text-4xl font-extrabold tracking-tight" style="color: #2d3e2d;">
+          Good <span id="greeting">{{ greeting }}</span>, {{ user.get_full_name|default:user.username }} 👋
+        </h1>
+        <p class="mt-2 text-sm md:text-base" style="color: #6b8c68;">
+          <span id="current-date">{{ current_date }}</span> &nbsp;·&nbsp; 
+          <span id="current-time">{{ current_time }}</span> &nbsp;·&nbsp;
+          <span class="text-primary font-bold">System Status: Optimal</span>
+        </p>
+      </div>
+      <div class="glass-card px-6 py-4 rounded-2xl flex items-center gap-4">
+        <div class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center border border-primary/20">
+          <span class="material-symbols-outlined text-primary text-3xl">location_on</span>
+        </div>
+        <div>
+          <p class="font-black text-xl leading-none" style="color: #2d3e2d;" id="location-name">Detecting...</p>
+          <p class="text-xs font-bold mt-1 uppercase tracking-wider" style="color: #6b8c68;">Your Location</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- KPI row with search highlighting -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-10 searchable-item" data-search="total scans count">
+      <div class="glass-card p-6 rounded-3xl fade-in" style="animation-delay: 0.1s">
+        <div class="flex items-center justify-between mb-6">
+          <div class="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center border border-primary/20">
+            <span class="material-symbols-outlined text-primary text-2xl">scan</span>
+          </div>
+          <!-- <span class="stat-badge stat-badge-good" id="scan-trend">+{{ scan_trend }}%</span> -->
+        </div>
+        <p class="text-4xl font-extrabold" style="color: #2d3e2d;" id="total-scans">{{ total_scans }}</p>
+        <p class="text-xs font-bold mt-2 uppercase tracking-widest" style="color: #6b8c68;">Total Scans</p>
+      </div>
+      <div class="glass-card p-6 rounded-3xl fade-in searchable-item" data-search="healthy plants count" style="animation-delay: 0.2s">
+        <div class="flex items-center justify-between mb-6">
+          <div class="w-12 h-12 rounded-2xl bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20">
+            <span class="material-symbols-outlined text-emerald-500 text-2xl">eco</span>
+          </div>
+          <!-- <span class="stat-badge stat-badge-good" id="healthy-trend">+{{ healthy_trend }}%</span> -->
+        </div>
+        <p class="text-4xl font-extrabold" style="color: #2d3e2d;" id="healthy-count">{{ healthy_count }}</p>
+        <p class="text-xs font-bold mt-2 uppercase tracking-widest" style="color: #6b8c68;">Healthy Plants</p>
+      </div>
+      <div class="glass-card p-6 rounded-3xl fade-in searchable-item" data-search="at risk disease count" style="animation-delay: 0.3s">
+        <div class="flex items-center justify-between mb-6">
+          <div class="w-12 h-12 rounded-2xl bg-rose-500/10 flex items-center justify-center border border-rose-500/20">
+            <span class="material-symbols-outlined text-rose-500 text-2xl">warning</span>
+          </div>
+          <!-- <span class="stat-badge stat-badge-danger" id="risk-trend">-{{ risk_trend }}%</span> -->
+        </div>
+        <p class="text-4xl font-extrabold" style="color: #2d3e2d;" id="disease-count">{{ disease_count }}</p>
+        <p class="text-xs font-bold mt-2 uppercase tracking-widest" style="color: #6b8c68;">At Risk Now</p>
+      </div>
+      <div class="glass-card p-6 rounded-3xl fade-in searchable-item" data-search="ai precision confidence" style="animation-delay: 0.4s">
+        <div class="flex items-center justify-between mb-6">
+          <div class="w-12 h-12 rounded-2xl bg-indigo-500/10 flex items-center justify-center border border-indigo-500/20">
+            <span class="material-symbols-outlined text-indigo-400 text-2xl">psychology</span>
+          </div>
+          <span class="stat-badge" style="background: rgba(99,102,241,0.1); color: #6366f1; border-color: rgba(99,102,241,0.2);">Edge AI</span>
+        </div>
+        <p class="text-4xl font-extrabold" style="color: #2d3e2d;" id="avg-confidence">{{ avg_confidence }}<span class="text-xl text-primary">%</span></p>
+        <p class="text-xs font-bold mt-2 uppercase tracking-widest" style="color: #6b8c68;">AI Precision</p>
+      </div>
+    </div>
+
+    <!-- Search Results Counter -->
+    <div id="search-results" class="hidden mb-4 text-sm" style="color: #6b8c68;">
+      <span id="results-count">0</span> results found
+    </div>
+
+    <!-- Main 3-col layout -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <!-- LEFT COLUMN -->
+      <div class="lg:col-span-2 space-y-6">
+        <!-- Farm Health Overview -->
+        <div class="glass-card p-8 rounded-[2rem] relative overflow-hidden fade-in searchable-item" data-search="farm health index overview total healthy risk" style="animation-delay: 0.5s">
+          <div class="absolute top-0 right-0 w-80 h-80 bg-primary/5 rounded-full blur-[100px] -mr-32 -mt-32 pointer-events-none"></div>
+          <div class="flex items-center justify-between mb-8">
+            <h2 class="font-black text-xl tracking-tight" style="color: #2d3e2d;">Farm Health Index</h2>
+            <button onclick="refreshData()" class="text-primary text-xs font-bold uppercase tracking-widest hover:text-primary-dark transition-colors">
+              <span class="material-symbols-outlined text-sm align-middle mr-1">refresh</span> Refresh
+            </button>
+          </div>
+          <div class="grid grid-cols-2 md:grid-cols-3 gap-8 mb-10">
+            <div class="flex flex-col gap-1">
+              <span class="text-xs font-bold uppercase tracking-widest" style="color: #6b8c68;">Total</span>
+              <p class="text-5xl font-black leading-none" style="color: #2d3e2d;" id="health-total">{{ total_scans }}</p>
+            </div>
+            <div class="flex flex-col gap-1">
+              <span class="text-xs font-bold uppercase tracking-widest" style="color: #6b8c68;">Healthy</span>
+              <p class="text-5xl font-black leading-none text-primary" id="health-healthy">{{ healthy_count }}</p>
+            </div>
+            <div class="hidden md:flex flex-col gap-1">
+              <span class="text-xs font-bold uppercase tracking-widest" style="color: #6b8c68;">At Risk</span>
+              <p class="text-5xl font-black leading-none text-rose-500" id="health-risk">{{ disease_count }}</p>
+            </div>
+          </div>
+          {% widthratio healthy_count total_scans 100 as healthy_percent %}
+          {% widthratio disease_count total_scans 100 as disease_percent %}
+          <div class="space-y-3">
+            <div class="w-full rounded-full h-3 overflow-hidden flex shadow-inner" style="background: #e8f4e4;">
+             <div class="bg-primary h-full rounded-l-full" style="--width: {{ healthy_percent }}%; width: var(--width);" id="health-bar-healthy"></div>
+<div class="bg-rose-500 h-full rounded-r-full" style="--width: {{ disease_percent }}%; width: var(--width);" id="health-bar-risk"></div>
+            </div>
+            <div class="flex justify-between items-center text-[11px] font-bold uppercase tracking-widest">
+              <span class="text-primary" id="health-percent-healthy">{{ healthy_percent }}% Optimal Health</span>
+              <span class="text-rose-500" id="health-percent-risk">{{ disease_percent }}% Risk Factor</span>
+            </div>
+          </div>
+          <div class="mt-8 h-24"><canvas id="trendChart"></canvas></div>
+        </div>
+
+        <!-- Recent Scans -->
+        <div class="glass-card p-6 rounded-3xl fade-in" style="animation-delay: 0.6s">
+          <div class="flex items-center justify-between mb-6">
+            <h2 class="font-black text-lg tracking-tight" style="color: #2d3e2d;">Recent Scans</h2>
+            <a href="{% url 'history' %}" class="text-primary text-[10px] font-black uppercase tracking-[0.2em] hover:text-primary-dark transition-colors">Historical Data →</a>
+          </div>
+          <div class="space-y-4" id="recent-scans-container">
+            {% for scan in recent_scans %}
+            <a href="{% url 'diagnosis' scan.id %}" class="flex items-center gap-4 p-4 rounded-2xl transition-all border border-transparent hover:border-white/5 group searchable-item" style="background: #f9fff8;" 
+               data-search="{{ scan.disease_name|default:'Unknown' }} {{ scan.crop_type|default:'Plant' }} {{ scan.severity|default:'' }} {% if scan.disease_detected %}threat disease{% else %}healthy{% endif %}">
+              <div class="w-16 h-16 rounded-2xl overflow-hidden relative shrink-0 shadow-lg" style="background: #e8f4e4;">
+                {% if scan.image %}
+                <img src="{{ scan.image.url }}" alt="{{ scan.disease_name }}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500 opacity-90 group-hover:opacity-100"/>
+                {% else %}
+                <div class="w-full h-full flex items-center justify-center" style="background: #e8f4e4;">
+                  <span class="material-symbols-outlined" style="color: #9bc48f;">image</span>
+                </div>
+                {% endif %}
+                <div class="absolute inset-0 {% if scan.disease_detected %}bg-rose-500/10{% else %}bg-primary/10{% endif %} mix-blend-overlay"></div>
+              </div>
+              <div class="flex-1 min-w-0">
+                <div class="flex justify-between items-start">
+                  <h4 class="font-bold truncate" style="color: #2d3e2d;">Scan #{{ scan.id|stringformat:".6s" }}</h4>
+                  <span class="stat-badge {% if scan.disease_detected %}stat-badge-danger{% else %}stat-badge-good{% endif %}">
+                    {% if scan.disease_detected %}Threat{% else %}Healthy{% endif %}
+                  </span>
+                </div>
+                <p class="text-xs mt-1 font-medium" style="color: #6b8c68;">
+                  {{ scan.disease_name|default:"Unknown" }} 
+                  {% if scan.disease_detected %}
+                  <span class="text-rose-500">({{ scan.confidence|floatformat:1 }}%)</span>
+                  {% endif %}
+                </p>
+                <p class="text-[10px] font-bold uppercase tracking-widest mt-1.5 flex items-center gap-1.5" style="color: #9bc48f;">
+                  <span class="material-symbols-outlined text-[12px]">schedule</span> 
+                  {{ scan.created_at|timesince }} ago · {{ scan.crop_type|default:"Unknown" }}
+                </p>
+              </div>
+              <span class="material-symbols-outlined transition-colors" style="color: #9bc48f;">arrow_forward_ios</span>
+            </a>
+            {% empty %}
+            <div class="text-center py-8" style="color: #6b8c68;">
+              <span class="material-symbols-outlined text-4xl mb-2">scan_delete</span>
+              <p>No scans yet. Start your first scan!</p>
+              <a href="{% url 'scanner' %}" class="inline-block mt-4 px-4 py-2 rounded-xl font-bold text-sm" style="background: #2f8b5c; color: white;">Start Scanning</a>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT COLUMN -->
+      <div class="space-y-6">
+        <!-- AI Confidence gauge -->
+        <div class="glass-card p-6 rounded-3xl text-center fade-in searchable-item" data-search="ai confidence precision score" style="animation-delay: 0.7s">
+          <h3 class="text-[10px] font-black uppercase tracking-[0.2em] mb-6" style="color: #6b8c68;">AI Edge Precision</h3>
+          <div class="relative w-40 h-20 mx-auto flex items-end justify-center">
+            <svg class="w-full h-full" viewBox="0 0 100 50">
+              <path d="M 10 50 A 40 40 0 0 1 90 50" fill="none" stroke="#d4e8ce" stroke-linecap="round" stroke-width="10"></path>
+              <path class="gauge-fill" d="M 10 50 A 40 40 0 0 1 90 50" fill="none" stroke="url(#gradient-green)" stroke-dasharray="{{ avg_confidence }},100" stroke-linecap="round" stroke-width="10" stroke-dashoffset="0"></path>
+              <defs>
+                <linearGradient id="gradient-green" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stop-color="#10b981"></stop>
+                  <stop offset="100%" stop-color="#34d399"></stop>
+                </linearGradient>
+              </defs>
+            </svg>
+            <div class="absolute bottom-[-4px] flex flex-col items-center">
+              <span class="text-2xl font-black leading-none" style="color: #2d3e2d;" id="gauge-confidence">{{ avg_confidence }}<span class="text-lg text-primary">%</span></span>
+              <span class="text-[10px] font-bold uppercase tracking-widest mt-1" style="color: #6b8c68;">Confidence</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Disease Distribution -->
+        <div class="glass-card p-6 rounded-3xl fade-in searchable-item" data-search="disease distribution chart" style="animation-delay: 0.8s">
+          <h3 class="text-[10px] font-black uppercase tracking-[0.2em] mb-6" style="color: #6b8c68;">Disease Distribution</h3>
+          <div class="space-y-3" id="disease-distribution">
+            {% for disease in disease_distribution %}
+            <div class="searchable-item" data-search="{{ disease.name }} disease count {{ disease.count }}">
+              <div class="flex justify-between text-xs mb-1">
+                <span style="color: #6b8c68;">{{ disease.name }}</span>
+                <span class="text-primary font-bold">{{ disease.count }}</span>
+              </div>
+              <div class="h-2 rounded-full overflow-hidden" style="background: #e8f4e4;">
+               <div class="h-full bg-primary rounded-full" style="--width: {{ disease.percentage }}%; width: var(--width);"></div>
+              </div>
+            </div>
+            {% empty %}
+            <p class="text-center py-4" style="color: #6b8c68;">No disease data yet</p>
+            {% endfor %}
+          </div>
+        </div>
+
+        <!-- Edge AI info -->
+        <div class="glass-card p-5 rounded-2xl flex items-center gap-4 mb-4 fade-in searchable-item" data-search="edge ai tensorflow mobile net" style="animation-delay: 1.0s">
+          <div class="w-10 h-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center">
+            <span class="material-symbols-outlined text-primary text-xl">memory</span>
+          </div>
+          <div>
+            <p class="text-[10px] font-black uppercase tracking-widest" style="color: #10b981;">Edge Engine</p>
+            <p class="text-sm font-bold" style="color: #2d3e2d;">Mobile Net V3 Active</p>
+            <p class="text-[10px] mt-0.5" style="color: #6b8c68;">TensorFlow · Pretrained</p>
+          </div>
+        </div>
+        <br>
+        <br>
+        <br>
+      </div>
+    </div>
+  </main>
+
+  <!-- MOBILE BOTTOM NAV - Deep Green -->
+  <nav class="lg:hidden fixed bottom-0 left-0 right-0 z-30" style="background: #1a3a2a; border-top: 1px solid #2d5a3d; height: 65px;">
+    <div class="flex justify-around items-center h-full px-4">
+      <a href="{% url 'dashboard' %}" class="flex flex-col items-center justify-center" style="color: #34d399;">
+        <span class="material-symbols-outlined text-[24px]">grid_view</span>
+        <span class="text-[9px] font-black uppercase tracking-widest">HOME</span>
+      </a>
+      <a href="{% url 'scanner' %}" class="flex flex-col items-center justify-center -mt-8">
+        <div class="w-14 h-14 rounded-xl flex items-center justify-center shadow-premium active:scale-90 transition-transform" style="background: #2f8b5c; border: 4px solid #1a3a2a;">
+          <span class="material-symbols-outlined text-[24px]" style="color: white;">filter_center_focus</span>
+        </div>
+      </a>
+      <a href="{% url 'history' %}" class="flex flex-col items-center justify-center transition-colors" style="color: #9bc48f;">
+        <span class="material-symbols-outlined text-[24px]">restore</span>
+        <span class="text-[9px] font-black uppercase tracking-widest">HISTORY</span>
+      </a>
+    </div>
+  </nav>
+</div>
+
+<script>
+// Mobile menu
+const btn = document.getElementById('mobileMenuBtn');
+const menu = document.getElementById('mobileMenu');
+const close = document.getElementById('closeMenu');
+
+function openMobileMenu() {
+  menu.classList.add('show');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeMobileMenu() {
+  menu.classList.remove('show');
+  document.body.style.overflow = '';
+}
+
+btn?.addEventListener('click', openMobileMenu);
+close?.addEventListener('click', closeMobileMenu);
+
+// Close menu when clicking on a link
+document.querySelectorAll('#mobileMenu a').forEach(link => {
+  link.addEventListener('click', closeMobileMenu);
+});
+
+// Clock
+function updateClock() {
+  const now = new Date();
+  const dateEl = document.getElementById('current-date');
+  const timeEl = document.getElementById('current-time');
+  const greetingEl = document.getElementById('greeting');
+  
+  if (dateEl) dateEl.textContent = now.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+  if (timeEl) timeEl.textContent = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  const hour = now.getHours();
+  let greeting = hour < 12 ? 'Morning' : hour < 18 ? 'Afternoon' : 'Evening';
+  if (greetingEl) greetingEl.textContent = greeting;
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+// Location
+function isWebView() {
+  const userAgent = navigator.userAgent.toLowerCase();
+  return (userAgent.includes('wv') || userAgent.includes('; wv') || /android.*applewebkit(?=.*version\/?.*safari)/.test(userAgent) === false);
+}
+function getLocationByIP() {
+  const locationElement = document.getElementById('location-name');
+  if (locationElement) locationElement.textContent = 'Detecting by IP...';
+  fetch('https://ipapi.co/json/').then(r => r.json()).then(data => {
+    let name = 'Farm Location';
+    if (data.city && data.region) name = `${data.city}, ${data.region}`;
+    else if (data.country_name) name = data.country_name;
+    if (locationElement) locationElement.textContent = name;
+  }).catch(() => {
+    fetch('https://ipinfo.io/json').then(r => r.json()).then(data => {
+      let name = 'Farm Location';
+      if (data.city && data.region) name = `${data.city}, ${data.region}`;
+      else if (data.country) name = data.country;
+      if (locationElement) locationElement.textContent = name;
+    }).catch(() => {
+      if (locationElement) locationElement.textContent = 'Farm Location';
+    });
+  });
+}
+function getLocation() {
+  const locationElement = document.getElementById('location-name');
+  if (isWebView()) { getLocationByIP(); return; }
+  if (navigator.geolocation) {
+    const timeoutId = setTimeout(() => getLocationByIP(), 5000);
+    navigator.geolocation.getCurrentPosition(pos => {
+      clearTimeout(timeoutId);
+      const lat = pos.coords.latitude, lon = pos.coords.longitude;
+      fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=10`)
+        .then(r => r.json()).then(data => {
+          let name = data.display_name ? data.display_name.split(',')[0] : 'Farm Location';
+          if (data.address && data.address.state) name += ', ' + data.address.state;
+          if (locationElement) locationElement.textContent = name;
+        }).catch(() => {
+          if (locationElement) locationElement.textContent = `${lat.toFixed(2)}°, ${lon.toFixed(2)}°`;
+        });
+    }, () => { clearTimeout(timeoutId); getLocationByIP(); }, { enableHighAccuracy: true, timeout: 5000 });
+  } else getLocationByIP();
+}
+
+// ==================== SEARCH FUNCTIONALITY ====================
+function searchDashboard() {
+  const searchTerm = document.getElementById('dashboard-search')?.value.toLowerCase().trim() || '';
+  const searchableItems = document.querySelectorAll('.searchable-item');
+  const resultsCount = document.getElementById('results-count');
+  const resultsDiv = document.getElementById('search-results');
+  
+  let visibleCount = 0;
+  
+  searchableItems.forEach(item => {
+    const searchData = item.dataset.search || '';
+    const itemText = item.textContent.toLowerCase();
+    
+    const matches = searchTerm === '' || 
+                    searchData.includes(searchTerm) || 
+                    itemText.includes(searchTerm);
+    
+    if (matches) {
+      item.style.display = '';
+      visibleCount++;
+      if (searchTerm !== '') {
+        item.classList.add('search-highlight');
+      } else {
+        item.classList.remove('search-highlight');
+      }
+    } else {
+      item.style.display = 'none';
+      item.classList.remove('search-highlight');
+    }
+  });
+  
+  if (resultsDiv && resultsCount) {
+    if (searchTerm !== '') {
+      resultsDiv.classList.remove('hidden');
+      resultsCount.textContent = visibleCount;
+      if (visibleCount === 0) {
+        resultsDiv.innerHTML = '<span class="text-rose-500">No results found</span>';
+      } else {
+        resultsDiv.innerHTML = `<span class="text-primary">${visibleCount}</span> results found`;
+      }
+    } else {
+      resultsDiv.classList.add('hidden');
+    }
+  }
+}
+
+// ==================== NOTIFICATION DROPDOWN ====================
+let recentScansData = [];
+
+function updateNotificationCount(count) {
+  const badge = document.getElementById('notification-count');
+  if (badge) {
+    badge.textContent = count;
+    badge.classList.toggle('hidden', count === 0);
+    badge.classList.toggle('animate-pulse', count > 0);
+  }
+}
+
+function positionDropdown() {
+  const dropdown = document.getElementById('notification-dropdown');
+  const bell = document.getElementById('notifications-btn');
+  if (!dropdown || !bell) return;
+  
+  const bellRect = bell.getBoundingClientRect();
+  const dropdownWidth = 380;
+  const windowWidth = window.innerWidth;
+  
+  let rightPosition = windowWidth - bellRect.right + 10;
+  if (rightPosition < 10) rightPosition = 10;
+  if (rightPosition + dropdownWidth > windowWidth - 10) {
+    rightPosition = windowWidth - dropdownWidth - 10;
+  }
+  
+  dropdown.style.right = rightPosition + 'px';
+  dropdown.style.top = (bellRect.bottom + 10) + 'px';
+}
+
+function renderDiseaseAlerts() {
+  const container = document.getElementById('alert-list');
+  const countEl = document.getElementById('alert-count-in-dropdown');
+  const alerts = recentScansData.filter(s => s.disease_detected);
+  if (countEl) countEl.textContent = alerts.length + ' alerts';
+  let html = '';
+  alerts.forEach(scan => {
+    html += `
+      <div class="flex gap-4 p-3 rounded-2xl transition-all" style="background: #e8f4e4;">
+        <div class="w-11 h-11 rounded-xl overflow-hidden shrink-0"><img src="${scan.image_url || '/static/images/placeholder.jpg'}" class="w-full h-full object-cover"></div>
+        <div class="flex-1 min-w-0">
+          <p class="font-bold text-sm" style="color: #2d3e2d;">${scan.disease_name}</p>
+          <p class="text-xs" style="color: #e53e3e;">Confidence: ${scan.confidence}% • ${getTimeAgo(scan.created_at)} ago</p>
+        </div>
+      </div>`;
+  });
+  if (container) container.innerHTML = html || `<p class="text-center py-8" style="color: #6b8c68;">No disease alerts</p>`;
+}
+
+const bell = document.getElementById('notifications-btn');
+const dropdown = document.getElementById('notification-dropdown');
+
+if (bell && dropdown) {
+  bell.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (dropdown.classList.contains('hidden')) {
+      positionDropdown();
+      fetchNotificationData();
+    } else {
+      dropdown.classList.add('hidden');
+    }
+  });
+
+  document.addEventListener('click', (e) => {
+    if (bell && dropdown && !bell.contains(e.target) && !dropdown.contains(e.target)) {
+      dropdown.classList.add('hidden');
+    }
+  });
+  
+  window.addEventListener('resize', () => {
+    if (!dropdown.classList.contains('hidden')) {
+      positionDropdown();
+    }
+  });
+}
+
+function fetchNotificationData() {
+  fetch('/api/dashboard-stats/')
+    .then(response => response.json())
+    .then(data => {
+      recentScansData = data.recent_scans || [];
+      updateNotificationCount(data.unread_notifications || 0);
+      renderDiseaseAlerts();
+      dropdown.classList.remove('hidden');
+      positionDropdown();
+    })
+    .catch(error => {
+      console.error('Error fetching notification data:', error);
+      renderDiseaseAlerts();
+      dropdown.classList.remove('hidden');
+      positionDropdown();
+    });
+}
+
+document.getElementById('mark-all-read-btn')?.addEventListener('click', async () => {
+  await fetch('/api/mark-notifications-read/', { method: 'POST' });
+  dropdown.classList.add('hidden');
+  refreshData();
+});
+
+// Refresh Data
+function refreshData() {
+  fetch('/api/dashboard-stats/')
+    .then(response => response.json())
+    .then(data => {
+      const totalScansEl = document.getElementById('total-scans');
+      const healthyCountEl = document.getElementById('healthy-count');
+      const diseaseCountEl = document.getElementById('disease-count');
+      const avgConfidenceEl = document.getElementById('avg-confidence');
+      const healthTotalEl = document.getElementById('health-total');
+      const healthHealthyEl = document.getElementById('health-healthy');
+      const healthRiskEl = document.getElementById('health-risk');
+      const healthBarHealthy = document.getElementById('health-bar-healthy');
+      const healthBarRisk = document.getElementById('health-bar-risk');
+      const healthPercentHealthy = document.getElementById('health-percent-healthy');
+      const healthPercentRisk = document.getElementById('health-percent-risk');
+      const gaugeConfidence = document.getElementById('gauge-confidence');
+      const scanTrend = document.getElementById('scan-trend');
+      const healthyTrend = document.getElementById('healthy-trend');
+      const riskTrend = document.getElementById('risk-trend');
+      
+      if (totalScansEl) totalScansEl.textContent = data.total_scans;
+      if (healthyCountEl) healthyCountEl.textContent = data.healthy_count;
+      if (diseaseCountEl) diseaseCountEl.textContent = data.disease_count;
+      if (avgConfidenceEl) avgConfidenceEl.innerHTML = data.avg_confidence + '<span class="text-xl text-primary">%</span>';
+      if (healthTotalEl) healthTotalEl.textContent = data.total_scans;
+      if (healthHealthyEl) healthHealthyEl.textContent = data.healthy_count;
+      if (healthRiskEl) healthRiskEl.textContent = data.disease_count;
+      
+      const healthyPercent = (data.healthy_count / data.total_scans * 100).toFixed(1);
+      const diseasePercent = (data.disease_count / data.total_scans * 100).toFixed(1);
+      
+      if (healthBarHealthy) healthBarHealthy.style.width = healthyPercent + '%';
+      if (healthBarRisk) healthBarRisk.style.width = diseasePercent + '%';
+      if (healthPercentHealthy) healthPercentHealthy.textContent = healthyPercent + '% Optimal Health';
+      if (healthPercentRisk) healthPercentRisk.textContent = diseasePercent + '% Risk Factor';
+      if (gaugeConfidence) gaugeConfidence.innerHTML = data.avg_confidence + '<span class="text-lg text-primary">%</span>';
+      if (scanTrend) scanTrend.textContent = '+' + data.scan_trend + '%';
+      if (healthyTrend) healthyTrend.textContent = '+' + data.healthy_trend + '%';
+      if (riskTrend) riskTrend.textContent = '-' + data.risk_trend + '%';
+      
+      updateRecentScans(data.recent_scans);
+      updateDiseaseDistribution(data.disease_distribution);
+      updateNotificationCount(data.unread_notifications || 0);
+      recentScansData = data.recent_scans || [];
+    })
+    .catch(error => console.error('Error refreshing data:', error));
+}
+
+// Update recent scans
+function updateRecentScans(scans) {
+  const container = document.getElementById('recent-scans-container');
+  if (!container) return;
+  if (scans.length === 0) {
+    container.innerHTML = `<div class="text-center py-8" style="color: #6b8c68;"><span class="material-symbols-outlined text-4xl mb-2">scan_delete</span><p>No scans yet. Start your first scan!</p><a href="/scanner/" class="inline-block mt-4 px-4 py-2 rounded-xl font-bold text-sm" style="background: #2f8b5c; color: white;">Start Scanning</a></div>`;
+    return;
+  }
+  let html = '';
+  scans.forEach(scan => {
+    const timeAgo = getTimeAgo(scan.created_at);
+    const statusClass = scan.disease_detected ? 'stat-badge-danger' : 'stat-badge-good';
+    const statusText = scan.disease_detected ? 'Threat' : 'Healthy';
+    const confidenceHtml = scan.disease_detected ? `<span class="text-rose-500">(${scan.confidence}%)</span>` : '';
+    html += `
+      <a href="/diagnosis/${scan.id}/" class="flex items-center gap-4 p-4 rounded-2xl transition-all border border-transparent hover:border-white/5 group searchable-item" style="background: #f9fff8;"
+         data-search="${scan.disease_name || 'Unknown'} ${scan.crop_type || 'Plant'} ${scan.severity || ''} ${scan.disease_detected ? 'threat disease' : 'healthy'}">
+        <div class="w-16 h-16 rounded-2xl overflow-hidden relative shrink-0 shadow-lg" style="background: #e8f4e4;">
+          <img src="${scan.image_url || '/static/images/placeholder.jpg'}" alt="${scan.disease_name}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500 opacity-90 group-hover:opacity-100"/>
+          <div class="absolute inset-0 ${scan.disease_detected ? 'bg-rose-500/10' : 'bg-primary/10'} mix-blend-overlay"></div>
+        </div>
+        <div class="flex-1 min-w-0">
+          <div class="flex justify-between items-start">
+            <h4 class="font-bold truncate" style="color: #2d3e2d;">Scan #${scan.id.substring(0,6)}</h4>
+            <span class="stat-badge ${statusClass}">${statusText}</span>
+          </div>
+          <p class="text-xs mt-1 font-medium" style="color: #6b8c68;">${scan.disease_name || 'Unknown'} ${confidenceHtml}</p>
+          <p class="text-[10px] font-bold uppercase tracking-widest mt-1.5 flex items-center gap-1.5" style="color: #9bc48f;">
+            <span class="material-symbols-outlined text-[12px]">schedule</span> ${timeAgo} ago · ${scan.crop_type || 'Unknown'}
+          </p>
+        </div>
+        <span class="material-symbols-outlined transition-colors" style="color: #9bc48f;">arrow_forward_ios</span>
+      </a>`;
+  });
+  container.innerHTML = html;
+}
+
+// Update disease distribution
+function updateDiseaseDistribution(diseases) {
+  const container = document.getElementById('disease-distribution');
+  if (!container) return;
+  if (diseases.length === 0) {
+    container.innerHTML = '<p class="text-center py-4" style="color: #6b8c68;">No disease data yet</p>';
+    return;
+  }
+  let html = '';
+  diseases.forEach(disease => {
+    html += `
+      <div class="searchable-item" data-search="${disease.name} disease count ${disease.count}">
+        <div class="flex justify-between text-xs mb-1">
+          <span style="color: #6b8c68;">${disease.name}</span>
+          <span class="text-primary font-bold">${disease.count}</span>
+        </div>
+        <div class="h-2 rounded-full overflow-hidden" style="background: #e8f4e4;">
+          <div class="h-full bg-primary rounded-full" style="width:${disease.percentage}%"></div>
+        </div>
+      </div>`;
+  });
+  container.innerHTML = html;
+}
+
+// Time ago
+function getTimeAgo(timestamp) {
+  const now = new Date();
+  const past = new Date(timestamp);
+  const diff = Math.floor((now - past) / 1000);
+  if (diff < 60) return diff + 's';
+  if (diff < 3600) return Math.floor(diff / 60) + 'm';
+  if (diff < 86400) return Math.floor(diff / 3600) + 'h';
+  return Math.floor(diff / 86400) + 'd';
+}
+
+// Chart
+document.addEventListener('DOMContentLoaded', function() {
+  // Safely parse chart data
+  let labels = [];
+  let chartData = [];
+  
+  try {
+    const labelsRaw = '{{ chart_labels|escapejs }}';
+    const dataRaw = '{{ chart_data|escapejs }}';
+    
+    if (labelsRaw && labelsRaw !== '[]') {
+      labels = JSON.parse(labelsRaw);
+    }
+    if (dataRaw && dataRaw !== '[]') {
+      chartData = JSON.parse(dataRaw);
+    }
+  } catch(e) {
+    console.warn('Error parsing chart data:', e);
+    labels = ['Week 1', 'Week 2', 'Week 3', 'Week 4'];
+    chartData = [85, 88, 92, 90];
+  }
+  
+  const ctx = document.getElementById('trendChart')?.getContext('2d');
+  if (ctx && labels.length > 0 && chartData.length > 0) {
+    new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: 'Health Score',
+          data: chartData,
+          borderColor: '#10b981',
+          backgroundColor: 'rgba(16, 185, 129, 0.1)',
+          tension: 0.4,
+          fill: true
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          y: { 
+            grid: { color: 'rgba(0,0,0,0.05)' }, 
+            ticks: { color: '#6b8c68' } 
+          },
+          x: { 
+            grid: { display: false }, 
+            ticks: { color: '#6b8c68' } 
+          }
+        }
+      }
+    });
+  }
+  
+  if (typeof getLocation === 'function') getLocation();
+  if (typeof refreshData === 'function') refreshData();
+});
+
+setInterval(refreshData, 30000);
+</script>
+</body>
+</html>

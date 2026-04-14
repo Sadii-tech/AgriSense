@@ -1,0 +1,737 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>AgriSense – About Us</title>
+<script src="{% static 'js/tailwind.min.js' %}"></script>
+<link href="{% static 'css/inter.css' %}" rel="stylesheet"/>
+<link href="{% static 'css/material-symbols.css' %}" rel="stylesheet"/>
+<script id="tailwind-config">
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        colors: {
+          "primary": "#10b981",
+          "primary-dark": "#059669",
+          "primary-light": "#34d399",
+          "background-dark": "#0a0f0a",
+          "surface-dark": "#121a12",
+          "surface-darker": "#0d130d",
+          "surface-accent": "#1a241a",
+          "glass": "rgba(255, 255, 255, 0.03)",
+          "glass-edge": "rgba(255, 255, 255, 0.08)",
+        },
+        fontFamily: { 
+          "display": ["'Inter'", "sans-serif"], 
+          "body": ["'Inter'", "sans-serif"] 
+        },
+        boxShadow: {
+          "premium": "0 10px 30px -10px rgba(0, 0, 0, 0.5)",
+          "glow-primary": "0 0 20px rgba(16, 185, 129, 0.15)",
+        }
+      },
+    },
+  }
+</script>
+<style type="text/tailwindcss">
+  /* LIGHT THEME OVERRIDES - White/Mint Background, Deep Green Navbar, Light Sage Cards, Dark Gray/Black Text */
+  body { 
+    font-family: 'Inter', sans-serif; 
+    background: #f0f7f0 !important;
+    color-scheme: light;
+    color: #1a2c1e !important;
+  }
+  
+  /* Override dark class behavior */
+  .dark body, body.dark {
+    background: #f0f7f0 !important;
+  }
+  
+  /* Sidebar - Light Sage */
+  aside.hidden {
+    background: #e8f0e5 !important;
+    border-right-color: #c8dbc2 !important;
+  }
+  
+  /* Glass cards - Light Sage */
+  .glass-card { 
+    background: #ffffff !important;
+    backdrop-filter: none !important;
+    border: 1px solid #d4e8ce !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+  }
+  .glass-card:hover {
+    background: #ffffff !important;
+    border-color: #bcddae !important;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+  }
+  
+  /* Sidebar links - Dark Gray text */
+  .sidebar-link { 
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.6rem 1rem;
+    border-radius: 1rem;
+    font-weight: 500;
+    font-size: 0.875rem;
+    transition: all 0.2s ease;
+    width: 100%;
+    color: #2d3e2d !important;
+  }
+  .sidebar-link:hover { 
+    background: #d9ecd2 !important;
+    color: #1a3a1a !important;
+  }
+  .sidebar-link.active { 
+    background: #d0e8c8 !important;
+    color: #0f5c2f !important;
+    border: 1px solid #9bc48f !important;
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.1);
+  }
+  
+  /* Stat badges - light theme */
+  .stat-badge { font-size: 0.65rem; font-weight: 700; padding: 0.2rem 0.65rem; border-radius: 999px; text-transform: uppercase; letter-spacing: 0.03em; border-width: 1px; }
+  .stat-badge-good  { background: #e0f2e0 !important; color: #166534 !important; border-color: #bbf7d0 !important; }
+  .stat-badge-warn  { background: #fffbeb !important; color: #b45309 !important; border-color: #fed7aa !important; }
+  .stat-badge-danger { background: #fee2e2 !important; color: #b91c1c !important; border-color: #fecaca !important; }
+  
+  /* Live indicator - keep green */
+  .live-indicator {
+    position: relative;
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    background-color: #10b981;
+    border-radius: 50%;
+    margin-right: 6px;
+  }
+  .live-indicator::after {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    width: 12px;
+    height: 12px;
+    background-color: rgba(16, 185, 129, 0.3);
+    border-radius: 50%;
+    animation: pulse-ring 1.5s infinite;
+  }
+  @keyframes pulse-ring {
+    0% { transform: scale(0.8); opacity: 0.7; }
+    70% { transform: scale(1.4); opacity: 0; }
+    100% { transform: scale(1.4); opacity: 0; }
+  }
+
+  /* Gradient text - keep green gradient */
+  .gradient-text {
+    background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Team member cards */
+  .team-card {
+    transition: all 0.3s ease;
+  }
+  .team-card:hover {
+    transform: translateY(-5px);
+  }
+  
+  /* Top bar - Deep Green Navbar */
+  header.sticky {
+    background: #307150 !important;
+    backdrop-filter: none !important;
+    border-bottom-color: #2d5a3d !important;
+  }
+  
+  /* Mobile menu button in header */
+  header .lg\:hidden {
+    background: rgba(255,255,255,0.12) !important;
+    border-color: rgba(255,255,255,0.2) !important;
+    color: white !important;
+  }
+  
+  /* Mobile logo text in header */
+  header .lg\:hidden span.font-bold {
+    color: white !important;
+  }
+  
+  /* Live status indicator in header */
+  header .flex.items-center.gap-2.bg-primary\/10 {
+    background: rgba(255,255,255,0.15) !important;
+    border-color: rgba(255,255,255,0.25) !important;
+  }
+  header .flex.items-center.gap-2.bg-primary\/10 span.text-primary {
+    color: #34d399 !important;
+  }
+  
+  /* Quick Scan button - Soft Green (KEEP WHITE TEXT) */
+  a.bg-primary.hover\:bg-primary-dark {
+    background: #2f8b5c !important;
+    color: white !important;
+  }
+  a.bg-primary.hover\:bg-primary-dark:hover {
+    background: #246e48 !important;
+    color: white !important;
+  }
+  
+  /* ===== FIXED: Only target specific text elements that need dark color ===== */
+  /* Sidebar text */
+  aside .text-white, 
+  aside .text-gray-500,
+  aside .text-gray-400,
+  aside p, aside span, aside a {
+    color: #2d3e2d !important;
+  }
+  
+  /* Main content headings and body text */
+  main h1, main h2, main h3, main h4, main p, main label, 
+  main .text-gray-500, main .text-gray-400, main .text-white,
+  main div:not(.glass-card.bg-primary\/\[0\.02\] *) p,
+  main .glass-card.px-6.py-4 .text-white {
+    color: #2d3e2d !important;
+  }
+  
+  /* Keep specific gray text muted */
+  main .text-xs, main .text-gray-500, .text-xs.text-gray-500 {
+    color: #6b8c68 !important;
+  }
+  
+  /* Keep gradient text exception */
+  .gradient-text, .gradient-text * {
+    -webkit-text-fill-color: transparent !important;
+    color: transparent !important;
+  }
+  
+  /* Keep primary colored elements */
+  .text-primary {
+    color: #10b981 !important;
+  }
+  .border-primary\/20 {
+    border-color: rgba(16, 185, 129, 0.2) !important;
+  }
+  .bg-primary\/10 {
+    background-color: rgba(16, 185, 129, 0.1) !important;
+  }
+  .bg-primary\/20 {
+    background-color: rgba(16, 185, 129, 0.2) !important;
+  }
+  
+  /* Sidebar user profile card */
+  aside .glass-card {
+    background: #ffffff !important;
+    border-color: #c8dbc2 !important;
+  }
+  aside .glass-card .text-white, 
+  aside .glass-card .text-gray-500 {
+    color: #2d3e2d !important;
+  }
+  aside .glass-card .text-gray-500 {
+    color: #6b8c68 !important;
+  }
+  
+  /* Mobile nav overlay */
+  #mobileMenu {
+    background: #f0f7f0 !important;
+    backdrop-filter: blur(16px);
+  }
+  #mobileMenu .text-white, #mobileMenu .text-gray-500 {
+    color: #2d3e2d !important;
+  }
+  #mobileMenu .sidebar-link {
+    color: #2d3e2d !important;
+  }
+  #mobileMenu .sidebar-link.active {
+    background: #d0e8c8 !important;
+    color: #0f5c2f !important;
+  }
+  #mobileMenu .glass-card {
+    background: #ffffff !important;
+    border-color: #d4e8ce !important;
+  }
+  
+  /* Page heading area */
+  main .glass-card.px-6.py-4 {
+    background: #ffffff !important;
+    border-color: #d4e8ce !important;
+  }
+  main .glass-card.px-6.py-4 .text-gray-500 {
+    color: #6b8c68 !important;
+  }
+  
+  /* Stats section */
+  .glass-card.p-8.rounded-\[2rem\] .text-primary {
+    color: #10b981 !important;
+  }
+  
+  /* Our Story cards */
+  .glass-card.p-6.rounded-2xl .text-white {
+    color: #2d3e2d !important;
+  }
+  .glass-card.p-6.rounded-2xl .text-gray-500 {
+    color: #6b8c68 !important;
+  }
+  .text-emerald-400 {
+    color: #10b981 !important;
+  }
+  
+  /* Mission section */
+  .text-gray-400 {
+    color: #4a6747 !important;
+  }
+  
+  /* Team section */
+  .team-card .text-white {
+    color: #2d3e2d !important;
+  }
+  .team-card .text-gray-500 {
+    color: #6b8c68 !important;
+  }
+  
+  /* Right column - Built With, Values, CTA */
+  .glass-card.p-8.rounded-3xl .text-white {
+    color: #2d3e2d !important;
+  }
+  .glass-card.p-8.rounded-3xl .text-gray-500 {
+    color: #6b8c68 !important;
+  }
+  .text-indigo-400, .text-amber-400, .text-emerald-400 {
+    color: #10b981 !important;
+  }
+  
+  /* CTA Card - keep button white */
+  .glass-card.bg-primary\/\[0\.02\] {
+    background: #e8f4e4 !important;
+    border-color: #bcddae !important;
+  }
+  .glass-card.bg-primary\/\[0\.02\] .text-white {
+    color: #2d3e2d !important;
+  }
+  .glass-card.bg-primary\/\[0\.02\] .text-gray-400 {
+    color: #4a6747 !important;
+  }
+  .glass-card.bg-primary\/\[0\.02\] .text-gray-600 {
+    color: #6b8c68 !important;
+  }
+  a.block.bg-primary {
+    background: #2f8b5c !important;
+    color: white !important;
+  }
+  a.block.bg-primary:hover {
+    background: #246e48 !important;
+    color: white !important;
+  }
+  
+  /* Mobile bottom nav - Deep Green */
+  nav.lg\:hidden.fixed {
+    background: #1a3a2a !important;
+    backdrop-filter: none !important;
+    border-top-color: #2d5a3d !important;
+  }
+  nav.lg\:hidden.fixed .text-gray-500 {
+    color: #9bc48f !important;
+  }
+  nav.lg\:hidden.fixed .hover\:text-primary:hover {
+    color: #34d399 !important;
+  }
+  nav.lg\:hidden.fixed .bg-primary {
+    background: #2f8b5c !important;
+  }
+  nav.lg\:hidden.fixed .border-background-dark {
+    border-color: #1a3a2a !important;
+  }
+  
+  /* Ensure header elements with white stay white */
+  header .text-white, header span[style*="color: white"], 
+  header .font-bold[style*="color: white"], header a[style*="color: white"] {
+    color: white !important;
+  }
+  
+  /* Fade-in animation */
+  .fade-in { animation: fadeIn 0.6s ease-out forwards; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+</style>
+</head>
+
+<body class="min-h-screen flex" id="app"
+      data-user-id="{{ user.id }}"
+      data-username="{{ user.username }}">
+
+<!-- SIDEBAR (desktop) - Light Sage -->
+<aside class="hidden lg:flex flex-col w-64 xl:w-72 min-h-screen sticky top-0 shrink-0 z-40" style="background: #e8f0e5; border-right-color: #c8dbc2;">
+  <!-- Logo -->
+  <div class="flex items-center gap-3 px-6 py-8">
+    <div class="w-10 h-10 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center shadow-glow-primary">
+      <span class="material-symbols-outlined text-primary text-2xl">eco</span>
+    </div>
+     <div class="flex flex-col">
+      <span class="font-bold text-xl tracking-tight leading-none" style="color: #2d3e2d;">{{ branding.app_name|default:"AgriSense" }}</span>
+      <span class="text-[10px] text-primary/60 uppercase tracking-[0.2em] font-bold mt-1.5" style="color: #10b981 !important;">
+        {{ branding.app_subtitle|default:"Edge Intelligence" }}
+      </span>
+    </div>
+  </div>
+
+  <!-- Nav links -->
+  <nav class="flex-1 px-4 py-4 overflow-y-auto flex flex-col gap-1.5">
+    <div class="pb-2 px-3 text-[10px] font-bold uppercase tracking-widest" style="color: #6b8c68;">General</div>
+    <a href="{% url 'dashboard' %}" class="sidebar-link">
+      <span class="material-symbols-outlined text-[20px]">grid_view</span> Dashboard
+    </a>
+    <a href="{% url 'scanner' %}" class="sidebar-link">
+      <span class="material-symbols-outlined text-[20px]">filter_center_focus</span> Smart Scan
+    </a>
+    <a href="{% url 'history' %}" class="sidebar-link">
+      <span class="material-symbols-outlined text-[20px]">restore</span> History
+    </a>
+    
+    <div class="pt-6 pb-2 px-3 text-[10px] font-bold uppercase tracking-widest" style="color: #6b8c68;">Management</div>
+    <a href="{% url 'setting' %}" class="sidebar-link">
+      <span class="material-symbols-outlined text-[20px]">settings</span> Settings
+    </a>
+      <a href="{% url 'about' %}" class="sidebar-link active">
+          <span class="material-symbols-outlined">info</span> About Us
+        </a>
+  </nav>
+
+  <!-- User profile -->
+  <div class="p-4 mt-auto">
+    <div class="glass-card p-3 rounded-2xl flex items-center gap-3">
+      <div class="w-9 h-9 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0">
+        <span class="material-symbols-outlined text-primary text-xl">account_circle</span>
+      </div>
+      <div class="flex-1 min-w-0">
+        <p class="text-sm font-bold truncate line-clamp-1" style="color: #2d3e2d;">{{ user.get_full_name|default:user.username }}</p>
+        <p class="text-[10px] truncate uppercase tracking-tighter" style="color: #6b8c68;">{{ user.email|default:"—" }}</p>
+      </div>
+      <a href="{% url 'logout' %}" class="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-rose-500/10 transition-colors" style="color: #6b8c68;">
+        <span class="material-symbols-outlined text-sm">logout</span>
+      </a>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN CONTENT -->
+<div class="flex-1 flex flex-col min-h-screen overflow-y-auto">
+
+  <!-- Top bar - Deep Green Navbar -->
+  <header class="sticky top-0 z-30 px-4 lg:px-8 py-4 flex items-center justify-between gap-4" style="background: #1a3a2a; border-bottom: 1px solid #2d5a3d;">
+    <!-- Mobile logo -->
+    <div class="flex items-center gap-2.5 lg:hidden">
+      <div class="w-9 h-9 rounded-xl bg-white/15 border border-white/25 flex items-center justify-center">
+        <span class="material-symbols-outlined text-primary text-xl">eco</span>
+      </div>
+      <span class="font-bold text-lg tracking-tight" style="color: white;">{{ branding.app_name|default:"AgriSense" }}</span>
+    </div>
+
+    <!-- Live status indicator -->
+    <div class="flex items-center gap-2 px-3 py-1.5 rounded-full border" style="background: rgba(255,255,255,0.12); border-color: rgba(255,255,255,0.25);">
+      <span class="live-indicator"></span>
+      <span class="text-[10px] font-bold uppercase tracking-wider" style="color: #34d399;">Live</span>
+    </div>
+
+    <!-- Right actions -->
+    <div class="flex items-center gap-3">
+      <a href="{% url 'scanner' %}" class="hidden sm:flex items-center gap-2.5 font-bold text-sm px-5 py-2.5 rounded-xl transition-all shadow-premium hover:shadow-glow-primary active:scale-95" style="background: #2f8b5c; color: white;">
+        <span class="material-symbols-outlined text-[20px]">add_a_photo</span>
+        <span>Quick Scan</span>
+      </a>
+      <button id="mobileMenuBtn" class="lg:hidden w-10 h-10 flex items-center justify-center rounded-xl transition-all" style="background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.2); color: white;">
+        <span class="material-symbols-outlined">menu</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Mobile nav overlay -->
+  <div id="mobileMenu" class="hidden lg:hidden fixed inset-0 z-50 flex-col p-6 overflow-y-auto" style="background: #f0f7f0; backdrop-filter: blur(16px);">
+    <div class="flex items-center justify-between mb-10">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center">
+          <span class="material-symbols-outlined text-primary text-2xl">eco</span>
+        </div>
+        <span class="font-bold text-xl tracking-tight" style="color: #2d3e2d;">AI AgriSense</span>
+      </div>
+      <button id="closeMenu" class="w-10 h-10 flex items-center justify-center rounded-2xl transition-all" style="background: rgba(0,0,0,0.05); border: 1px solid #d4e8ce; color: #2d3e2d;">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+    
+    <div class="flex flex-col h-full">
+      <nav class="flex-1 px-3 py-5 flex flex-col gap-1">
+        <a href="{% url 'dashboard' %}" class="sidebar-link"><span class="material-symbols-outlined text-xl">dashboard</span>Dashboard</a>
+        <a href="{% url 'scanner' %}" class="sidebar-link"><span class="material-symbols-outlined text-xl">center_focus_strong</span>New Scan</a>
+        <a href="{% url 'history' %}" class="sidebar-link"><span class="material-symbols-outlined text-xl">history</span>History</a>
+        <div class="pt-6 pb-2 px-3 text-[10px] font-bold uppercase tracking-widest" style="color: #6b8c68;">Management</div>
+        <a href="{% url 'setting' %}" class="sidebar-link"><span class="material-symbols-outlined text-[20px]">settings</span> Settings</a>
+        <a href="{% url 'about' %}" class="sidebar-link active"><span class="material-symbols-outlined">info</span> About Us</a>
+      </nav>
+
+      <div class="mt-auto pb-10">
+        <div class="glass-card p-4 rounded-2xl border flex flex-col gap-4" style="background: white; border-color: #d4e8ce;">
+          <div class="flex items-center gap-4">
+             <div class="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center">
+                <span class="material-symbols-outlined text-primary text-2xl">person</span>
+             </div>
+             <div>
+                <p class="font-bold" style="color: #2d3e2d;">{{ user.get_full_name|default:user.username }}</p>
+                <p class="text-xs" style="color: #6b8c68;">{{ user.email|default:"—" }}</p>
+             </div>
+          </div>
+          <a href="{% url 'logout' %}" class="w-full py-3 rounded-xl font-bold text-sm text-center" style="background: #fee2e2; border: 1px solid #fecaca; color: #b91c1c;">Log Out</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Page Content -->
+  <main class="flex-1 p-4 lg:p-8 max-w-screen-2xl mx-auto w-full">
+
+    <!-- Page heading with animation -->
+    <div class="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-6 fade-in">
+      <div>
+        <h1 class="text-3xl lg:text-4xl font-extrabold tracking-tight" style="color: #2d3e2d;">
+          About <span class="gradient-text">Us</span>
+        </h1>
+        <p class="mt-2 text-sm md:text-base flex items-center gap-2" style="color: #6b8c68;">
+          <span class="material-symbols-outlined text-primary text-sm">radar</span>
+          Edge Intelligence for Sustainable Farming
+        </p>
+      </div>
+      <div class="glass-card px-6 py-4 rounded-2xl flex items-center gap-4">
+        <div class="w-12 h-12 rounded-xl bg-green-500/10 flex items-center justify-center border border-primary/20">
+          <span class="material-symbols-outlined text-primary text-3xl">eco</span>
+        </div>
+        <div>
+          <p class="font-black text-xl leading-none" style="color: #2d3e2d;">AI AgriSense</p>
+          <p class="text-xs font-bold mt-1 uppercase tracking-wider" style="color: #6b8c68;">Since 2026</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Hero section with stats -->
+    <div class="glass-card p-8 rounded-[2rem] mb-6 fade-in" style="animation-delay: 0.1s">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div class="text-center">
+          <p class="text-4xl font-black text-primary">10K+</p>
+          <p class="text-xs uppercase tracking-widest mt-2" style="color: #6b8c68;">Farmers Protected</p>
+        </div>
+        <div class="text-center">
+          <p class="text-4xl font-black text-primary">90%</p>
+          <p class="text-xs uppercase tracking-widest mt-2" style="color: #6b8c68;">Avg. Accuracy</p>
+        </div>
+        <div class="text-center">
+          <p class="text-4xl font-black text-primary">15+</p>
+          <p class="text-xs uppercase tracking-widest mt-2" style="color: #6b8c68;">Disease Types</p>
+        </div>
+        <div class="text-center">
+          <p class="text-4xl font-black text-primary">24/7</p>
+          <p class="text-xs uppercase tracking-widest mt-2" style="color: #6b8c68;">Edge AI Active</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- About content -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+      <!-- Left column - Story & Mission -->
+      <div class="lg:col-span-2 space-y-6">
+        <!-- Our Story -->
+        <div class="glass-card p-8 rounded-[2rem] fade-in" style="animation-delay: 0.2s">
+          <h2 class="font-black text-2xl tracking-tight mb-6 flex items-center gap-3" style="color: #2d3e2d;">
+            <span class="material-symbols-outlined text-primary text-3xl">history</span>
+            Our Story
+          </h2>
+          <p class="leading-relaxed text-lg" style="color: #4a6747;">
+            AgriSense was founded in 2026 by a team of agronomists and AI engineers who believed farmers deserved instant, accurate plant health insights — right on their Edge Devices. 
+            No internet. No cloud delays. Just pure edge intelligence.
+          </p>
+          <div class="mt-8 grid grid-cols-2 gap-6">
+            <div class="glass-card p-6 rounded-2xl hover:border-primary/20 transition-all">
+              <span class="material-symbols-outlined text-primary text-4xl">eco</span>
+              <p class="font-bold mt-4" style="color: #2d3e2d;">10,000+ farmers protected</p>
+              <p class="text-xs mt-2" style="color: #6b8c68;">Growing community</p>
+            </div>
+            <div class="glass-card p-6 rounded-2xl hover:border-primary/20 transition-all">
+              <span class="material-symbols-outlined text-primary text-4xl">psychology</span>
+              <p class="font-bold mt-4" style="color: #2d3e2d;">90% average accuracy</p>
+              <p class="text-xs mt-2" style="color: #6b8c68;">Validated by experts</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Our Mission -->
+        <div class="glass-card p-8 rounded-[2rem] fade-in" style="animation-delay: 0.3s">
+          <h2 class="font-black text-2xl tracking-tight mb-6 flex items-center gap-3" style="color: #2d3e2d;">
+            <span class="material-symbols-outlined text-primary text-3xl">target</span>
+            Our Mission
+          </h2>
+          <div class="flex flex-col md:flex-row gap-8 items-center">
+            <div class="flex-1">
+              <p class="text-4xl md:text-5xl font-black text-primary leading-none">Empower every farmer</p>
+              <p class="mt-4 text-lg" style="color: #4a6747;">with AI that works Efficiently, detects diseases in seconds, and helps grow healthier crops sustainably.</p>
+              <div class="mt-6 flex gap-3">
+                <span class="stat-badge stat-badge-good">AI-Powered</span>
+                <span class="stat-badge stat-badge-good">Easy To Use</span>
+                <span class="stat-badge stat-badge-good">Privacy Focused</span>
+              </div>
+            </div>
+            <div class="w-40 h-40 bg-primary/10 rounded-3xl flex items-center justify-center border border-primary/20">
+              <span class="material-symbols-outlined text-primary text-8xl">public</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Team Section -->
+        <div class="glass-card p-8 rounded-[2rem] fade-in" style="animation-delay: 0.4s">
+          <h2 class="font-black text-2xl tracking-tight mb-6 flex items-center gap-3" style="color: #2d3e2d;">
+            <span class="material-symbols-outlined text-primary text-3xl">diversity_3</span>
+            Our Team
+          </h2>
+          <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+            <div class="text-center team-card">
+              <div class="w-24 h-24 mx-auto rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/20 flex items-center justify-center mb-3">
+                <span class="material-symbols-outlined text-primary text-5xl">person</span>
+              </div>
+              <p class="font-bold" style="color: #2d3e2d;">Asma Ramzan</p>
+              <p class="text-xs" style="color: #6b8c68;">Developer</p>
+            </div>
+            <div class="text-center team-card">
+              <div class="w-24 h-24 mx-auto rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/20 flex items-center justify-center mb-3">
+                <span class="material-symbols-outlined text-primary text-5xl">person</span>
+              </div>
+              <p class="font-bold" style="color: #2d3e2d;">Sadia</p>
+              <p class="text-xs" style="color: #6b8c68;">Developer</p>
+            </div>
+            <div class="text-center team-card">
+              <div class="w-24 h-24 mx-auto rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/20 flex items-center justify-center mb-3">
+                <span class="material-symbols-outlined text-primary text-5xl">person</span>
+              </div>
+              <p class="font-bold" style="color: #2d3e2d;">Join Our</p>
+              <p class="text-xs" style="color: #6b8c68;">Team</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right column - Technology & Values -->
+      <div class="space-y-6">
+        <!-- Built With -->
+        <div class="glass-card p-8 rounded-3xl fade-in" style="animation-delay: 0.5s">
+          <h3 class="uppercase text-[10px] font-bold tracking-widest text-primary mb-6">Built With</h3>
+          <div class="space-y-6">
+            <div class="flex gap-4 p-4 rounded-2xl hover:bg-white/[0.02] transition-all">
+              <span class="material-symbols-outlined text-primary text-3xl">memory</span>
+              <div>
+                <p class="font-bold" style="color: #2d3e2d;">MobileNet V3 + TensorFlow Lite</p>
+                <p class="text-xs mt-1" style="color: #6b8c68;">Runs 100% on-device, no cloud needed</p>
+              </div>
+            </div>
+            <div class="flex gap-4 p-4 rounded-2xl hover:bg-white/[0.02] transition-all">
+              <span class="material-symbols-outlined text-primary text-3xl">shield</span>
+              <div>
+                <p class="font-bold" style="color: #2d3e2d;">Privacy First</p>
+                <p class="text-xs mt-1" style="color: #6b8c68;">Your farm photos never leave your phone</p>
+              </div>
+            </div>
+            <div class="flex gap-4 p-4 rounded-2xl hover:bg-white/[0.02] transition-all">
+              <span class="material-symbols-outlined text-primary text-3xl">bolt</span>
+              <div>
+                <p class="font-bold" style="color: #2d3e2d;">Real-time Inference</p>
+                <p class="text-xs mt-1" style="color: #6b8c68;">Results in under 2 seconds</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Our Values -->
+        <div class="glass-card p-8 rounded-3xl fade-in" style="animation-delay: 0.6s">
+          <h3 class="uppercase text-[10px] font-bold tracking-widest text-primary mb-6">Our Values</h3>
+          <div class="space-y-4">
+            <div class="flex items-center gap-3">
+              <span class="w-2 h-2 rounded-full bg-primary"></span>
+              <span class="text-sm" style="color: #2d3e2d;">Accessibility for all farmers</span>
+            </div>
+            <div class="flex items-center gap-3">
+              <span class="w-2 h-2 rounded-full bg-primary"></span>
+              <span class="text-sm" style="color: #2d3e2d;">Scientific accuracy & validation</span>
+            </div>
+            <div class="flex items-center gap-3">
+              <span class="w-2 h-2 rounded-full bg-primary"></span>
+              <span class="text-sm" style="color: #2d3e2d;">Sustainable agriculture</span>
+            </div>
+            <div class="flex items-center gap-3">
+              <span class="w-2 h-2 rounded-full bg-primary"></span>
+              <span class="text-sm" style="color: #2d3e2d;">Continuous innovation</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- CTA Card -->
+        <div class="glass-card p-8 rounded-3xl border fade-in" style="animation-delay: 0.7s; background: #e8f4e4; border-color: #bcddae;">
+          <h3 class="text-xl font-black mb-4" style="color: #2d3e2d;">Join the movement</h3>
+          <p class="text-sm mb-6" style="color: #4a6747;">Be part of the agricultural AI revolution. Start protecting your crops today.</p>
+          <a href="{% url 'scanner' %}" class="block font-bold text-center py-4 rounded-2xl transition-all shadow-glow-primary" style="background: #2f8b5c; color: white;">
+            Start Scanning Today →
+          </a>
+          <p class="text-[10px] text-center mt-4" style="color: #6b8c68;">No credit card required • Free tier available</p>
+        </div>
+       
+      </div>
+       <br>
+        <br>
+    </div>
+  </main>
+
+  <!-- Mobile bottom nav - Deep Green -->
+  <nav class="lg:hidden fixed bottom-0 left-0 right-0 z-30" style="background: #1a3a2a; border-top: 1px solid #2d5a3d;">
+    <div class="flex justify-around items-center px-4 py-3 pb-safe">
+      <a href="{% url 'dashboard' %}" class="flex flex-col items-center gap-1 transition-colors" style="color: #9bc48f;">
+        <span class="material-symbols-outlined text-[24px]">grid_view</span>
+        <span class="text-[9px] font-black uppercase tracking-widest">Home</span>
+      </a>
+      <a href="{% url 'scanner' %}" class="flex flex-col items-center -mt-8">
+        <div class="w-14 h-14 rounded-2xl flex items-center justify-center shadow-premium active:scale-90 transition-transform" style="background: #2f8b5c; border: 4px solid #1a3a2a;">
+          <span class="material-symbols-outlined text-[28px]" style="color: white;">filter_center_focus</span>
+        </div>
+      </a>
+      <a href="{% url 'history' %}" class="flex flex-col items-center gap-1 transition-colors" style="color: #9bc48f;">
+        <span class="material-symbols-outlined text-[24px]">restore</span>
+        <span class="text-[9px] font-black uppercase tracking-widest">History</span>
+      </a>
+    </div>
+  </nav>
+</div>
+
+<script>
+// Mobile menu handlers
+const btn = document.getElementById('mobileMenuBtn');
+const menu = document.getElementById('mobileMenu');
+const close = document.getElementById('closeMenu');
+btn?.addEventListener('click', () => menu.classList.remove('hidden'));
+close?.addEventListener('click', () => menu.classList.add('hidden'));
+
+// Real-time clock update
+function updateClock() {
+    const now = new Date();
+    const timeElement = document.getElementById('current-time');
+    if (timeElement) {
+        timeElement.textContent = now.toLocaleTimeString('en-US', { 
+            hour: '2-digit', 
+            minute: '2-digit',
+            second: '2-digit'
+        });
+    }
+}
+setInterval(updateClock, 1000);
+
+document.addEventListener('DOMContentLoaded', function() {});
+</script>
+</body>
+</html>

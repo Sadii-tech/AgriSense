@@ -1,0 +1,796 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>AgriSense – Diagnosis Result</title>
+<script src="{% static 'js/tailwind.min.js' %}"></script>
+<link href="{% static 'css/inter.css' %}" rel="stylesheet"/>
+<link href="{% static 'css/material-symbols.css' %}" rel="stylesheet"/>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script>
+  tailwind.config = {
+    darkMode:"class",
+    theme:{extend:{colors:{"primary":"#10b981","primary-dark":"#059669","background-dark":"#0a0f0a","surface-dark":"#121a12","surface-darker":"#0d130d"},fontFamily:{display:["Inter","sans-serif"]},boxShadow:{"glow-green":"0 0 20px rgba(16,185,129,0.2)","glow-green-sm":"0 0 10px rgba(16,185,129,0.1)"}}}
+  }
+</script>
+<style type="text/tailwindcss">
+  body { 
+    font-family: 'Inter', sans-serif; 
+    background: #f0f7f0 !important;
+    color-scheme: light;
+    color: #1a2c1e !important;
+  }
+  
+  .dark body, body.dark {
+    background: #f0f7f0 !important;
+  }
+  
+  ::-webkit-scrollbar{width:4px} ::-webkit-scrollbar-track{background:#d4e8ce} ::-webkit-scrollbar-thumb{background:#9bc48f;border-radius:2px}
+  
+  @keyframes fillGauge{from{stroke-dasharray:0,100}to{stroke-dasharray:94,100}} .gauge-fill{animation:fillGauge 1.5s ease-out forwards;}
+  
+  aside.hidden {
+    background: #e8f0e5 !important;
+    border-right-color: #c8dbc2 !important;
+  }
+  
+  .sidebar-link{
+    display:flex;
+    align-items:center;
+    gap:.75rem;
+    padding:.75rem 1rem;
+    border-radius:.75rem;
+    font-weight:500;
+    transition:all .2s;
+    width:100%;
+    color: #2d3e2d !important;
+  }
+  .sidebar-link:hover{
+    background: #d9ecd2 !important;
+    color: #1a3a1a !important;
+  }
+  .sidebar-link.active{
+    background: #d0e8c8 !important;
+    color: #0f5c2f !important;
+    border:1px solid #9bc48f !important;
+    box-shadow:0 2px 8px rgba(16,185,129,0.1);
+  }
+  
+  .bg-surface-dark {
+    background: #ffffff !important;
+    border: 1px solid #d4e8ce !important;
+  }
+  
+  .bg-surface-darker {
+    background: #f9fff8 !important;
+    border: 1px solid #d4e8ce !important;
+  }
+  
+  @keyframes modalFadeIn {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+  }
+  .modal-animation {
+    animation: modalFadeIn 0.2s ease-out forwards;
+  }
+  
+  .leaflet-container {
+    background: #e8f4e4;
+  }
+  
+  .toast-notification {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: #ffffff;
+    border: 1px solid #9bc48f;
+    border-radius: 12px;
+    padding: 12px 20px;
+    color: #2d3e2d;
+    font-weight: 500;
+    box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.1);
+    transform: translateY(100px);
+    opacity: 0;
+    transition: all 0.3s ease;
+    z-index: 9999;
+  }
+  .toast-notification.show {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  
+  .loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(4px);
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .loading-spinner {
+    width: 48px;
+    height: 48px;
+    border: 3px solid rgba(16, 185, 129, 0.2);
+    border-top-color: #10b981;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+  
+  header.sticky {
+     background: #307150 !important;
+    backdrop-filter: none !important;
+    border-bottom-color: #2d5a3d !important;
+  }
+  
+  header h1, header .font-bold.text-white {
+    color: white !important;
+  }
+  
+  header a .bg-surface-dark {
+    background: rgba(255,255,255,0.12) !important;
+    border-color: rgba(255,255,255,0.2) !important;
+    color: white !important;
+  }
+  
+  button.border-white\/10 {
+    border-color: rgba(255,255,255,0.2) !important;
+    color: rgba(255,255,255,0.8) !important;
+  }
+  button.bg-primary {
+    background: #2f8b5c !important;
+    color: white !important;
+  }
+  
+  .text-white, .text-gray-300, .text-gray-400 {
+    color: #2d3e2d !important;
+  }
+  .text-gray-500, .text-gray-400.text-sm {
+    color: #6b8c68 !important;
+  }
+  .text-primary {
+    color: #10b981 !important;
+  }
+  .text-red-400 {
+    color: #e53e3e !important;
+  }
+  .text-green-400 {
+    color: #10b981 !important;
+  }
+  .text-yellow-400 {
+    color: #d97706 !important;
+  }
+  .text-orange-400 {
+    color: #ea580c !important;
+  }
+  
+  .border-white\/5, .border-white\/10, .border-white\/20 {
+    border-color: #d4e8ce !important;
+  }
+  .border-primary\/20, .border-primary\/30 {
+    border-color: #9bc48f !important;
+  }
+  .border-red-500\/30 {
+    border-color: #fecaca !important;
+  }
+  .border-green-500\/30 {
+    border-color: #bbf7d0 !important;
+  }
+  
+  .bg-primary\/10, .bg-primary\/20 {
+    background-color: rgba(16, 185, 129, 0.1) !important;
+  }
+  .bg-red-500\/10 {
+    background-color: rgba(229, 62, 62, 0.1) !important;
+  }
+  .bg-green-500\/10 {
+    background-color: rgba(16, 185, 129, 0.1) !important;
+  }
+  .bg-black\/60 {
+    background: rgba(0, 0, 0, 0.6) !important;
+  }
+  
+  svg path:first-child {
+    stroke: #d4e8ce !important;
+  }
+  svg path.gauge-fill {
+    stroke: #10b981 !important;
+  }
+  
+  .bg-surface-dark.rounded-2xl {
+    background: #ffffff !important;
+  }
+  .bg-surface-darker.rounded-xl {
+    background: #f9fff8 !important;
+  }
+  
+  nav.lg\:hidden.fixed {
+    background: #1a3a2a !important;
+    backdrop-filter: none !important;
+    border-top-color: #2d5a3d !important;
+  }
+  nav.lg\:hidden.fixed .text-gray-500 {
+    color: #9bc48f !important;
+  }
+  nav.lg\:hidden.fixed .bg-primary {
+    background: #2f8b5c !important;
+  }
+  nav.lg\:hidden.fixed .border-background-dark {
+    border-color: #1a3a2a !important;
+  }
+  
+  .hover\:bg-white\/5:hover {
+    background: #e8f4e4 !important;
+  }
+  
+  header .text-white, header span[style*="color: white"] {
+    color: white !important;
+  }
+  
+  button.bg-primary span, button.bg-primary {
+    color: white !important;
+  }
+  
+  #location-name {
+    color: #2d3e2d !important;
+  }
+</style>
+</head>
+<body class="min-h-screen flex">
+
+<div id="toast" class="toast-notification flex items-center gap-3">
+  <span class="material-symbols-outlined text-primary">check_circle</span>
+  <span id="toast-message">Action completed successfully</span>
+</div>
+
+<div id="loadingOverlay" class="loading-overlay" style="display: none;">
+  <div class="loading-spinner"></div>
+  <p class="text-primary font-semibold">Analyzing image...</p>
+  <p class="text-gray-400 text-sm">Our AI is examining your plant</p>
+</div>
+
+<aside class="hidden lg:flex flex-col w-64 xl:w-72 min-h-screen sticky top-0 shrink-0" style="background: #e8f0e5; border-right: 1px solid #c8dbc2;">
+  <div class="flex items-center gap-3 px-6 py-6 border-b" style="border-color: #c8dbc2;">
+    <div class="w-9 h-9 rounded-xl bg-primary/20 border border-primary/30 flex items-center justify-center">
+      <span class="material-symbols-outlined text-primary text-xl">eco</span>
+    </div>
+    <div class="flex flex-col">
+      <span class="font-bold text-xl tracking-tight leading-none" style="color: #2d3e2d;">{{ branding.app_name|default:"AgriSense" }}</span>
+      <span class="text-[10px] text-primary/60 uppercase tracking-[0.2em] font-bold mt-1.5" style="color: #10b981 !important;">
+        {{ branding.app_subtitle|default:"Edge Intelligence" }}
+      </span>
+    </div>
+  </div>
+  <nav class="flex-1 px-3 py-5 flex flex-col gap-1">
+    <a href="{% url 'dashboard' %}" class="sidebar-link"><span class="material-symbols-outlined text-xl">dashboard</span>Dashboard</a>
+    <a href="{% url 'scanner' %}" class="sidebar-link"><span class="material-symbols-outlined text-xl">center_focus_strong</span>New Scan</a>
+    <a href="{% url 'history' %}" class="sidebar-link"><span class="material-symbols-outlined text-xl">history</span>History</a>
+   <div class="pt-6 pb-2 px-3 text-[10px] font-bold uppercase tracking-widest" style="color: #6b8c68;">Management</div>
+    <a href="{% url 'setting' %}" class="sidebar-link"><span class="material-symbols-outlined text-[20px]">settings</span> Settings</a>
+    <a href="{% url 'about' %}" class="sidebar-link"><span class="material-symbols-outlined">info</span> About Us</a>
+  </nav>
+  <div class="p-4 border-t" style="border-color: #c8dbc2;">
+    <div class="flex items-center gap-3 p-3 rounded-xl transition-colors" style="background: #e8f4e4;">
+      <div class="w-9 h-9 rounded-full bg-primary/20 border border-primary/30 flex items-center justify-center shrink-0">
+        <span class="material-symbols-outlined text-primary text-lg">person</span>
+      </div>
+      <div class="flex-1 min-w-0">
+        <p class="text-sm font-semibold truncate" style="color: #2d3e2d;">{{ user.get_full_name|default:user.username }}</p>
+        <p class="text-xs" style="color: #6b8c68;">{{ user.email|default:"AgriSense User" }}</p>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<div class="flex-1 flex flex-col min-h-screen">
+  <header class="sticky top-0 z-30 px-4 lg:px-8 py-4 flex items-center gap-4" style="background: #1a3a2a; border-bottom: 1px solid #2d5a3d;">
+    <a href="{% url 'scanner' %}" class="flex items-center gap-2">
+      <button class="w-9 h-9 flex items-center justify-center rounded-full transition-all" style="background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.2); color: white;">
+        <span class="material-symbols-outlined text-xl">arrow_back</span>
+      </button>
+    </a>
+    <div>
+      <h1 class="font-bold text-white text-lg leading-none">Diagnosis Result</h1>
+      <p class="text-white/60 text-xs mt-0.5">
+        {% if scan %}
+          Scan #{{ scan.id|stringformat:".8s" }} · {{ scan.created_at|date:"M d, Y" }}
+        {% else %}
+          New Analysis
+        {% endif %}
+      </p>
+    </div>
+   <div class="ml-auto flex items-center gap-2">
+      <button onclick="shareReport()" class="hidden sm:flex px-4 py-2 text-sm font-semibold rounded-xl transition-all items-center gap-2" style="background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.2); color: rgba(255,255,255,0.9);">
+        <span class="material-symbols-outlined text-[18px]">share</span>
+        <span>Share Report</span>
+      </button>
+      <button onclick="exportReport()" class="hidden sm:flex px-4 py-2 text-sm font-semibold rounded-xl transition-all items-center gap-2" style="background: #2f8b5c; color: white;">
+        <span class="material-symbols-outlined text-[18px]">download</span>
+        <span>Export</span>
+      </button>
+    </div>
+  </header>
+
+  <main class="flex-1 p-4 lg:p-8 max-w-screen-xl mx-auto w-full pb-24 lg:pb-8">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
+      <div class="space-y-5">
+        <div class="relative w-full aspect-[4/3] rounded-2xl overflow-hidden shadow-xl border" style="border-color: #9bc48f;">
+          <img src="{% if scan and scan.image %}{{ scan.image.url }}{% else %}https://placehold.co/800x600/e8f4e4/9bc48f?text=Upload+Plant+Image{% endif %}" alt="Plant analysis" class="w-full h-full object-cover"/>
+          <div class="absolute bottom-4 right-4 backdrop-blur-md px-3 py-1.5 rounded-full flex items-center gap-2" style="background: rgba(0,0,0,0.6); border: 1px solid rgba(16,185,129,0.3);">
+            <span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+            <span class="text-xs font-bold text-primary tracking-widest uppercase">AI Analyzed</span>
+          </div>
+          <div class="absolute top-4 left-4 backdrop-blur-md px-3 py-1.5 rounded-full flex items-center gap-2" 
+               style="background: rgba(0,0,0,0.6); border: 1px solid {% if scan.disease_detected %}#fecaca{% else %}#bbf7d0{% endif %};">
+            <span class="material-symbols-outlined {% if scan.disease_detected %}text-red-400{% else %}text-green-400{% endif %} text-sm">
+              {% if scan.disease_detected %}warning{% else %}check_circle{% endif %}
+            </span>
+            <span class="text-xs font-bold {% if scan.disease_detected %}text-red-400{% else %}text-green-400{% endif %} uppercase tracking-wide">
+              {% if scan.disease_detected %}Threat Detected{% else %}Healthy{% endif %}
+            </span>
+          </div>
+        </div>
+
+        <div class="rounded-2xl p-6 flex flex-col items-center" style="background: #ffffff; border: 1px solid #d4e8ce;">
+          <h3 class="text-xs font-bold uppercase tracking-widest mb-5" style="color: #6b8c68;">AI Confidence Score</h3>
+          <div class="relative w-56 h-28 flex items-end justify-center overflow-visible">
+            <svg class="w-full h-full overflow-visible" viewBox="0 0 100 50">
+              <path d="M 10 50 A 40 40 0 0 1 90 50" fill="none" stroke="#d4e8ce" stroke-linecap="round" stroke-width="8"></path>
+              <path class="gauge-fill" d="M 10 50 A 40 40 0 0 1 90 50" fill="none" stroke="#10b981" stroke-dasharray="{% if scan %}{{ scan.confidence }}{% else %}0{% endif %},100" stroke-linecap="round" stroke-width="8"></path>
+            </svg>
+            <div class="absolute bottom-0 flex flex-col items-center mb-1">
+              <span class="text-5xl font-bold tracking-tighter" style="color: #2d3e2d;">{% if scan %}{{ scan.confidence|floatformat:0 }}{% else %}0{% endif %}<span class="text-2xl text-primary">%</span></span>
+              <span class="text-xs uppercase tracking-widest mt-1" style="color: #6b8c68;">Confidence</span>
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-3 w-full mt-6">
+            <div class="rounded-xl p-4 text-center" style="background: #f9fff8; border: 1px solid #d4e8ce;">
+              <span class="material-symbols-outlined text-primary text-xl">dataset</span>
+              <p class="text-xs font-medium uppercase mt-1" style="color: #6b8c68;">Model</p>
+              <p class="font-bold mt-1" style="color: #2d3e2d;">Mobile Net V3</p>
+            </div>
+            <div class="rounded-xl p-4 text-center" id="latency-cell" style="background: #f9fff8; border: 1px solid #d4e8ce;">
+              <span class="material-symbols-outlined text-primary text-xl">bolt</span>
+              <p class="text-xs font-medium uppercase mt-1" style="color: #6b8c68;">Latency</p>
+              <p class="font-bold mt-1" id="latency-value" style="color: #2d3e2d;">-- ms</p>
+            </div>
+            <div class="rounded-xl p-4 text-center" style="background: #f9fff8; border: 1px solid #d4e8ce;">
+              <span class="material-symbols-outlined text-blue-500 text-xl">location_on</span>
+              <p class="text-xs font-medium uppercase mt-1" style="color: #6b8c68;">Location</p>
+              <p class="font-bold mt-1" id="location-name" style="color: #2d3e2d;">Detecting...</p>
+            </div>
+            <div class="rounded-xl p-4 text-center" style="background: #f9fff8; border: 1px solid #d4e8ce;">
+              <span class="material-symbols-outlined text-purple-500 text-xl">memory</span>
+              <p class="text-xs font-medium uppercase mt-1" style="color: #6b8c68;">Device</p>
+              <p class="font-bold mt-1" style="color: #2d3e2d;">Edge TPU</p>
+            </div>
+          </div>
+          <div class="w-full mt-4 h-32 rounded-xl overflow-hidden border" id="location-map-container" style="display: none; border-color: #d4e8ce;">
+            <div id="location-map" class="w-full h-full"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="space-y-5">
+        <div class="rounded-2xl p-6" style="background: #ffffff; border: 1px solid #d4e8ce;">
+          <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full mb-4 
+                      {% if scan.disease_detected %}bg-red-100 border border-red-200{% else %}bg-green-100 border border-green-200{% endif %}">
+            <span class="material-symbols-outlined {% if scan.disease_detected %}text-red-500{% else %}text-primary{% endif %} text-lg">
+              {% if scan.disease_detected %}warning{% else %}check_circle{% endif %}
+            </span>
+            <span class="{% if scan.disease_detected %}text-red-600{% else %}text-primary-dark{% endif %} text-sm font-bold uppercase tracking-wide">
+              {% if scan.disease_detected %}Threat Detected{% else %}Healthy Plant{% endif %}
+            </span>
+          </div>
+          
+          <h2 class="text-4xl font-bold leading-tight" style="color: #2d3e2d;">{% if scan.disease_name %}{{ scan.disease_name }}{% else %}No Analysis Yet{% endif %}</h2>
+          <p class="text-sm font-mono mt-1" style="color: #6b8c68;">{% if scan.scientific_name %}{{ scan.scientific_name }}{% else %}Upload an image to analyze{% endif %}</p>
+          
+          <p class="text-sm mt-4 leading-relaxed" style="color: #4a6747;">
+            {% if scan.treatment_recommended %}
+              {{ scan.treatment_recommended }}
+            {% elif scan %}
+              Analysis complete. View treatment details below.
+            {% else %}
+              Please upload a clear image of a plant leaf or fruit from supported crops.
+            {% endif %}
+          </p>
+
+          <div class="mt-5 space-y-3">
+            <div>
+              <div class="flex justify-between text-xs mb-1">
+                <span class="font-medium" style="color: #6b8c68;">Severity</span>
+                <span class="{% if scan.severity == 'high' %}text-red-500{% elif scan.severity == 'medium' %}text-orange-500{% else %}text-yellow-600{% endif %} font-bold">
+                  {% if scan.severity %}{{ scan.severity|title }}{% else %}N/A{% endif %}
+                </span>
+              </div>
+              <div class="h-2 rounded-full overflow-hidden" style="background: #e8f4e4;">
+                <div class="h-full rounded-full {% if scan.severity == 'high' %}bg-red-500{% elif scan.severity == 'medium' %}bg-orange-400{% else %}bg-yellow-500{% endif %}" 
+                     style="--width: {% if scan.severity == 'high' %}82{% elif scan.severity == 'medium' %}55{% else %}30{% endif %}%; width: var(--width);">
+                </div>
+              </div>
+            </div>
+            <div>
+              <div class="flex justify-between text-xs mb-1">
+                <span class="font-medium" style="color: #6b8c68;">Spread Risk</span>
+                <span class="{% if scan.severity == 'high' %}text-orange-500{% else %}text-yellow-600{% endif %} font-bold">
+                  {% if scan.severity == 'high' %}High{% else %}Medium{% endif %}
+                </span>
+              </div>
+              <div class="h-2 rounded-full overflow-hidden" style="background: #e8f4e4;">
+                <div class="h-full rounded-full {% if scan.severity == 'high' %}bg-orange-400{% else %}bg-yellow-500{% endif %}" 
+                     style="--width: {% if scan.severity == 'high' %}75{% else %}45{% endif %}%; width: var(--width);">
+                </div>
+              </div>
+            </div>
+            <div>
+              <div class="flex justify-between text-xs mb-1">
+                <span class="font-medium" style="color: #6b8c68;">Treatment Urgency</span>
+                <span class="text-yellow-600 font-bold">
+                  {% if scan.severity == 'high' %}Immediate{% else %}Within 48h{% endif %}
+                </span>
+              </div>
+              <div class="h-2 rounded-full overflow-hidden" style="background: #e8f4e4;">
+                <div class="h-full rounded-full bg-yellow-500" 
+                     style="--width: {% if scan.severity == 'high' %}90{% else %}60{% endif %}%; width: var(--width);">
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="rounded-2xl p-6" style="background: #ffffff; border: 1px solid #d4e8ce;">
+          <h3 class="font-bold text-lg mb-4 flex items-center gap-2" style="color: #2d3e2d;">
+            <span class="material-symbols-outlined text-primary">healing</span>
+            Recommended Actions
+          </h3>
+          <div class="space-y-3">
+            <button id="action-button" data-scan="{{ scan|yesno:'true,false' }}" class="w-full font-bold py-4 rounded-xl flex items-center justify-center gap-3 transition-all active:scale-[0.98]" style="background: #2f8b5c; color: white;">
+              <span class="material-symbols-outlined">{% if scan %}medication_liquid{% else %}photo_camera{% endif %}</span>
+              {% if scan %}{% if scan.disease_detected %}View Treatment Details{% else %}Continue Monitoring{% endif %}{% else %}Scan New Image{% endif %}
+            </button>
+          </div>
+          <div class="mt-5 flex items-center justify-center gap-2" style="color: #9bc48f;">
+            <span class="material-symbols-outlined text-sm">memory</span>
+            <span class="text-xs font-mono">Processed locally on Edge TPU</span>
+          </div>
+        </div>
+
+        <div class="rounded-2xl p-6" style="background: #ffffff; border: 1px solid #d4e8ce;">
+          <h3 class="font-bold mb-4 flex items-center gap-2 text-base" style="color: #2d3e2d;">
+            <span class="material-symbols-outlined text-primary text-[18px]">history</span>
+            Similar Past Diagnoses
+          </h3>
+          <div class="space-y-2" id="similar-cases-container">
+            <div class="flex items-center justify-center p-6">
+              <div class="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+              <span class="ml-3" style="color: #6b8c68;">Loading history...</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <div id="treatmentModal" class="fixed inset-0 z-50 flex items-center justify-center hidden">
+    <div class="absolute inset-0 bg-black/80 backdrop-blur-sm" onclick="closeTreatmentModal()"></div>
+    <div class="relative rounded-2xl max-w-2xl w-full mx-4 modal-animation" style="background: #ffffff; border: 1px solid #9bc48f;">
+      <div class="p-6">
+        <div class="flex items-center justify-between mb-4">
+          <div class="flex items-center gap-3">
+            <div class="w-12 h-12 rounded-xl flex items-center justify-center" style="background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.3);">
+              <span class="material-symbols-outlined text-primary text-2xl">healing</span>
+            </div>
+            <div>
+              <h3 class="text-xl font-bold" style="color: #2d3e2d;">Treatment Plan</h3>
+              <p class="text-sm" style="color: #6b8c68;">{{ scan.disease_name|default:"Plant Disease" }}</p>
+            </div>
+          </div>
+          <button onclick="closeTreatmentModal()" class="w-10 h-10 rounded-full flex items-center justify-center transition-all" style="background: #e8f4e4;">
+            <span class="material-symbols-outlined" style="color: #6b8c68;">close</span>
+          </button>
+        </div>
+        <div class="space-y-4 max-h-96 overflow-y-auto pr-2">
+          <div class="rounded-xl p-4" style="background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.3);">
+            <div class="flex items-center gap-3">
+              <span class="material-symbols-outlined text-primary">emergency</span>
+              <span class="font-bold" style="color: #2d3e2d;">Immediate Action Required</span>
+            </div>
+            <p class="text-sm mt-2 ml-9" style="color: #4a6747;">Apply treatment within the next 24 hours to prevent spread.</p>
+          </div>
+          <div class="rounded-xl p-4" style="background: #f9fff8; border: 1px solid #d4e8ce;">
+            <h4 class="font-bold flex items-center gap-2 mb-3" style="color: #2d3e2d;">
+              <span class="material-symbols-outlined text-primary text-sm">science</span>
+              Chemical Control
+            </h4>
+            <p class="text-sm leading-relaxed whitespace-pre-line" style="color: #4a6747;">
+              {% if scan.treatment_recommended %}{{ scan.treatment_recommended }}{% else %}Consult agricultural expert for treatment.{% endif %}
+            </p>
+          </div>
+        </div>
+        <div class="mt-6 flex gap-3">
+          <button onclick="closeTreatmentModal()" class="flex-1 bg-transparent border font-semibold py-3 rounded-xl transition-all" style="border-color: #d4e8ce; color: #2d3e2d;">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="errorModal" class="fixed inset-0 z-50 hidden items-center justify-center">
+    <div class="absolute inset-0 bg-black/80 backdrop-blur-sm" onclick="closeErrorModal()"></div>
+    <div class="relative rounded-2xl max-w-md w-full mx-4 p-6 modal-animation" style="background: #ffffff; border: 1px solid #fecaca;">
+      <div class="flex items-center gap-3 mb-4">
+        <div class="w-12 h-12 rounded-xl flex items-center justify-center" style="background: rgba(229,62,62,0.1); border: 1px solid rgba(229,62,62,0.3);">
+          <span class="material-symbols-outlined text-red-500 text-2xl">error</span>
+        </div>
+        <div>
+          <h3 class="text-xl font-bold" style="color: #2d3e2d;" id="errorTitle">Upload Failed</h3>
+          <p class="text-sm" style="color: #6b8c68;">Please try again</p>
+        </div>
+      </div>
+      <div class="rounded-xl p-4 mb-6" style="background: rgba(229,62,62,0.1); border: 1px solid rgba(229,62,62,0.3);">
+        <p class="text-sm leading-relaxed whitespace-pre-line" style="color: #4a6747;" id="errorMessage">An error occurred</p>
+      </div>
+      <div class="flex gap-3">
+        <button onclick="closeErrorModal()" class="flex-1 font-semibold py-3 rounded-xl transition-all" style="background: #2f8b5c; color: white;">Try Again</button>
+        <button onclick="window.location.href='/scanner/'" class="flex-1 bg-transparent border font-semibold py-3 rounded-xl transition-all" style="border-color: #d4e8ce; color: #2d3e2d;">Go to Scanner</button>
+      </div>
+    </div>
+  </div>
+
+  <nav class="lg:hidden fixed bottom-0 left-0 right-0 z-30" style="background: #1a3a2a; border-top: 1px solid #2d5a3d;">
+    <div class="flex justify-around items-center px-4 py-3 pb-safe">
+      <a href="{% url 'dashboard' %}" class="flex flex-col items-center gap-1 transition-colors" style="color: #9bc48f;">
+        <span class="material-symbols-outlined text-[24px]">grid_view</span>
+        <span class="text-[9px] font-black uppercase tracking-widest">Home</span>
+      </a>
+      <a href="{% url 'scanner' %}" class="flex flex-col items-center -mt-8">
+        <div class="w-14 h-14 rounded-2xl flex items-center justify-center shadow-premium active:scale-90 transition-transform" style="background: #2f8b5c; border: 4px solid #1a3a2a;">
+          <span class="material-symbols-outlined text-[28px]" style="color: white;">filter_center_focus</span>
+        </div>
+      </a>
+      <a href="{% url 'history' %}" class="flex flex-col items-center gap-1 transition-colors" style="color: #9bc48f;">
+        <span class="material-symbols-outlined text-[24px]">restore</span>
+        <span class="text-[9px] font-black uppercase tracking-widest">History</span>
+      </a>
+    </div>
+  </nav>
+</div>
+
+<script>
+function showToast(message, isSuccess = true) {
+    const toast = document.getElementById('toast');
+    const toastMessage = document.getElementById('toast-message');
+    const icon = toast.querySelector('.material-symbols-outlined');
+    toastMessage.textContent = message;
+    icon.textContent = isSuccess ? 'check_circle' : 'error';
+    icon.className = `material-symbols-outlined ${isSuccess ? 'text-primary' : 'text-red-500'}`;
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 3000);
+}
+
+function showLoading(show) {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.style.display = show ? 'flex' : 'none';
+}
+
+function showErrorModal(title, message) {
+    const modal = document.getElementById('errorModal');
+    const errorTitle = document.getElementById('errorTitle');
+    const errorMessage = document.getElementById('errorMessage');
+    errorTitle.textContent = title;
+    errorMessage.textContent = message;
+    modal.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+}
+
+function closeErrorModal() {
+    const modal = document.getElementById('errorModal');
+    modal.style.display = 'none';
+    document.body.style.overflow = 'auto';
+}
+
+function shareReport() {
+    const scanData = {
+        title: 'AgriSense Diagnosis Report',
+        text: `Diagnosis: {{ scan.disease_name|default:"No Analysis" }}\nConfidence: {{ scan.confidence|default:"0" }}%\nDate: {{ scan.created_at|date:"M d, Y"|default:"Today" }}`,
+        url: window.location.href
+    };
+    if (navigator.share) {
+        navigator.share(scanData).catch(() => fallbackShare());
+    } else {
+        fallbackShare();
+    }
+}
+
+function fallbackShare() {
+    navigator.clipboard.writeText(window.location.href).then(() => showToast('Link copied to clipboard!')).catch(() => showToast('Could not copy link', false));
+}
+
+function exportReport() {
+    showToast('Preparing PDF...');
+    const element = document.querySelector('main');
+    html2canvas(element, { scale: 2, backgroundColor: '#f0f7f0', logging: false, useCORS: true }).then((canvas) => {
+        const { jsPDF } = window.jspdf;
+        const pdf = new jsPDF({ orientation: 'portrait', unit: 'px', format: [canvas.width * 0.75, canvas.height * 0.75] });
+        pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, canvas.width * 0.75, canvas.height * 0.75);
+        pdf.save(`AgriSense_Report_${new Date().toISOString().slice(0,10)}.pdf`);
+        showToast('PDF downloaded successfully');
+    }).catch(() => showToast('Failed to generate PDF', false));
+}
+
+function updateLatencyDisplay(latencyMs) {
+    const el = document.getElementById('latency-value');
+    if (el && latencyMs) {
+        el.textContent = latencyMs + ' ms';
+        el.style.transition = 'color 0.3s ease';
+        el.style.color = '#10b981';
+        setTimeout(() => {
+            if (el) el.style.color = '#2d3e2d';
+        }, 500);
+    }
+}
+
+// Get latency from sessionStorage (set during scanning)
+document.addEventListener('DOMContentLoaded', function() {
+    const latencyEl = document.getElementById('latency-value');
+    
+    // Try to get latency from sessionStorage (set during scanning)
+    const storedLatency = sessionStorage.getItem('lastScanLatency');
+    if (storedLatency && storedLatency !== 'undefined') {
+        updateLatencyDisplay(storedLatency);
+        // Clear it after displaying
+        sessionStorage.removeItem('lastScanLatency');
+    } else if ({{ scan.confidence|default:0 }} > 0) {
+        // Fallback: estimate latency based on confidence
+        const confidence = {{ scan.confidence|default:0 }};
+        const estimatedLatency = Math.round(80 + (100 - confidence) * 0.5);
+        updateLatencyDisplay(estimatedLatency);
+    } else {
+        latencyEl.textContent = '-- ms';
+    }
+    
+    getLocation();
+    loadSimilarCases();
+    
+    const errorData = sessionStorage.getItem('scanError');
+    if (errorData) {
+        try {
+            const error = JSON.parse(errorData);
+            showErrorModal(error.title || 'Upload Failed', error.message || 'An error occurred');
+            sessionStorage.removeItem('scanError');
+        } catch(e) { console.error('Error parsing error data:', e); }
+    }
+});
+
+let map = null;
+function initMap(lat, lon, locationName) {
+    const container = document.getElementById('location-map-container');
+    if (container) container.style.display = 'block';
+    if (!map) {
+        map = L.map('location-map').setView([lat, lon], 13);
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', { attribution: '&copy; OpenStreetMap' }).addTo(map);
+    } else {
+        map.setView([lat, lon], 13);
+    }
+    L.marker([lat, lon]).addTo(map).bindPopup(locationName).openPopup();
+    document.getElementById('location-name').textContent = locationName;
+}
+
+function isWebView() {
+    const ua = navigator.userAgent.toLowerCase();
+    return ua.includes('wv') || ua.includes('; wv') || /android.*applewebkit(?=.*version\/?.*safari)/.test(ua) === false;
+}
+
+function getLocationByIP() {
+    const el = document.getElementById('location-name');
+    if (el) el.textContent = 'Detecting by IP...';
+    fetch('https://ipapi.co/json/').then(r => r.json()).then(d => {
+        let name = 'Farm Location';
+        if (d.city && d.region) name = `${d.city}, ${d.region}`;
+        else if (d.country_name) name = d.country_name;
+        if (d.latitude && d.longitude) initMap(d.latitude, d.longitude, name);
+        else if (el) el.textContent = name;
+    }).catch(() => {
+        fetch('https://ipinfo.io/json').then(r => r.json()).then(d => {
+            let name = 'Farm Location';
+            if (d.city && d.region) name = `${d.city}, ${d.region}`;
+            else if (d.country) name = d.country;
+            if (d.loc) { const [lat, lon] = d.loc.split(','); initMap(parseFloat(lat), parseFloat(lon), name); }
+            else if (el) el.textContent = name;
+        }).catch(() => { if (el) el.textContent = 'Farm Location'; });
+    });
+}
+
+function getLocation() {
+    if (isWebView()) { getLocationByIP(); return; }
+    if (navigator.geolocation) {
+        const timeout = setTimeout(() => getLocationByIP(), 5000);
+        navigator.geolocation.getCurrentPosition(
+            pos => {
+                clearTimeout(timeout);
+                const lat = pos.coords.latitude, lon = pos.coords.longitude;
+                document.getElementById('location-name').textContent = 'Getting location...';
+                fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=10`)
+                    .then(r => r.json()).then(d => {
+                        let name = d.display_name ? d.display_name.split(',')[0] : 'Farm Location';
+                        if (d.address && d.address.state) name += ', ' + d.address.state;
+                        initMap(lat, lon, name);
+                    }).catch(() => { document.getElementById('location-name').textContent = `${lat.toFixed(2)}°, ${lon.toFixed(2)}°`; });
+            },
+            () => getLocationByIP(),
+            { enableHighAccuracy: true, timeout: 5000 }
+        );
+    } else { getLocationByIP(); }
+}
+
+function loadSimilarCases() {
+    fetch('/api/history/recent/').then(r => r.json()).then(d => {
+        const container = document.getElementById('similar-cases-container');
+        if (container) {
+            if (d.scans && d.scans.length > 0) {
+                let html = '';
+                d.scans.slice(0, 2).forEach(s => {
+                    html += `<div class="flex items-center justify-between p-3 rounded-xl transition-colors cursor-pointer" style="background: #f9fff8; border: 1px solid #d4e8ce;" onclick="window.location.href='/diagnosis/${s.id}/'">
+                        <div><p class="text-sm font-semibold" style="color: #2d3e2d;">Scan #${s.id.slice(0,4)}</p>
+                        <p class="text-xs" style="color: #6b8c68;">${s.disease_name || 'Healthy'} · ${timeAgo(s.created_at)} · ${Math.round(s.confidence)}%</p></div>
+                        <span class="text-xs font-bold px-2 py-0.5 rounded-full border" style="color: #10b981; background: rgba(16,185,129,0.1); border-color: rgba(16,185,129,0.3);">${s.disease_detected ? 'Treated' : 'Healthy'}</span>
+                    </div>`;
+                });
+                container.innerHTML = html;
+            } else {
+                container.innerHTML = `<div class="text-center p-6" style="color: #6b8c68;"><span class="material-symbols-outlined text-3xl">history</span><p class="text-sm mt-2">No past scans found</p></div>`;
+            }
+        }
+    }).catch(() => {
+        const container = document.getElementById('similar-cases-container');
+        if (container) container.innerHTML = `<div class="text-center p-6" style="color: #6b8c68;"><span class="material-symbols-outlined text-3xl">error</span><p class="text-sm mt-2">Unable to load history</p></div>`;
+    });
+}
+
+function timeAgo(dateString) {
+    const date = new Date(dateString), now = new Date(), seconds = Math.floor((now - date) / 1000);
+    if (seconds < 60) return 'just now';
+    if (seconds < 3600) return Math.floor(seconds / 60) + ' mins ago';
+    if (seconds < 86400) return Math.floor(seconds / 3600) + ' hours ago';
+    return Math.floor(seconds / 86400) + ' days ago';
+}
+
+function openTreatmentModal() {
+    const modal = document.getElementById('treatmentModal');
+    if (modal) { modal.classList.remove('hidden'); document.body.style.overflow = 'hidden'; }
+}
+
+function closeTreatmentModal() {
+    const modal = document.getElementById('treatmentModal');
+    if (modal) { modal.classList.add('hidden'); document.body.style.overflow = 'auto'; }
+}
+
+document.getElementById('action-button')?.addEventListener('click', function() {
+    const hasScan = this.dataset.scan === 'true';
+    if (hasScan) {
+        openTreatmentModal();
+    } else {
+        window.location.href = "{% url 'scanner' %}";
+    }
+});
+
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') { closeTreatmentModal(); closeErrorModal(); }
+});
+</script>
+</body>
+</html>

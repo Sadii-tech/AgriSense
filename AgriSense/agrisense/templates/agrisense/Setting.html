@@ -1,0 +1,676 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover" name="viewport"/>
+    <title>AgriSense – Settings</title>
+    <script src="{% static 'js/tailwind.min.js' %}"></script>
+    <link href="{% static 'css/inter.css' %}" rel="stylesheet"/>
+    <link href="{% static 'css/material-symbols.css' %}" rel="stylesheet"/>
+
+    <script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#10b981",
+              "primary-dark": "#059669",
+              "primary-light": "#34d399",
+              "background-dark": "#0a0f0a",
+              "surface-dark": "#121a12",
+              "surface-darker": "#0d130d",
+              "surface-accent": "#1a241a",
+              "glass": "rgba(255, 255, 255, 0.03)",
+              "glass-edge": "rgba(255, 255, 255, 0.08)",
+            },
+            fontFamily: { 
+              "display": ["'Inter'", "sans-serif"], 
+              "body": ["'Inter'", "sans-serif"] 
+            },
+            boxShadow: {
+              "premium": "0 10px 30px -10px rgba(0, 0, 0, 0.5)",
+              "glow-primary": "0 0 20px rgba(16, 185, 129, 0.15)",
+            }
+          },
+        },
+      }
+    </script>
+
+    <style type="text/tailwindcss">
+      /* RESET & BASE */
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      
+      html, body {
+        overflow-x: hidden !important;
+        width: 100% !important;
+        max-width: 100% !important;
+      }
+      
+      /* LIGHT THEME OVERRIDES - White/Mint Background, Deep Green Navbar, Light Sage Cards, Dark Gray/Black Text */
+      body { 
+        font-family: 'Inter', sans-serif; 
+        background: #f0f7f0 !important;
+        color-scheme: light;
+        color: #1a2c1e !important;
+      }
+      
+      /* Override dark class behavior */
+      .dark body, body.dark {
+        background: #f0f7f0 !important;
+      }
+      
+      /* Sidebar - Light Sage */
+      aside.hidden {
+        background: #e8f0e5 !important;
+        border-right-color: #c8dbc2 !important;
+      }
+      
+      /* Glass cards - Light Sage / White */
+      .glass-card { 
+        background: #ffffff !important;
+        backdrop-filter: none !important;
+        border: 1px solid #d4e8ce !important;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+      }
+      .glass-card:hover {
+        background: #ffffff !important;
+        border-color: #bcddae !important;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+      }
+      
+      /* Sidebar links - Dark Gray text */
+      .sidebar-link { 
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.6rem 1rem;
+        border-radius: 1rem;
+        font-weight: 500;
+        font-size: 0.875rem;
+        transition: all 0.2s ease;
+        width: 100%;
+        color: #2d3e2d !important;
+      }
+      .sidebar-link:hover { 
+        background: #d9ecd2 !important;
+        color: #1a3a1a !important;
+      }
+      .sidebar-link.active { 
+        background: #d0e8c8 !important;
+        color: #0f5c2f !important;
+        border: 1px solid #9bc48f !important;
+        box-shadow: 0 2px 8px rgba(16, 185, 129, 0.1);
+      }
+      
+      /* Settings input - light theme */
+      .settings-input {
+        width: 100%;
+        background: #f9fff8 !important;
+        border: 1px solid #d4e8ce !important;
+        border-radius: 0.75rem;
+        padding: 0.75rem 1rem;
+        color: #1a2c1e !important;
+        transition: all 0.2s ease;
+      }
+      .settings-input:focus {
+        outline: none;
+        border-color: #10b981 !important;
+        box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1);
+      }
+      .settings-input::placeholder {
+        color: #9bbf95 !important;
+      }
+      
+      .gradient-text {
+        background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+
+      .errorlist {
+        color: #e53e3e !important;
+        font-size: 0.75rem;
+        margin-top: 0.25rem;
+      }
+      
+      /* Top bar - Deep Green Navbar */
+      header.sticky {
+        background: #307150 !important;
+        backdrop-filter: none !important;
+        border-bottom-color: #2d5a3d !important;
+      }
+      
+      /* Mobile menu button in header */
+      header .lg\:hidden {
+        background: rgba(255,255,255,0.12) !important;
+        border-color: rgba(255,255,255,0.2) !important;
+        color: white !important;
+      }
+      
+      /* Mobile logo text in header */
+      header .lg\:hidden span.font-bold {
+        color: white !important;
+      }
+      
+      /* Live status indicator in header */
+      header .flex.items-center.gap-2.bg-primary\/10 {
+        background: rgba(255,255,255,0.15) !important;
+        border-color: rgba(255,255,255,0.25) !important;
+      }
+      header .flex.items-center.gap-2.bg-primary\/10 span.text-primary {
+        color: #34d399 !important;
+      }
+      
+      /* Live indicator dot */
+      .live-indicator {
+        position: relative;
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        background-color: #10b981;
+        border-radius: 50%;
+        margin-right: 6px;
+      }
+      .live-indicator::after {
+        content: '';
+        position: absolute;
+        top: -2px;
+        left: -2px;
+        width: 12px;
+        height: 12px;
+        background-color: rgba(16, 185, 129, 0.3);
+        border-radius: 50%;
+        animation: pulse-ring 1.5s infinite;
+      }
+      @keyframes pulse-ring {
+        0% { transform: scale(0.8); opacity: 0.7; }
+        70% { transform: scale(1.4); opacity: 0; }
+        100% { transform: scale(1.4); opacity: 0; }
+      }
+      
+      /* Quick Scan button - Soft Green */
+      a.bg-primary.hover\:bg-primary-dark {
+        background: #2f8b5c !important;
+        color: white !important;
+      }
+      a.bg-primary.hover\:bg-primary-dark:hover {
+        background: #246e48 !important;
+      }
+      
+      /* All text colors to Dark Gray/Black */
+      .text-white, .text-gray-400, .text-gray-500, .text-gray-300, .text-gray-200 {
+        color: #2d3e2d !important;
+      }
+      
+      /* Keep gradient text exception */
+      .gradient-text, .gradient-text * {
+        -webkit-text-fill-color: transparent !important;
+        color: transparent !important;
+      }
+      
+      /* Keep primary colored elements */
+      .text-primary {
+        color: #10b981 !important;
+      }
+      .border-primary\/20 {
+        border-color: rgba(16, 185, 129, 0.2) !important;
+      }
+      .bg-primary\/10 {
+        background-color: rgba(16, 185, 129, 0.1) !important;
+      }
+      .bg-primary\/20 {
+        background-color: rgba(16, 185, 129, 0.2) !important;
+      }
+      
+      /* Sidebar user profile card */
+      aside .glass-card {
+        background: #ffffff !important;
+        border-color: #c8dbc2 !important;
+      }
+      aside .glass-card .text-white, 
+      aside .glass-card .text-gray-500 {
+        color: #2d3e2d !important;
+      }
+      aside .glass-card .text-gray-500 {
+        color: #6b8c68 !important;
+      }
+      
+      /* Mobile nav overlay */
+      #mobileMenu {
+        background: #f0f7f0 !important;
+        backdrop-filter: blur(16px);
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        width: 100% !important;
+        height: 100% !important;
+        z-index: 1000 !important;
+        overflow-y: auto !important;
+        display: none;
+        flex-direction: column;
+      }
+      
+      #mobileMenu.show {
+        display: flex !important;
+      }
+      
+      #mobileMenu .text-white, #mobileMenu .text-gray-500 {
+        color: #2d3e2d !important;
+      }
+      #mobileMenu .sidebar-link {
+        color: #2d3e2d !important;
+      }
+      #mobileMenu .sidebar-link.active {
+        background: #d0e8c8 !important;
+        color: #0f5c2f !important;
+      }
+      #mobileMenu .glass-card {
+        background: #ffffff !important;
+        border-color: #d4e8ce !important;
+      }
+      
+      /* Mobile menu logout button */
+      .mobile-logout-btn {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 0.5rem !important;
+        width: 100% !important;
+        padding: 0.75rem !important;
+        border-radius: 0.75rem !important;
+        font-weight: 700 !important;
+        font-size: 0.875rem !important;
+        text-align: center !important;
+        transition: all 0.2s !important;
+        background: #fee2e2 !important;
+        border: 1px solid #fecaca !important;
+        color: #b91c1c !important;
+        margin-top: 1rem;
+      }
+      
+      .mobile-logout-btn:hover {
+        background: #fecaca !important;
+        transform: translateY(-1px);
+      }
+      
+      .mobile-logout-btn .material-symbols-outlined {
+        font-size: 1.25rem !important;
+      }
+      
+      /* Page heading area */
+      main .flex.md\:flex-row .text-white {
+        color: #2d3e2d !important;
+      }
+      
+      /* Form labels */
+      label.text-sm.font-bold {
+        color: #2d3e2d !important;
+      }
+      
+      /* Preview card */
+      .glass-card.p-6.rounded-2xl.bg-white\/\[0\.02\] {
+        background: #e8f4e4 !important;
+        border-color: #bcddae !important;
+      }
+      .glass-card.p-6.rounded-2xl .text-white {
+        color: #2d3e2d !important;
+      }
+      .glass-card.p-6.rounded-2xl .text-gray-400 {
+        color: #6b8c68 !important;
+      }
+      
+      /* Save button */
+      button[type="submit"] {
+        background: #2f8b5c !important;
+        border-color: #2f8b5c !important;
+        color: white !important;
+      }
+      button[type="submit"]:hover {
+        background: #246e48 !important;
+      }
+      
+      /* Toast message */
+      #toast {
+        background: white !important;
+        border-color: #bcddae !important;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+      }
+      #toast .text-white {
+        color: #2d3e2d !important;
+      }
+      
+      /* Mobile bottom nav - Deep Green */
+      nav.lg\:hidden.fixed {
+        background: #1a3a2a !important;
+        backdrop-filter: none !important;
+        border-top-color: #2d5a3d !important;
+      }
+      nav.lg\:hidden.fixed .text-gray-500 {
+        color: #9bc48f !important;
+      }
+      nav.lg\:hidden.fixed .text-primary {
+        color: #34d399 !important;
+      }
+      nav.lg\:hidden.fixed .hover\:text-primary:hover {
+        color: #34d399 !important;
+      }
+      nav.lg\:hidden.fixed .bg-primary {
+        background: #2f8b5c !important;
+      }
+      nav.lg\:hidden.fixed .border-background-dark {
+        border-color: #1a3a2a !important;
+      }
+      
+      /* Fade-in animation */
+      .fade-in { animation: fadeIn 0.6s ease-out forwards; }
+      @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+      
+      /* Helper text */
+      .text-xs.text-gray-500 {
+        color: #6b8c68 !important;
+      }
+      
+      /* Logout icon in desktop sidebar */
+      .logout-icon {
+        transition: all 0.2s ease;
+      }
+      .logout-icon:hover {
+        background: #fee2e2 !important;
+        color: #b91c1c !important;
+      }
+    </style>
+</head>
+
+<body class="min-h-screen flex" id="app"
+      data-user-id="{{ user.id }}"
+      data-username="{{ user.username }}">
+
+<!-- SIDEBAR (desktop) - Light Sage -->
+<aside class="hidden lg:flex flex-col w-64 xl:w-72 min-h-screen sticky top-0 shrink-0 z-40" style="background: #e8f0e5; border-right-color: #c8dbc2;">
+  <!-- Logo -->
+  <div class="flex items-center gap-3 px-6 py-8 border-b" style="border-color: #c8dbc2;">
+    <div class="w-10 h-10 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center shadow-glow-primary">
+      <span class="material-symbols-outlined text-primary text-2xl">eco</span>
+    </div>
+    <div class="flex flex-col">
+      <span class="font-bold text-xl tracking-tight leading-none" style="color: #2d3e2d;">{{ branding.app_name|default:"AgriSense" }}</span>
+      <span class="text-[10px] text-primary/60 uppercase tracking-[0.2em] font-bold mt-1.5" style="color: #10b981 !important;">
+        {{ branding.app_subtitle|default:"Edge Intelligence" }}
+      </span>
+    </div>
+  </div>
+
+  <!-- Nav links -->
+  <nav class="flex-1 px-4 py-4 overflow-y-auto flex flex-col gap-1.5">
+    <div class="pb-2 px-3 text-[10px] font-bold uppercase tracking-widest" style="color: #6b8c68;">General</div>
+    <a href="{% url 'dashboard' %}" class="sidebar-link">
+      <span class="material-symbols-outlined text-[20px]">grid_view</span> Dashboard
+    </a>
+    <a href="{% url 'scanner' %}" class="sidebar-link">
+      <span class="material-symbols-outlined text-[20px]">filter_center_focus</span> Smart Scan
+    </a>
+    <a href="{% url 'history' %}" class="sidebar-link">
+      <span class="material-symbols-outlined text-[20px]">restore</span> History
+    </a>
+    
+    <div class="pt-6 pb-2 px-3 text-[10px] font-bold uppercase tracking-widest" style="color: #6b8c68;">Management</div>
+    <a href="{% url 'setting' %}" class="sidebar-link active">
+      <span class="material-symbols-outlined text-[20px]">settings</span> Settings
+    </a>
+    <a href="{% url 'about' %}" class="sidebar-link">
+      <span class="material-symbols-outlined">info</span> About Us
+    </a>
+  </nav>
+
+  <!-- User profile with Logout button (DESKTOP) - FIXED -->
+  <div class="p-4 border-t" style="border-color: #c8dbc2;">
+    <div class="glass-card p-3 rounded-2xl flex items-center gap-3">
+      <div class="w-9 h-9 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0">
+        <span class="material-symbols-outlined text-primary text-xl">account_circle</span>
+      </div>
+      <div class="flex-1 min-w-0">
+        <p class="text-sm font-bold truncate line-clamp-1" style="color: #2d3e2d;">{{ user.get_full_name|default:user.username }}</p>
+        <p class="text-[10px] truncate uppercase tracking-tighter" style="color: #6b8c68;">{{ user.email|default:"AgriSense User" }}</p>
+      </div>
+      <a href="{% url 'logout' %}" class="w-7 h-7 flex items-center justify-center rounded-lg transition-colors logout-icon" style="color: #6b8c68;" title="Logout">
+        <span class="material-symbols-outlined text-sm">logout</span>
+      </a>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN CONTENT -->
+<div class="flex-1 flex flex-col min-h-screen overflow-y-auto">
+
+  <!-- Top bar - Deep Green Navbar -->
+  <header class="sticky top-0 z-30 px-4 lg:px-8 py-4 flex items-center justify-between gap-4" style="background: #1a3a2a; border-bottom: 1px solid #2d5a3d;">
+    <!-- Mobile logo -->
+    <div class="flex items-center gap-2.5 lg:hidden">
+      <div class="w-9 h-9 rounded-xl bg-white/15 border border-white/25 flex items-center justify-center">
+        <span class="material-symbols-outlined text-primary text-xl">eco</span>
+      </div>
+      <span class="font-bold text-lg tracking-tight" style="color: white;">{{ branding.app_name|default:"AgriSense" }}</span>
+    </div>
+
+    <!-- Live status indicator -->
+    <div class="flex items-center gap-2 px-3 py-1.5 rounded-full border" style="background: rgba(255,255,255,0.12); border-color: rgba(255,255,255,0.25);">
+      <span class="live-indicator"></span>
+      <span class="text-[10px] font-bold uppercase tracking-wider" style="color: #34d399;">Live</span>
+    </div>
+
+    <!-- Right actions -->
+    <div class="flex items-center gap-3">
+      <a href="{% url 'scanner' %}" class="hidden sm:flex items-center gap-2.5 font-bold text-sm px-5 py-2.5 rounded-xl transition-all shadow-premium hover:shadow-glow-primary active:scale-95" style="background: #2f8b5c; color: white;">
+        <span class="material-symbols-outlined text-[20px]">add_a_photo</span>
+        <span>Quick Scan</span>
+      </a>
+      <button id="mobileMenuBtn" class="lg:hidden w-10 h-10 flex items-center justify-center rounded-xl transition-all" style="background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.2); color: white;">
+        <span class="material-symbols-outlined">menu</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Mobile nav overlay -->
+  <div id="mobileMenu" class="lg:hidden">
+    <div class="flex flex-col h-full p-6">
+      <div class="flex items-center justify-between mb-8">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center">
+            <span class="material-symbols-outlined text-primary text-2xl">eco</span>
+          </div>
+          <span class="font-bold text-xl tracking-tight" style="color: #2d3e2d;">{{ branding.app_name|default:"AgriSense" }}</span>
+        </div>
+        <button id="closeMenu" class="w-10 h-10 flex items-center justify-center rounded-2xl transition-all" style="background: rgba(0,0,0,0.05); border: 1px solid #d4e8ce; color: #2d3e2d;">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+      
+      <nav class="flex-1 flex flex-col gap-2">
+        <a href="{% url 'dashboard' %}" class="sidebar-link"><span class="material-symbols-outlined text-xl">dashboard</span>Dashboard</a>
+        <a href="{% url 'scanner' %}" class="sidebar-link"><span class="material-symbols-outlined text-xl">center_focus_strong</span>New Scan</a>
+        <a href="{% url 'history' %}" class="sidebar-link"><span class="material-symbols-outlined text-xl">history</span>History</a>
+        <div class="pt-6 pb-2 px-3 text-[10px] font-bold uppercase tracking-widest" style="color: #6b8c68;">Management</div>
+        <a href="{% url 'setting' %}" class="sidebar-link active"><span class="material-symbols-outlined text-[20px]">settings</span> Settings</a>
+        <a href="{% url 'about' %}" class="sidebar-link"><span class="material-symbols-outlined">info</span> About Us</a>
+      </nav>
+      
+      <!-- Mobile User Profile and Logout Section -->
+      <div class="mt-auto pt-6 border-t" style="border-color: #c8dbc2;">
+        <div class="glass-card p-4 rounded-2xl mb-4" style="background: white; border-color: #d4e8ce;">
+          <div class="flex items-center gap-4">
+            <div class="w-12 h-12 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0">
+              <span class="material-symbols-outlined text-primary text-2xl">person</span>
+            </div>
+            <div class="flex-1 min-w-0">
+              <p class="font-bold truncate" style="color: #2d3e2d;">{{ user.get_full_name|default:user.username }}</p>
+              <p class="text-xs truncate" style="color: #6b8c68;">{{ user.email|default:"AgriSense User" }}</p>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Logout Button for Mobile -->
+        <a href="{% url 'logout' %}" class="mobile-logout-btn">
+          <span class="material-symbols-outlined">logout</span>
+          <span>Log Out</span>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Page Content -->
+  <main class="flex-1 p-4 lg:p-8 max-w-screen-2xl mx-auto w-full">
+
+    <!-- Page heading -->
+    <div class="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-6 fade-in">
+      <div>
+        <h1 class="text-3xl lg:text-4xl font-extrabold tracking-tight" style="color: #2d3e2d;">
+          App Branding <span class="gradient-text">& Customization</span>
+        </h1>
+        <p class="mt-2 text-sm md:text-base" style="color: #6b8c68;">Changes will apply across the entire application</p>
+      </div>
+    </div>
+
+    <!-- BRANDING FORM -->
+    <div class="max-w-2xl mx-auto">
+      <div class="glass-card p-8 rounded-[2rem] fade-in">
+        <div class="flex items-center justify-between mb-6">
+          <h2 class="font-black text-2xl tracking-tight flex items-center gap-3" style="color: #2d3e2d;">
+            <span class="material-symbols-outlined text-primary text-3xl">branding_watermark</span>
+            App Branding
+          </h2>
+        </div>
+        
+        <form method="post" class="space-y-7">
+          {% csrf_token %}
+
+          <!-- App Name -->
+          <div>
+            <label class="text-sm font-bold mb-2 block" style="color: #2d3e2d;">App Name</label>
+            <div class="flex flex-col sm:flex-row gap-3">
+              <input type="text" name="app_name" value="{{ form.app_name.value|default:branding.app_name|default:'AgriSense' }}" class="settings-input" placeholder="e.g., AgriSense">
+            </div>
+            {% if form.app_name.errors %}
+              <div class="errorlist">{{ form.app_name.errors }}</div>
+            {% endif %}
+            <p class="text-xs mt-2" style="color: #6b8c68;">Used in header, sidebar, mobile menu, etc.</p>
+          </div>
+
+          <!-- App Subtitle -->
+          <div>
+            <label class="text-sm font-bold mb-2 block" style="color: #2d3e2d;">App Subtitle</label>
+            <div class="flex flex-col sm:flex-row gap-3">
+              <input type="text" name="app_subtitle" value="{{ form.app_subtitle.value|default:branding.app_subtitle|default:'Edge Intelligence' }}" class="settings-input" placeholder="e.g., Edge Intelligence">
+              <button type="submit" class="min-w-[100px] sm:w-auto px-6 py-3 rounded-xl font-bold text-sm transition-all whitespace-nowrap" style="background: #2f8b5c; color: white;">
+                Save
+              </button>
+            </div>
+            {% if form.app_subtitle.errors %}
+              <div class="errorlist">{{ form.app_subtitle.errors }}</div>
+            {% endif %}
+            <p class="text-xs mt-2" style="color: #6b8c68;">Displayed below the app name / logo</p>
+          </div>
+
+          <!-- Current Values Preview -->
+          <div class="glass-card p-6 rounded-2xl mt-8 border" style="background: #e8f4e4; border-color: #bcddae;">
+            <p class="text-xs mb-4 uppercase tracking-wider font-medium" style="color: #6b8c68;">Current Appearance</p>
+            <div class="flex items-center gap-4">
+              <div class="w-14 h-14 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0">
+                <span class="material-symbols-outlined text-primary text-3xl">eco</span>
+              </div>
+              <div>
+                <p class="font-bold text-2xl tracking-tight" style="color: #2d3e2d;">
+                  {{ branding.app_name|default:"AgriSense" }}
+                </p>
+                <p class="text-sm font-medium mt-0.5" style="color: #10b981;">
+                  {{ branding.app_subtitle|default:"Edge Intelligence" }}
+                </p>
+              </div>
+            </div>
+          </div>
+        </form>
+        <br>
+        <br>
+      </div>
+    </div>
+  </main>
+
+  <!-- Mobile bottom nav - Deep Green -->
+  <nav class="lg:hidden fixed bottom-0 left-0 right-0 z-30" style="background: #1a3a2a; border-top: 1px solid #2d5a3d; height: 65px;">
+    <div class="flex justify-around items-center h-full px-4">
+      <a href="{% url 'dashboard' %}" class="flex flex-col items-center justify-center transition-colors" style="color: #9bc48f;">
+        <span class="material-symbols-outlined text-[24px]">grid_view</span>
+        <span class="text-[9px] font-black uppercase tracking-widest">HOME</span>
+      </a>
+      <a href="{% url 'scanner' %}" class="flex flex-col items-center justify-center -mt-8">
+        <div class="w-14 h-14 rounded-2xl flex items-center justify-center shadow-premium active:scale-90 transition-transform" style="background: #2f8b5c; border: 4px solid #1a3a2a;">
+          <span class="material-symbols-outlined text-[28px]" style="color: white;">filter_center_focus</span>
+        </div>
+      </a>
+      <a href="{% url 'setting' %}" class="flex flex-col items-center justify-center" style="color: #34d399;">
+        <span class="material-symbols-outlined text-[24px]">settings</span>
+        <span class="text-[9px] font-black uppercase tracking-widest">SETTINGS</span>
+      </a>
+    </div>
+  </nav>
+</div>
+
+{% if messages %}
+  <div id="toast" class="fixed bottom-8 right-8 z-50 glass-card px-6 py-4 rounded-2xl border" style="background: white; border-color: #bcddae; box-shadow: 0 8px 20px rgba(0,0,0,0.08);">
+    <div class="flex items-center gap-3">
+      <span class="material-symbols-outlined text-primary">check_circle</span>
+      {% for message in messages %}
+        <span class="font-medium" style="color: #2d3e2d;">{{ message }}</span>
+      {% endfor %}
+    </div>
+  </div>
+{% endif %}
+
+<!-- Mobile menu script -->
+<script>
+  // Mobile menu toggle
+  const btn = document.getElementById('mobileMenuBtn');
+  const menu = document.getElementById('mobileMenu');
+  const close = document.getElementById('closeMenu');
+
+  function openMobileMenu() {
+    menu.classList.add('show');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeMobileMenu() {
+    menu.classList.remove('show');
+    document.body.style.overflow = '';
+  }
+
+  btn?.addEventListener('click', openMobileMenu);
+  close?.addEventListener('click', closeMobileMenu);
+
+  // Close menu when clicking on any link inside it
+  document.querySelectorAll('#mobileMenu a').forEach(link => {
+    link.addEventListener('click', closeMobileMenu);
+  });
+
+  // Auto-hide toast after 4 seconds
+  const toast = document.getElementById('toast');
+  if (toast) {
+    setTimeout(() => {
+      toast.style.opacity = '0';
+      toast.style.transition = 'opacity 0.5s ease';
+    }, 4000);
+    setTimeout(() => {
+      if (toast && toast.parentNode) toast.remove();
+    }, 4500);
+  }
+</script>
+
+</body>
+</html>

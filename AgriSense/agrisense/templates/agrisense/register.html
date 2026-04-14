@@ -1,0 +1,258 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>AgriSense – Create Account</title>
+<script src="{% static 'js/tailwind.min.js' %}"></script>
+<link href="{% static 'css/inter.css' %}" rel="stylesheet"/>
+<link href="{% static 'css/material-symbols.css' %}" rel="stylesheet"/>
+<script>tailwind.config={darkMode:"class",theme:{extend:{colors:{"primary":"#10b981","primary-dark":"#059669","background-dark":"#0a0f0a","surface-dark":"#121a12","surface-darker":"#0d130d","input-bg":"#1a241a"},fontFamily:{display:["Inter","sans-serif"]},boxShadow:{"glow-green":"0 0 20px rgba(16,185,129,0.2)"}}}}</script>
+<style>
+  /* LIGHT THEME OVERRIDES - White/Mint Background, Light Sage Cards, Dark Gray/Black Text */
+  body {
+    font-family: 'Inter', sans-serif;
+    background: #f0f7f0 !important;
+    color-scheme: light;
+  }
+  
+  /* Override dark class behavior */
+  .dark body, body.dark {
+    background: #f0f7f0 !important;
+  }
+  
+  /* Text colors - Dark Gray/Black */
+  .text-white {
+    color: #2d3e2d !important;
+  }
+  
+  .text-gray-400 {
+    color: #6b8c68 !important;
+  }
+  
+  .text-gray-500 {
+    color: #9bbf95 !important;
+  }
+  
+  .text-primary {
+    color: #10b981 !important;
+  }
+  
+  .text-rose-400 {
+    color: #e53e3e !important;
+  }
+  
+  /* Card background - Light Sage */
+  .bg-surface-dark {
+    background: #ffffff !important;
+    border: 1px solid #d4e8ce !important;
+    backdrop-filter: none !important;
+    box-shadow: 0 8px 25px -10px rgba(0, 0, 0, 0.08);
+  }
+  
+  /* Input background */
+  .bg-input-bg {
+    background: #f9fff8 !important;
+  }
+  
+  /* Input border */
+  .border-white\/10 {
+    border-color: #d4e8ce !important;
+  }
+  
+  .border-white\/20 {
+    border-color: #bcddae !important;
+  }
+  
+  /* Input focus ring */
+  .input-focus-ring:focus-within {
+    box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.15);
+    border-color: #10b981 !important;
+  }
+  
+  /* Input text */
+  input {
+    color: #1a2c1e !important;
+  }
+  
+  input::placeholder {
+    color: #c8dbc2 !important;
+  }
+  
+  /* Icons in inputs */
+  .material-symbols-outlined.text-gray-500 {
+    color: #9bc48f !important;
+  }
+  
+  .group-focus-within\:text-primary:focus-within .material-symbols-outlined {
+    color: #10b981 !important;
+  }
+  
+  /* Logo container */
+  .bg-primary\/20 {
+    background-color: rgba(16, 185, 129, 0.1) !important;
+  }
+  
+  .border-primary\/30 {
+    border-color: rgba(16, 185, 129, 0.2) !important;
+  }
+  
+  /* Button */
+  .bg-primary {
+    background: #2f8b5c !important;
+    color: white !important;
+  }
+  
+  .bg-primary:hover {
+    background: #246e48 !important;
+  }
+  
+  /* Message containers */
+  .bg-rose-500\/10 {
+    background-color: rgba(229, 62, 62, 0.08) !important;
+  }
+  
+  .border-rose-500\/20 {
+    border-color: #fecaca !important;
+  }
+  
+  .text-rose-400 {
+    color: #e53e3e !important;
+  }
+  
+  .bg-primary\/10 {
+    background-color: rgba(16, 185, 129, 0.08) !important;
+  }
+  
+  .border-primary\/20 {
+    border-color: #bbf7d0 !important;
+  }
+  
+  /* Checkbox styling */
+  input[type="checkbox"] {
+    background-color: #f9fff8;
+    border-color: #d4e8ce;
+  }
+  
+  input[type="checkbox"]:checked {
+    background-color: #10b981;
+  }
+  
+  /* Links */
+  a.text-primary {
+    color: #10b981 !important;
+  }
+  
+  a.text-primary:hover {
+    color: #059669 !important;
+  }
+  
+  /* Background glow effects - muted for light theme */
+  .absolute.bg-primary\/5 {
+    background: rgba(16, 185, 129, 0.05) !important;
+  }
+  
+  .absolute.bg-emerald-900\/10 {
+    background: rgba(16, 185, 129, 0.03) !important;
+  }
+  
+  /* Help text */
+  .text-\[10px\].text-gray-500 {
+    color: #9bc48f !important;
+  }
+  
+  /* Error text */
+  .text-\[10px\].text-rose-400 {
+    color: #e53e3e !important;
+  }
+  
+  /* Terms label */
+  .text-gray-400 {
+    color: #6b8c68 !important;
+  }
+  
+  /* Keep white text on button */
+  button.bg-primary span, button.bg-primary {
+    color: white !important;
+  }
+  
+  /* Hover effect on button arrow */
+  .group-hover\:translate-x-1:hover {
+    transform: translateX(4px);
+  }
+</style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
+
+<!-- Background glow effects - muted for light theme -->
+<div class="absolute top-0 left-1/4 w-96 h-96 bg-primary/5 rounded-full blur-3xl pointer-events-none"></div>
+<div class="absolute bottom-0 right-1/4 w-96 h-96 bg-emerald-900/10 rounded-full blur-3xl pointer-events-none"></div>
+
+<div class="w-full max-w-lg relative z-10">
+  <!-- Logo -->
+  <div class="text-center mb-8">
+    <div class="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-primary/20 border border-primary/30 mb-4 shadow-glow-green">
+      <span class="material-symbols-outlined text-primary text-3xl">eco</span>
+    </div>
+    <h1 class="text-3xl font-bold" style="color: #2d3e2d;">Create Account</h1>
+    <p class="text-gray-400 text-sm mt-2">Join AgriSense for AI-powered farm diagnostics</p>
+  </div>
+
+  <!-- Messages -->
+  {% if messages %}
+    <div class="mb-4 space-y-2">
+      {% for message in messages %}
+        <div class="p-4 rounded-xl {% if message.tags == 'error' %}bg-rose-500/10 text-rose-400 border border-rose-500/20{% else %}bg-primary/10 text-primary border border-primary/20{% endif %} text-sm">
+          {{ message }}
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <!-- Card -->
+  <div class="rounded-2xl p-8 shadow-xl" style="background: #ffffff; border: 1px solid #d4e8ce;">
+    <form class="space-y-5" method="POST">
+      {% csrf_token %}
+      
+      {% for field in form %}
+        <div class="space-y-1.5">
+          <label class="text-xs font-semibold uppercase tracking-wider ml-1" style="color: #6b8c68;">{{ field.label }}</label>
+          <div class="relative group input-focus-ring rounded-xl border transition-colors" style="border-color: #d4e8ce; background: #f9fff8;">
+            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+              <span class="material-symbols-outlined transition-colors" style="color: #9bc48f;">
+                {% if "user" in field.name.lower %}person{% elif "mail" in field.name.lower %}mail{% elif "pass" in field.name.lower %}lock{% else %}edit{% endif %}
+              </span>
+            </div>
+            <input name="{{ field.name }}" type="{{ field.field.widget.input_type }}" class="block w-full pl-12 pr-4 py-4 bg-transparent border-none focus:ring-0 text-sm" style="color: #1a2c1e;" placeholder="{{ field.label }}" required/>
+          </div>
+          {% if field.help_text %}
+            <p class="text-[10px] ml-1" style="color: #9bc48f;">{{ field.help_text|safe }}</p>
+          {% endif %}
+          {% if field.errors %}
+            <p class="text-[10px] ml-1" style="color: #e53e3e;">{{ field.errors.as_text }}</p>
+          {% endif %}
+        </div>
+      {% endfor %}
+
+      <div class="flex items-start gap-3 pt-1">
+        <input id="terms" type="checkbox" required class="w-4 h-4 mt-0.5 rounded border shrink-0" style="background-color: #f9fff8; border-color: #d4e8ce;"/>
+        <label class="text-sm" style="color: #6b8c68;" for="terms">
+          I agree to the <a class="font-medium hover:text-primary underline decoration-primary/40 underline-offset-2" href="#" style="color: #10b981;">Terms of Service</a>
+        </label>
+      </div>
+
+      <button type="submit" class="w-full font-bold text-lg py-4 rounded-xl shadow-glow-green flex items-center justify-center gap-2 transition-all active:scale-[0.98] group mt-2" style="background: #2f8b5c; color: white;">
+        Create Account
+        <span class="material-symbols-outlined group-hover:translate-x-1 transition-transform" style="color: white;">arrow_forward</span>
+      </button>
+    </form>
+  </div>
+
+  <p class="text-center text-sm mt-6" style="color: #6b8c68;">
+    Already have an account?
+    <a class="font-semibold hover:text-primary-dark transition-colors ml-1" href="{% url 'login' %}" style="color: #10b981;">Log In</a>
+  </p>
+</div>
+</body>
+</html>

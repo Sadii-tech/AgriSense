@@ -1,0 +1,7 @@
+{% extends 'registration/base.html' %}
+
+{% block content %}
+  <h3>Password Reset Link</h3>
+  <p>Click the link below to reset your password:</p>
+  <a href="{{ reset_link }}">{{ reset_link }}</a>
+{% endblock %}

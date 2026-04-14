@@ -1,0 +1,1267 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover" name="viewport"/>
+<title>AgriSense – Scan History</title>
+<script src="{% static 'js/tailwind.min.js' %}"></script>
+<link href="{% static 'css/inter.css' %}" rel="stylesheet"/>
+<link href="{% static 'css/material-symbols.css' %}" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  tailwind.config = {
+    darkMode:"class",
+    theme:{extend:{colors:{"primary":"#10b981","primary-dark":"#059669","background-dark":"#0a0f0a","surface-dark":"#121a12","surface-darker":"#0d130d"},fontFamily:{display:["Inter","sans-serif"]},boxShadow:{"glow-green":"0 0 20px rgba(16,185,129,0.2)","glow-green-sm":"0 0 10px rgba(16,185,129,0.1)"}}}
+  }
+</script>
+<style type="text/tailwindcss">
+  /* RESET & BASE - Prevent horizontal overflow */
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  
+  html, body {
+    overflow-x: hidden !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    position: relative;
+  }
+  
+  /* LIGHT THEME OVERRIDES - White/Mint Background, Deep Green Navbar, Light Sage Cards */
+  body { 
+    font-family: 'Inter', sans-serif; 
+    background: #f0f7f0 !important;
+    color-scheme: light;
+    color: #1a2c1e !important;
+    overflow-x: hidden !important;
+    width: 100%;
+    max-width: 100vw;
+  }
+  
+  /* Override dark class behavior */
+  .dark body, body.dark {
+    background: #f0f7f0 !important;
+  }
+  .bg-danger {
+    background: #fee2e2;
+  }
+  .bg-success {
+    background: #e0f2e0;
+  }
+  
+  ::-webkit-scrollbar{width:4px} ::-webkit-scrollbar-track{background:#d4e8ce} ::-webkit-scrollbar-thumb{background:#9bc48f;border-radius:2px}
+  
+  /* Sidebar - Light Sage */
+  aside.hidden {
+    background: #e8f0e5 !important;
+    border-right-color: #c8dbc2 !important;
+  }
+  
+  .sidebar-link{
+    display:flex;
+    align-items:center;
+    gap:.75rem;
+    padding:.75rem 1rem;
+    border-radius:.75rem;
+    font-weight:500;
+    transition:all .2s;
+    width:100%;
+    color: #2d3e2d !important;
+  }
+  .sidebar-link:hover{
+    background: #d9ecd2 !important;
+    color: #1a3a1a !important;
+  }
+  .sidebar-link.active{
+    background: #d0e8c8 !important;
+    color: #0f5c2f !important;
+    border:1px solid #9bc48f !important;
+    box-shadow:0 2px 8px rgba(16,185,129,0.1);
+  }
+  
+  /* Glass cards - Light Sage / White */
+  .glass-card { 
+    background: #ffffff !important;
+    backdrop-filter: none !important;
+    border: 1px solid #d4e8ce !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+  }
+  .glass-card:hover {
+    background: #ffffff !important;
+    border-color: #bcddae !important;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+  }
+  
+  /* Scan rows */
+  .scan-row{
+    background: #ffffff !important;
+    border: 1px solid #d4e8ce !important;
+    border-radius: 0.75rem;
+    transition:all .2s;
+    cursor:pointer;
+    width: 100%;
+  }
+  .scan-row:hover{
+    background: #f9fff8 !important;
+    border-color: #bcddae !important;
+  }
+  .scan-row.selected{
+    background: #e8f4e4 !important;
+    border-color: #9bc48f !important;
+  }
+  
+  /* Search input */
+  #search-input {
+    background: #ffffff !important;
+    border: 1px solid #d4e8ce !important;
+    color: #1a2c1e !important;
+    width: 100%;
+  }
+  #search-input:focus {
+    border-color: #10b981 !important;
+    box-shadow: 0 0 0 3px rgba(16,185,129,0.1);
+  }
+  #search-input::placeholder {
+    color: #9bbf95 !important;
+  }
+  
+  /* Filter buttons */
+  .filter-btn {
+    transition: all 0.2s;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .filter-btn.active {
+    background: #d0e8c8 !important;
+    color: #0f5c2f !important;
+    border-color: #9bc48f !important;
+  }
+  .filter-btn:not(.active) {
+    background: #ffffff !important;
+    border-color: #d4e8ce !important;
+    color: #6b8c68 !important;
+  }
+  .filter-btn:not(.active):hover {
+    background: #e8f4e4 !important;
+    border-color: #bcddae !important;
+    color: #2d3e2d !important;
+  }
+  
+  .live-indicator {
+    position: relative;
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    background-color: #10b981;
+    border-radius: 50%;
+    margin-right: 6px;
+  }
+  .live-indicator::after {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    width: 12px;
+    height: 12px;
+    background-color: rgba(16, 185, 129, 0.3);
+    border-radius: 50%;
+    animation: pulse-ring 1.5s infinite;
+  }
+  @keyframes pulse-ring {
+    0% { transform: scale(0.8); opacity: 0.7; }
+    70% { transform: scale(1.4); opacity: 0; }
+    100% { transform: scale(1.4); opacity: 0; }
+  }
+  
+  /* Top bar - Deep Green Navbar */
+  header.sticky {
+    background: #307150 !important;
+    backdrop-filter: none !important;
+    border-bottom-color: #2d5a3d !important;
+  }
+  
+  /* Header text colors */
+  header h1, header .font-bold.text-white {
+    color: white !important;
+  }
+  
+  header .bg-primary\/10 {
+    background: rgba(255,255,255,0.15) !important;
+    border-color: rgba(255,255,255,0.25) !important;
+  }
+  header .text-primary {
+    color: #34d399 !important;
+  }
+  
+  /* Back button in header */
+  header a .bg-surface-dark {
+    background: rgba(255,255,255,0.12) !important;
+    border-color: rgba(255,255,255,0.2) !important;
+    color: white !important;
+  }
+  
+  /* Bell icon */
+  #notifications-btn {
+    background: rgba(255,255,255,0.12) !important;
+    border-color: rgba(255,255,255,0.2) !important;
+    color: white !important;
+  }
+  
+  /* Quick Scan button */
+  a.bg-primary {
+    background: #2f8b5c !important;
+    color: white !important;
+  }
+  
+  /* Mobile menu */
+  .mobile-menu {
+    position: fixed;
+    top: 0;
+    left: -280px;
+    width: 280px;
+    height: 100%;
+    z-index: 1000;
+    transition: left 0.3s ease;
+    background: #f0f7f0 !important;
+    box-shadow: 2px 0 20px rgba(0,0,0,0.1);
+  }
+  .mobile-menu.active {
+    left: 0;
+  }
+  .mobile-menu .text-white, .mobile-menu .sidebar-link {
+    color: #2d3e2d !important;
+  }
+  .mobile-menu .sidebar-link.active {
+    background: #d0e8c8 !important;
+    color: #0f5c2f !important;
+  }
+  .mobile-menu-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+    display: none;
+  }
+  .mobile-menu-overlay.active {
+    display: block;
+  }
+  
+  /* Scan details panel */
+  .bg-surface-dark {
+    background: #ffffff !important;
+    border-color: #d4e8ce !important;
+  }
+  .bg-surface-dark .text-white, .bg-surface-dark .text-gray-300 {
+    color: #2d3e2d !important;
+  }
+  .bg-surface-dark .text-gray-500 {
+    color: #6b8c68 !important;
+  }
+  .bg-surface-dark .border-primary\/20 {
+    border-color: #9bc48f !important;
+  }
+  
+  /* Notification dropdown - Fixed positioning */
+  #notification-dropdown {
+    background: #ffffff !important;
+    border: 1px solid #d4e8ce !important;
+    position: fixed !important;
+    top: 70px !important;
+    right: 20px !important;
+    left: auto !important;
+    width: 380px !important;
+    max-width: calc(100vw - 40px) !important;
+    z-index: 1000 !important;
+  }
+  
+  /* Mobile adjustment for dropdown */
+  @media (max-width: 640px) {
+    #notification-dropdown {
+      right: 10px !important;
+      left: 10px !important;
+      width: auto !important;
+      max-width: calc(100vw - 20px) !important;
+    }
+  }
+  
+  #notification-dropdown .text-white {
+    color: #2d3e2d !important;
+  }
+  #notification-dropdown .bg-white\/5 {
+    background: #e8f4e4 !important;
+  }
+  
+  /* Bottom mobile nav */
+  nav.lg\:hidden.fixed {
+    background: #1a3a2a !important;
+    backdrop-filter: none !important;
+    border-top-color: #2d5a3d !important;
+  }
+  nav.lg\:hidden.fixed .text-gray-500 {
+    color: #9bc48f !important;
+  }
+  nav.lg\:hidden.fixed .text-primary {
+    color: #34d399 !important;
+  }
+  nav.lg\:hidden.fixed .bg-primary {
+    background: #2f8b5c !important;
+  }
+  nav.lg\:hidden.fixed .border-background-dark {
+    border-color: #1a3a2a !important;
+  }
+  
+  /* Stats cards */
+  .bg-surface-dark.rounded-xl {
+    background: #ffffff !important;
+    border-color: #d4e8ce !important;
+  }
+  .bg-surface-dark.rounded-xl .text-white {
+    color: #2d3e2d !important;
+  }
+  .text-red-400 {
+    color: #e53e3e !important;
+  }
+  .text-primary {
+    color: #10b981 !important;
+  }
+  
+  /* Date section headers */
+  .text-gray-400 {
+    color: #6b8c68 !important;
+  }
+  .bg-white\/10 {
+    background: #d4e8ce !important;
+  }
+  
+  /* Empty state */
+  .text-gray-700 {
+    color: #9bbf95 !important;
+  }
+  .text-gray-500 {
+    color: #6b8c68 !important;
+  }
+  
+  /* Buttons */
+  .bg-primary.hover\:bg-primary-dark {
+    background: #2f8b5c !important;
+  }
+  .bg-primary.hover\:bg-primary-dark:hover {
+    background: #246e48 !important;
+  }
+  
+  /* Fade-in */
+  .fade-in { animation: fadeIn 0.6s ease-out forwards; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  
+  /* Ensure header elements stay white */
+  header .text-white, header span[style*="color: white"], 
+  header .font-bold[style*="color: white"], header button .text-white {
+    color: white !important;
+  }
+  
+  /* Keep badge colors */
+  .bg-red-500\/10 {
+    background-color: rgba(229, 62, 62, 0.1) !important;
+  }
+  .bg-green-500\/10 {
+    background-color: rgba(16, 185, 129, 0.1) !important;
+  }
+
+  /* Mobile filter pills - horizontal scroll */
+  .filter-scroll-container {
+    overflow-x: auto;
+    overflow-y: hidden;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+  }
+  .filter-scroll-container::-webkit-scrollbar {
+    height: 2px;
+  }
+  
+  /* Mobile detail panel */
+  #mobile-detail-panel {
+    transition: all 0.3s ease;
+  }
+  
+  /* Responsive adjustments */
+  @media (max-width: 1023px) {
+    .scan-row {
+      padding: 1rem !important;
+    }
+    .scan-row .w-20 {
+      width: 4rem !important;
+      height: 4rem !important;
+    }
+    h3.font-bold {
+      font-size: 0.95rem !important;
+    }
+    main.p-4 {
+      padding: 1rem !important;
+    }
+  }
+  
+  @media (max-width: 640px) {
+    .scan-row {
+      padding: 0.75rem !important;
+    }
+    .scan-row .w-20 {
+      width: 3rem !important;
+      height: 3rem !important;
+    }
+    .material-symbols-outlined.text-3xl {
+      font-size: 1.5rem !important;
+    }
+    header {
+      padding: 0.75rem !important;
+    }
+    header h1 {
+      font-size: 1rem !important;
+    }
+  }
+  
+  /* Prevent horizontal overflow on all containers */
+  .flex, .grid, .container, main, div {
+    max-width: 100%;
+  }
+  
+  /* Ensure images don't overflow */
+  img {
+    max-width: 100%;
+    height: auto;
+  }
+  
+  /* Fix grid on mobile */
+  @media (max-width: 1023px) {
+    .grid {
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+    }
+    .lg\:col-span-3, .lg\:col-span-2 {
+      width: 100%;
+    }
+  }
+</style>
+</head>
+<body class="min-h-screen flex" 
+      data-total-scans="{{ total_scans }}"
+      data-threat-count="{{ threat_count }}"
+      data-healthy-count="{{ healthy_count }}">
+
+<!-- Sidebar (Desktop) - Light Sage -->
+<aside class="hidden lg:flex flex-col w-64 xl:w-72 min-h-screen sticky top-0 shrink-0" style="background: #e8f0e5; border-right: 1px solid #c8dbc2;">
+  <div class="flex items-center gap-3 px-6 py-6 border-b" style="border-color: #c8dbc2;">
+    <div class="w-9 h-9 rounded-xl bg-primary/20 border border-primary/30 flex items-center justify-center">
+      <span class="material-symbols-outlined text-primary text-xl">eco</span>
+    </div>
+    <div class="flex flex-col">
+      <span class="font-bold text-xl tracking-tight leading-none" style="color: #2d3e2d;">{{ branding.app_name|default:"AgriSense" }}</span>
+      <span class="text-[10px] text-primary/60 uppercase tracking-[0.2em] font-bold mt-1.5" style="color: #10b981 !important;">
+        {{ branding.app_subtitle|default:"Edge Intelligence" }}
+      </span>
+    </div>
+  </div>
+  <nav class="flex-1 px-3 py-5 flex flex-col gap-1">
+    <a href="{% url 'dashboard' %}" class="sidebar-link"><span class="material-symbols-outlined text-xl">dashboard</span>Dashboard</a>
+    <a href="{% url 'scanner' %}" class="sidebar-link"><span class="material-symbols-outlined text-xl">center_focus_strong</span>New Scan</a>
+    <a href="{% url 'history' %}" class="sidebar-link active"><span class="material-symbols-outlined text-xl">history</span>History</a>
+    <div class="pt-6 pb-2 px-3 text-[10px] font-bold uppercase tracking-widest" style="color: #6b8c68;">Management</div>
+    <a href="{% url 'setting' %}" class="sidebar-link">
+      <span class="material-symbols-outlined text-[20px]">settings</span> Settings
+    </a>
+    <a href="{% url 'about' %}" class="sidebar-link">
+      <span class="material-symbols-outlined">info</span> About Us
+    </a>
+  </nav>
+  
+  <!-- User profile with Logout button -->
+  <div class="p-4 border-t" style="border-color: #c8dbc2;">
+    <div class="glass-card p-3 rounded-2xl flex items-center gap-3">
+      <div class="w-9 h-9 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0">
+        <span class="material-symbols-outlined text-primary text-xl">account_circle</span>
+      </div>
+      <div class="flex-1 min-w-0">
+        <p class="text-sm font-bold truncate line-clamp-1" style="color: #2d3e2d;">{{ user.get_full_name|default:user.username }}</p>
+        <p class="text-[10px] truncate uppercase tracking-tighter" style="color: #6b8c68;">{{ user.email|default:"AgriSense User" }}</p>
+      </div>
+      <a href="{% url 'logout' %}" class="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-rose-500/10 transition-colors" style="color: #6b8c68;" title="Logout">
+        <span class="material-symbols-outlined text-sm">logout</span>
+      </a>
+    </div>
+  </div>
+</aside>
+
+<!-- Mobile Menu Overlay -->
+<div class="mobile-menu-overlay" id="mobileMenuOverlay" onclick="closeMobileMenu()"></div>
+
+<!-- Mobile Menu -->
+<div class="mobile-menu lg:hidden" id="mobileMenu" style="background: #f0f7f0; border-right: 1px solid #c8dbc2;">
+  <div class="flex items-center justify-between p-4 border-b" style="border-color: #c8dbc2;">
+    <div class="flex items-center gap-3">
+      <div class="w-9 h-9 rounded-xl bg-primary/20 border border-primary/30 flex items-center justify-center">
+        <span class="material-symbols-outlined text-primary text-xl">eco</span>
+      </div>
+      <div class="flex flex-col">
+        <span class="font-bold text-xl tracking-tight leading-none" style="color: #2d3e2d;">{{ branding.app_name|default:"AgriSense" }}</span>
+        <span class="text-[10px] text-primary/60 uppercase tracking-[0.2em] font-bold mt-1.5" style="color: #10b981 !important;">
+          {{ branding.app_subtitle|default:"Edge Intelligence" }}
+        </span>
+      </div>
+    </div>
+    <button onclick="closeMobileMenu()" class="w-9 h-9 flex items-center justify-center rounded-full" style="background: #e8f0e5; border: 1px solid #c8dbc2; color: #2d3e2d;">
+      <span class="material-symbols-outlined text-xl">close</span>
+    </button>
+  </div>
+  
+  <nav class="flex-1 px-3 py-5 flex flex-col gap-1">
+    <a href="{% url 'dashboard' %}" class="sidebar-link">
+      <span class="material-symbols-outlined text-xl">dashboard</span>Dashboard
+    </a>
+    <a href="{% url 'scanner' %}" class="sidebar-link">
+      <span class="material-symbols-outlined text-xl">center_focus_strong</span>New Scan
+    </a>
+    <a href="{% url 'history' %}" class="sidebar-link active">
+      <span class="material-symbols-outlined text-xl">history</span>History
+    </a>
+    <div class="pt-6 pb-2 px-3 text-[10px] font-bold uppercase tracking-widest" style="color: #6b8c68;">Management</div>
+    <a href="{% url 'setting' %}" class="sidebar-link">
+      <span class="material-symbols-outlined text-[20px]">settings</span>Settings
+    </a>
+    <a href="{% url 'about' %}" class="sidebar-link">
+      <span class="material-symbols-outlined">info</span>About Us
+    </a>
+  </nav>
+  
+  <div class="p-4 border-t" style="border-color: #c8dbc2;">
+    <div class="flex items-center gap-3 p-3 rounded-xl" style="background: #e8f4e4;">
+      <div class="w-9 h-9 rounded-full bg-primary/20 border border-primary/30 flex items-center justify-center shrink-0">
+        <span class="material-symbols-outlined text-primary text-lg">person</span>
+      </div>
+      <div class="flex-1 min-w-0">
+        <p class="text-sm font-semibold truncate" style="color: #2d3e2d;">{{ user.get_full_name|default:user.username }}</p>
+        <p class="text-xs truncate" style="color: #6b8c68;">{{ user.email|default:"AgriSense User" }}</p>
+      </div>
+      <a href="{% url 'logout' %}" class="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-rose-500/10 transition-colors" style="color: #6b8c68;">
+        <span class="material-symbols-outlined text-sm">logout</span>
+      </a>
+    </div>
+  </div>
+</div>
+
+<div class="flex-1 flex flex-col min-h-screen w-full overflow-x-hidden">
+  <!-- Header - Deep Green Navbar -->
+  <header class="sticky top-0 z-30 px-4 lg:px-8 py-4 flex flex-wrap items-center gap-3 w-full" style="background: #1a3a2a; border-bottom: 1px solid #2d5a3d;">
+    <a href="{% url 'dashboard' %}" class="flex items-center gap-2 shrink-0">
+      <button class="w-9 h-9 flex items-center justify-center rounded-full transition-all" style="background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.2); color: white;">
+        <span class="material-symbols-outlined text-xl">arrow_back</span>
+      </button>
+    </a>
+    <h1 class="font-bold text-white text-lg flex-1">Scan History</h1>
+
+    <div class="flex items-center gap-3 relative shrink-0">
+      <!-- BELL ICON -->
+      <button id="notifications-btn" class="w-10 h-10 flex items-center justify-center rounded-xl transition-all relative" style="background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.2); color: white;">
+        <span class="material-symbols-outlined text-[22px]">notifications</span>
+        <span id="notification-count" class="absolute -top-1 -right-1 bg-rose-500 text-white text-[10px] font-bold min-w-[18px] h-[18px] flex items-center justify-center rounded-full px-1 shadow-glow-primary border-2 border-[#1a3a2a] transition-all hidden">0</span>
+      </button>
+
+      <!-- Hamburger Menu Button -->
+      <button onclick="toggleMobileMenu()" class="lg:hidden w-10 h-10 flex items-center justify-center rounded-xl transition-all" style="background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.2); color: white;">
+        <span class="material-symbols-outlined text-xl">menu</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- DROPDOWN - Moved outside header for better positioning -->
+  <div id="notification-dropdown" class="hidden rounded-3xl shadow-premium p-5" style="background: #ffffff; border: 1px solid #d4e8ce;">
+    <div class="flex items-center justify-between mb-4">
+      <div class="flex items-center gap-2" style="color: #e53e3e;">
+        <span class="material-symbols-outlined">warning</span>
+        <span class="font-bold text-sm">Disease Alerts</span>
+      </div>
+      <span id="alert-count-in-dropdown" class="text-xs font-bold" style="color: #e53e3e;"></span>
+    </div>
+    <div id="alert-list" class="space-y-4 max-h-80 overflow-y-auto pr-2"></div>
+    <button id="mark-all-read-btn" class="mt-6 w-full py-3 font-bold text-sm rounded-2xl flex items-center justify-center gap-2 transition-all" style="background: #2f8b5c; color: white;">
+      <span class="material-symbols-outlined text-lg">done_all</span>
+      Mark All as Read
+    </button>
+  </div>
+
+  <main class="flex-1 p-4 lg:p-8 w-full pb-24 lg:pb-8 overflow-x-hidden">
+    <!-- Search -->
+    <div class="relative mb-4 w-full">
+      <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[#9bbf95] text-[18px]">search</span>
+      <input id="search-input" type="text" placeholder="Search by plant, disease, sector…" onkeyup="searchScans()" class="w-full pl-10 pr-4 py-3 rounded-xl text-sm focus:outline-none transition-all" style="background: #ffffff; border: 1px solid #d4e8ce; color: #1a2c1e;" />
+    </div>
+
+    <!-- Filter pills - Mobile Horizontal Scroll + Desktop Normal -->
+    <div class="mb-6 filter-scroll-container lg:overflow-visible w-full">
+      <div class="flex gap-2 lg:justify-start" id="filter-container">
+        <button onclick="filterScans('all', this)" class="filter-btn active px-4 py-2 text-sm font-semibold rounded-full border whitespace-nowrap" style="background: #d0e8c8; color: #0f5c2f; border-color: #9bc48f;">All ({{ total_scans }})</button>
+        <button onclick="filterScans('threats', this)" class="filter-btn px-4 py-2 text-sm font-semibold rounded-full border whitespace-nowrap" style="background: #ffffff; border-color: #d4e8ce; color: #6b8c68;">Threats ({{ threat_count }})</button>
+        <button onclick="filterScans('healthy', this)" class="filter-btn px-4 py-2 text-sm font-semibold rounded-full border whitespace-nowrap" style="background: #ffffff; border-color: #d4e8ce; color: #6b8c68;">Healthy ({{ healthy_count }})</button>
+      </div>
+    </div>
+
+    <div class="w-full">
+      <!-- SCAN LIST (full width on mobile, 3/5 on desktop) -->
+      <div class="w-full lg:w-3/5 lg:float-left lg:pr-6 space-y-4" id="scans-container">
+        {% regroup scans by created_at|date:"Y-m-d" as scan_dates %}
+        
+        {% for date_group in scan_dates %}
+          <!-- Date section header -->
+          <div class="flex items-center gap-2 mb-2 mt-{% if not forloop.first %}4{% else %}0{% endif %} w-full">
+            <div class="h-px flex-1" style="background: #d4e8ce;"></div>
+            <span class="text-xs font-semibold uppercase tracking-wider whitespace-nowrap" style="color: #6b8c68;">
+              {% with date=date_group.list.0.created_at %}
+                {% if date|date:"Y-m-d" == today|date:"Y-m-d" %}
+                  Today
+                {% elif date|date:"Y-m-d" == yesterday|date:"Y-m-d" %}
+                  Yesterday
+                {% else %}
+                  {{ date|date:"l, F j" }}
+                {% endif %}
+              {% endwith %}
+            </span>
+            <div class="h-px flex-1" style="background: #d4e8ce;"></div>
+          </div>
+
+          {% for scan in date_group.list %}
+            <div class="scan-row rounded-xl p-4 flex items-center gap-4 cursor-pointer group transition-all w-full" 
+                 style="background: #ffffff; border: 1px solid #d4e8ce;"
+                 onclick="selectScan(this, '{{ scan.id }}')"
+                 data-scan-id="{{ scan.id }}"
+                 data-disease="{% if scan.disease_detected %}true{% else %}false{% endif %}"
+                 data-name="{{ scan.disease_name|default:'Healthy'|escapejs }}"
+                 data-plant="{{ scan.crop_type|default:'Plant'|escapejs }}"
+                 data-search="{{ scan.crop_type|default:'' }} {{ scan.disease_name|default:'' }} {{ scan.severity|default:'' }}"
+                 data-image="{% if scan.image %}{{ scan.image.url }}{% else %}https://via.placeholder.com/600x400/e8f4e4/9bc48f?text=No+Image{% endif %}"
+                 data-scientific="{{ scan.scientific_name|default:''|escapejs }}"
+                 data-description="{{ scan.treatment_recommended|default:'No treatment needed. Continue regular monitoring.'|escapejs }}"
+                 data-confidence="{{ scan.confidence|floatformat:1 }}">
+              <div class="relative w-20 h-20 rounded-xl overflow-hidden flex-shrink-0 flex items-center justify-center" style="background: #e8f4e4;">
+                {% if scan.image %}
+                <img src="{{ scan.image.url }}" alt="{{ scan.crop_type }}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"/>
+                {% else %}
+                <span class="material-symbols-outlined {% if scan.disease_detected %}text-red-500{% else %}text-primary{% endif %} text-3xl">
+                  {% if scan.disease_detected %}pest_control{% else %}spa{% endif %}
+                </span>
+                {% endif %}
+                <div class="absolute inset-0 {% if scan.disease_detected %}bg-red-500/10{% else %}bg-primary/10{% endif %} mix-blend-overlay"></div>
+              </div>
+              <div class="flex-1 min-w-0">
+                <div class="flex justify-between items-start flex-wrap gap-1">
+                  <h3 class="font-bold text-base leading-tight break-words" style="color: #2d3e2d;">{{ scan.crop_type|default:"Plant" }}</h3>
+                  <span class="text-xs font-mono shrink-0" style="color: #6b8c68;">{{ scan.created_at|date:"H:i" }}</span>
+                </div>
+                <p class="{% if scan.disease_detected %}text-red-500{% else %}text-primary{% endif %} text-sm font-semibold break-words">
+                  {{ scan.disease_name|default:"Healthy" }}
+                </p>
+                <div class="flex items-center justify-between mt-2 flex-wrap gap-2">
+                  <span class="text-xs break-words" style="color: #6b8c68;">{{ scan.severity|default:"Normal" }}</span>
+                  <div class="px-2 py-0.5 rounded-md border {% if scan.disease_detected %}border-red-500/20{% else %}border-primary/20{% endif %}">
+                    <span class="{% if scan.disease_detected %}text-red-600{% else %}text-primary-dark{% endif %} text-xs font-bold">{{ scan.confidence|floatformat:1 }}%</span>
+                  </div>
+                </div>
+              </div>
+              <span class="material-symbols-outlined transition-colors shrink-0 hidden sm:block" style="color: #9bc48f;">chevron_right</span>
+            </div>
+          {% endfor %}
+        {% empty %}
+          <div class="text-center py-12 w-full">
+            <span class="material-symbols-outlined text-6xl mb-4" style="color: #c8dbc2;">scan_delete</span>
+            <h3 class="text-xl font-bold mb-2" style="color: #2d3e2d;">No Scans Yet</h3>
+            <p class="mb-6" style="color: #6b8c68;">Start your first scan to see history here</p>
+            <a href="{% url 'scanner' %}" class="inline-block font-bold px-6 py-3 rounded-xl transition-all" style="background: #2f8b5c; color: white;">
+              Start Scanning
+            </a>
+          </div>
+        {% endfor %}
+
+        {% if scans %}
+        <div class="flex items-center justify-center py-6 text-sm gap-2 w-full" style="color: #9bc48f;">
+          <span class="material-symbols-outlined text-sm">history_toggle_off</span> End of history
+        </div>
+        {% endif %}
+      </div>
+
+      <!-- DETAIL PREVIEW (right, 2/5) — desktop only -->
+      <div class="hidden lg:block lg:w-2/5 lg:float-left" id="detail-preview-container">
+        {% if scans.first %}
+        <div class="sticky top-24 space-y-4 w-full" id="detail-preview">
+          <div class="rounded-2xl overflow-hidden w-full" style="background: #ffffff; border: 1px solid #9bc48f;">
+            <div class="aspect-video relative w-full" id="preview-image-container">
+              {% if scans.first.image %}
+              <img id="preview-image" src="{{ scans.first.image.url }}" alt="Selected scan" class="w-full h-full object-cover"/>
+              {% else %}
+              <div class="w-full h-full flex items-center justify-center" style="background: #e8f4e4;">
+                <span class="material-symbols-outlined text-6xl" style="color: #9bc48f;">image_not_supported</span>
+              </div>
+              {% endif %}
+              <div class="absolute bottom-3 right-3 backdrop-blur-md px-2 py-1 rounded-full flex items-center gap-1.5" style="background: rgba(0,0,0,0.6); border: 1px solid rgba(16,185,129,0.3);">
+                <span class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
+                <span class="text-[10px] text-primary font-bold uppercase tracking-wider">AI Analyzed</span>
+              </div>
+            </div>
+            <div class="p-5 w-full" id="preview-content">
+              <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full mb-3" id="preview-badge">
+                <span class="material-symbols-outlined text-sm" id="preview-badge-icon">{% if scans.first.disease_detected %}warning{% else %}check_circle{% endif %}</span>
+                <span class="text-xs font-bold uppercase tracking-wide" id="preview-badge-text">
+                  {% if scans.first.disease_detected %}Threat Detected{% else %}Healthy{% endif %}
+                </span>
+              </div>
+              <h2 class="text-2xl font-bold break-words" style="color: #2d3e2d;" id="preview-disease">{{ scans.first.disease_name|default:"Healthy Plant" }}</h2>
+              <p class="text-xs font-mono mt-0.5 break-words" style="color: #6b8c68;" id="preview-scientific">
+                {{ scans.first.scientific_name|default:"No disease detected" }} · {{ scans.first.confidence|floatformat:1 }}% confidence
+              </p>
+              <p class="text-sm mt-3 leading-relaxed break-words" style="color: #4a6747;" id="preview-description">
+                {{ scans.first.treatment_recommended|default:"No treatment needed. Continue regular monitoring."|truncatechars:120 }}
+              </p>
+              <div class="mt-4 space-y-2 w-full">
+                {% if scans.first.disease_detected %}
+                <a href="{% url 'diagnosis' scans.first.id %}" class="w-full font-bold py-3 rounded-xl flex items-center justify-center gap-2 transition-all text-sm" style="background: #2f8b5c; color: white;">
+                  <span class="material-symbols-outlined text-[18px]">medication_liquid</span> Apply Treatment
+                </a>
+                {% endif %}
+                <a href="{% url 'diagnosis' scans.first.id %}" class="w-full border font-semibold py-3 rounded-xl flex items-center justify-center gap-2 transition-all text-sm" style="border-color: #d4e8ce; color: #2d3e2d;">
+                  <span class="material-symbols-outlined text-[18px]">open_in_new</span> Full Report
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+        {% else %}
+        <div class="sticky top-24 rounded-2xl border p-8 text-center w-full" style="background: #ffffff; border-color: #d4e8ce;">
+          <span class="material-symbols-outlined text-6xl mb-4" style="color: #c8dbc2;">history_toggle_off</span>
+          <h3 class="text-xl font-bold mb-2" style="color: #2d3e2d;">No Data</h3>
+          <p style="color: #6b8c68;">Start scanning to see details</p>
+        </div>
+        {% endif %}
+      </div>
+      
+      <div class="clearfix"></div>
+    </div>
+
+    <!-- MOBILE DETAIL PANEL (visible on small screens only) -->
+    <div class="lg:hidden mt-6 w-full" id="mobile-detail-panel">
+      {% if scans.first %}
+      <div class="rounded-2xl overflow-hidden w-full" style="background: #ffffff; border: 1px solid #9bc48f;">
+        <div class="aspect-video relative w-full" id="mobile-preview-image-container">
+          {% if scans.first.image %}
+          <img id="mobile-preview-image" src="{{ scans.first.image.url }}" alt="Selected scan" class="w-full h-full object-cover"/>
+          {% else %}
+          <div class="w-full h-full flex items-center justify-center" style="background: #e8f4e4;">
+            <span class="material-symbols-outlined text-6xl" style="color: #9bc48f;">image_not_supported</span>
+          </div>
+          {% endif %}
+          <div class="absolute bottom-3 right-3 backdrop-blur-md px-2 py-1 rounded-full flex items-center gap-1.5" style="background: rgba(0,0,0,0.6); border: 1px solid rgba(16,185,129,0.3);">
+            <span class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
+            <span class="text-[10px] text-primary font-bold uppercase tracking-wider">AI Analyzed</span>
+          </div>
+        </div>
+        <div class="p-5 w-full" id="mobile-preview-content">
+          <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full mb-3" id="mobile-preview-badge">
+            <span class="material-symbols-outlined text-sm" id="mobile-preview-badge-icon">{% if scans.first.disease_detected %}warning{% else %}check_circle{% endif %}</span>
+            <span class="text-xs font-bold uppercase tracking-wide" id="mobile-preview-badge-text">
+              {% if scans.first.disease_detected %}Threat Detected{% else %}Healthy{% endif %}
+            </span>
+          </div>
+          <h2 class="text-2xl font-bold break-words" style="color: #2d3e2d;" id="mobile-preview-disease">{{ scans.first.disease_name|default:"Healthy Plant" }}</h2>
+          <p class="text-xs font-mono mt-0.5 break-words" style="color: #6b8c68;" id="mobile-preview-scientific">
+            {{ scans.first.scientific_name|default:"No disease detected" }} · {{ scans.first.confidence|floatformat:1 }}% confidence
+          </p>
+          <p class="text-sm mt-3 leading-relaxed break-words" style="color: #4a6747;" id="mobile-preview-description">
+            {{ scans.first.treatment_recommended|default:"No treatment needed. Continue regular monitoring."|truncatechars:120 }}
+          </p>
+          <div class="mt-4 space-y-2 w-full">
+            {% if scans.first.disease_detected %}
+            <a href="{% url 'diagnosis' scans.first.id %}" id="mobile-preview-treatment-link" class="w-full font-bold py-3 rounded-xl flex items-center justify-center gap-2 transition-all text-sm" style="background: #2f8b5c; color: white;">
+              <span class="material-symbols-outlined text-[18px]">medication_liquid</span> Apply Treatment
+            </a>
+            {% endif %}
+            <a href="{% url 'diagnosis' scans.first.id %}" id="mobile-preview-report-link" class="w-full border font-semibold py-3 rounded-xl flex items-center justify-center gap-2 transition-all text-sm" style="border-color: #d4e8ce; color: #2d3e2d;">
+              <span class="material-symbols-outlined text-[18px]">open_in_new</span> Full Report
+            </a>
+          </div>
+        </div>
+      </div>
+      {% else %}
+      <div class="rounded-2xl border p-8 text-center w-full" style="background: #ffffff; border-color: #d4e8ce;">
+        <span class="material-symbols-outlined text-6xl mb-4" style="color: #c8dbc2;">history_toggle_off</span>
+        <h3 class="text-xl font-bold mb-2" style="color: #2d3e2d;">No Data</h3>
+        <p style="color: #6b8c68;">Start scanning to see details</p>
+      </div>
+      {% endif %}
+    </div>
+  </main>
+
+  <!-- Mobile bottom nav - Deep Green -->
+  <nav class="lg:hidden fixed bottom-0 left-0 right-0 z-30 w-full" style="background: #1a3a2a; border-top: 1px solid #2d5a3d; height: 65px;">
+    <div class="flex justify-around items-center h-full px-4 w-full">
+      <a href="{% url 'dashboard' %}" class="flex flex-col items-center justify-center transition-colors" style="color: #9bc48f;">
+        <span class="material-symbols-outlined text-[24px]">grid_view</span>
+        <span class="text-[9px] font-black uppercase tracking-widest">HOME</span>
+      </a>
+      <a href="{% url 'scanner' %}" class="flex flex-col items-center -mt-8">
+        <div class="w-14 h-14 rounded-2xl flex items-center justify-center shadow-premium active:scale-90 transition-transform" style="background: #2f8b5c; border: 4px solid #1a3a2a;">
+          <span class="material-symbols-outlined text-[28px]" style="color: white;">filter_center_focus</span>
+        </div>
+      </a>
+      <a href="{% url 'history' %}" class="flex flex-col items-center justify-center" style="color: #34d399;">
+        <span class="material-symbols-outlined text-[24px]">restore</span>
+        <span class="text-[9px] font-black uppercase tracking-widest">HISTORY</span>
+      </a>
+    </div>
+  </nav>
+</div>
+
+<script>
+let currentFilter = 'all';
+let currentSearch = '';
+let selectedScanId = '{{ scans.first.id|default:"" }}';
+let recentScansData = [];
+
+// Mobile menu functions
+function toggleMobileMenu() {
+  const menu = document.getElementById('mobileMenu');
+  const overlay = document.getElementById('mobileMenuOverlay');
+  menu.classList.toggle('active');
+  overlay.classList.toggle('active');
+  document.body.style.overflow = menu.classList.contains('active') ? 'hidden' : '';
+}
+
+function closeMobileMenu() {
+  const menu = document.getElementById('mobileMenu');
+  const overlay = document.getElementById('mobileMenuOverlay');
+  menu.classList.remove('active');
+  overlay.classList.remove('active');
+  document.body.style.overflow = '';
+}
+
+document.querySelectorAll('#mobileMenu a').forEach(link => {
+  link.addEventListener('click', closeMobileMenu);
+});
+
+// ==================== NOTIFICATION DROPDOWN ====================
+function updateNotificationCount(count) {
+  const badge = document.getElementById('notification-count');
+  if (badge) {
+    badge.textContent = count;
+    badge.classList.toggle('hidden', count === 0);
+    badge.classList.toggle('animate-pulse', count > 0);
+  }
+}
+
+function renderDiseaseAlerts() {
+  const container = document.getElementById('alert-list');
+  const countEl = document.getElementById('alert-count-in-dropdown');
+  const alerts = recentScansData.filter(s => s.disease_detected);
+  if (countEl) countEl.textContent = alerts.length + ' alerts';
+  let html = '';
+  alerts.forEach(scan => {
+    html += `
+      <div class="flex gap-4 p-3 rounded-2xl transition-all" style="background: #e8f4e4;">
+        <div class="w-11 h-11 rounded-xl overflow-hidden shrink-0"><img src="${scan.image_url || '/static/images/placeholder.jpg'}" class="w-full h-full object-cover"></div>
+        <div class="flex-1 min-w-0">
+          <p class="font-bold text-sm" style="color: #2d3e2d;">${scan.disease_name}</p>
+          <p class="text-xs" style="color: #e53e3e;">Confidence: ${scan.confidence}% • ${getTimeAgo(scan.created_at)} ago</p>
+        </div>
+      </div>`;
+  });
+  if (container) container.innerHTML = html || `<p class="text-center py-8" style="color: #6b8c68;">No disease alerts</p>`;
+}
+
+function positionDropdown() {
+  const dropdown = document.getElementById('notification-dropdown');
+  const bell = document.getElementById('notifications-btn');
+  if (!dropdown || !bell) return;
+  
+  const bellRect = bell.getBoundingClientRect();
+  const dropdownWidth = 380;
+  const windowWidth = window.innerWidth;
+  
+  // Calculate position
+  let rightPosition = windowWidth - bellRect.right + 10;
+  
+  // Ensure dropdown stays within viewport
+  if (rightPosition < 10) rightPosition = 10;
+  if (rightPosition + dropdownWidth > windowWidth - 10) {
+    rightPosition = windowWidth - dropdownWidth - 10;
+  }
+  
+  dropdown.style.right = rightPosition + 'px';
+  dropdown.style.top = (bellRect.bottom + 10) + 'px';
+}
+
+const bell = document.getElementById('notifications-btn');
+const dropdown = document.getElementById('notification-dropdown');
+
+if (bell && dropdown) {
+  bell.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (dropdown.classList.contains('hidden')) {
+      positionDropdown();
+      fetchNotificationData();
+    } else {
+      dropdown.classList.add('hidden');
+    }
+  });
+
+  document.addEventListener('click', (e) => {
+    if (bell && dropdown && !bell.contains(e.target) && !dropdown.contains(e.target)) {
+      dropdown.classList.add('hidden');
+    }
+  });
+  
+  // Reposition on window resize
+  window.addEventListener('resize', () => {
+    if (!dropdown.classList.contains('hidden')) {
+      positionDropdown();
+    }
+  });
+}
+
+function fetchNotificationData() {
+  fetch('/api/dashboard-stats/')
+    .then(response => response.json())
+    .then(data => {
+      recentScansData = data.recent_scans || [];
+      updateNotificationCount(data.unread_notifications || 0);
+      renderDiseaseAlerts();
+      dropdown.classList.remove('hidden');
+      positionDropdown();
+    })
+    .catch(error => {
+      console.error('Error fetching notification data:', error);
+      renderDiseaseAlerts();
+      dropdown.classList.remove('hidden');
+      positionDropdown();
+    });
+}
+
+async function markAllAsRead() {
+  try {
+    const response = await fetch('/api/mark-notifications-read/', { 
+      method: 'POST',
+      headers: {
+        'X-CSRFToken': getCookie('csrftoken')
+      }
+    });
+    
+    if (response.ok) {
+      dropdown.classList.add('hidden');
+      updateNotificationCount(0);
+      if (recentScansData) {
+        recentScansData.forEach(scan => {
+          if (scan.disease_detected) {
+            scan.disease_detected = false;
+          }
+        });
+      }
+    } else {
+      console.error('Failed to mark notifications as read');
+    }
+  } catch (error) {
+    console.error('Error marking notifications as read:', error);
+  }
+}
+
+document.getElementById('mark-all-read-btn')?.addEventListener('click', markAllAsRead);
+
+function getCookie(name) {
+  let cookieValue = null;
+  if (document.cookie && document.cookie !== '') {
+    const cookies = document.cookie.split(';');
+    for (let i = 0; i < cookies.length; i++) {
+      const cookie = cookies[i].trim();
+      if (cookie.substring(0, name.length + 1) === (name + '=')) {
+        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+        break;
+      }
+    }
+  }
+  return cookieValue;
+}
+
+function selectScan(element, scanId) {
+  // Remove selected class from all rows
+  document.querySelectorAll('.scan-row').forEach(r => r.classList.remove('selected'));
+  element.classList.add('selected');
+  selectedScanId = scanId;
+  
+  // On mobile, update the mobile detail panel
+  if (window.innerWidth < 1024) {
+    updateMobilePreviewFromSelected(element);
+    // Scroll to mobile detail panel smoothly
+    const mobilePanel = document.getElementById('mobile-detail-panel');
+    if (mobilePanel) {
+      setTimeout(() => {
+        mobilePanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 100);
+    }
+  } else {
+    // On desktop, update desktop preview
+    updateDesktopPreviewFromSelected(element);
+  }
+}
+
+function updateDesktopPreviewFromSelected(element) {
+  const isDisease = element.dataset.disease === 'true';
+  const diseaseName = element.dataset.name;
+  const imageUrl = element.dataset.image || '';
+  const scientificName = element.dataset.scientific || 'No disease detected';
+  const description = element.dataset.description || 'No treatment needed. Continue regular monitoring.';
+  const confidence = element.dataset.confidence || '0';
+
+  const previewImg = document.getElementById('preview-image');
+  if (previewImg) {
+    previewImg.src = imageUrl;
+  }
+
+  const badge = document.getElementById('preview-badge');
+  const badgeIcon = document.getElementById('preview-badge-icon');
+  const badgeText = document.getElementById('preview-badge-text');
+  
+  if (badge) {
+    if (isDisease) {
+      badge.style.background = '#fee2e2';
+      badge.style.border = '1px solid #fecaca';
+      if (badgeIcon) badgeIcon.textContent = 'warning';
+      if (badgeIcon) badgeIcon.style.color = '#e53e3e';
+      if (badgeText) badgeText.textContent = 'Threat Detected';
+      if (badgeText) badgeText.style.color = '#e53e3e';
+    } else {
+      badge.style.background = '#e0f2e0';
+      badge.style.border = '1px solid #bbf7d0';
+      if (badgeIcon) badgeIcon.textContent = 'check_circle';
+      if (badgeIcon) badgeIcon.style.color = '#10b981';
+      if (badgeText) badgeText.textContent = 'Healthy';
+      if (badgeText) badgeText.style.color = '#10b981';
+    }
+  }
+  
+  const diseaseEl = document.getElementById('preview-disease');
+  if (diseaseEl) diseaseEl.textContent = diseaseName;
+  
+  const scientificEl = document.getElementById('preview-scientific');
+  if (scientificEl) scientificEl.innerHTML = `${scientificName} · ${confidence}% confidence`;
+  
+  const descEl = document.getElementById('preview-description');
+  if (descEl) descEl.textContent = description;
+
+  const reportLinks = document.querySelectorAll('#preview-content a[href*="diagnosis"]');
+  reportLinks.forEach(link => {
+    link.href = `/diagnosis/${selectedScanId}/`;
+  });
+}
+
+function updateMobilePreviewFromSelected(element) {
+  const isDisease = element.dataset.disease === 'true';
+  const diseaseName = element.dataset.name;
+  const imageUrl = element.dataset.image || '';
+  const scientificName = element.dataset.scientific || 'No disease detected';
+  const description = element.dataset.description || 'No treatment needed. Continue regular monitoring.';
+  const confidence = element.dataset.confidence || '0';
+
+  const previewImg = document.getElementById('mobile-preview-image');
+  if (previewImg) {
+    previewImg.src = imageUrl;
+  }
+
+  const badge = document.getElementById('mobile-preview-badge');
+  const badgeIcon = document.getElementById('mobile-preview-badge-icon');
+  const badgeText = document.getElementById('mobile-preview-badge-text');
+  
+  if (badge) {
+    if (isDisease) {
+      badge.style.background = '#fee2e2';
+      badge.style.border = '1px solid #fecaca';
+      if (badgeIcon) badgeIcon.textContent = 'warning';
+      if (badgeIcon) badgeIcon.style.color = '#e53e3e';
+      if (badgeText) badgeText.textContent = 'Threat Detected';
+      if (badgeText) badgeText.style.color = '#e53e3e';
+    } else {
+      badge.style.background = '#e0f2e0';
+      badge.style.border = '1px solid #bbf7d0';
+      if (badgeIcon) badgeIcon.textContent = 'check_circle';
+      if (badgeIcon) badgeIcon.style.color = '#10b981';
+      if (badgeText) badgeText.textContent = 'Healthy';
+      if (badgeText) badgeText.style.color = '#10b981';
+    }
+  }
+  
+  const diseaseEl = document.getElementById('mobile-preview-disease');
+  if (diseaseEl) diseaseEl.textContent = diseaseName;
+  
+  const scientificEl = document.getElementById('mobile-preview-scientific');
+  if (scientificEl) scientificEl.innerHTML = `${scientificName} · ${confidence}% confidence`;
+  
+  const descEl = document.getElementById('mobile-preview-description');
+  if (descEl) descEl.textContent = description;
+
+  const treatmentLink = document.getElementById('mobile-preview-treatment-link');
+  const reportLink = document.getElementById('mobile-preview-report-link');
+  
+  if (treatmentLink) {
+    treatmentLink.href = `/diagnosis/${selectedScanId}/`;
+    if (!isDisease) {
+      treatmentLink.style.display = 'none';
+    } else {
+      treatmentLink.style.display = 'flex';
+    }
+  }
+  if (reportLink) {
+    reportLink.href = `/diagnosis/${selectedScanId}/`;
+  }
+}
+
+function filterScans(filter, buttonElement) {
+  currentFilter = filter;
+  
+  document.querySelectorAll('.filter-btn').forEach(btn => {
+    btn.classList.remove('active');
+    btn.style.background = '#ffffff';
+    btn.style.borderColor = '#d4e8ce';
+    btn.style.color = '#6b8c68';
+  });
+  buttonElement.classList.add('active');
+  buttonElement.style.background = '#d0e8c8';
+  buttonElement.style.borderColor = '#9bc48f';
+  buttonElement.style.color = '#0f5c2f';
+  
+  applyFilters();
+}
+
+function searchScans() {
+  currentSearch = document.getElementById('search-input').value.toLowerCase();
+  applyFilters();
+}
+
+function applyFilters() {
+  const scans = document.querySelectorAll('.scan-row');
+  let visibleCount = 0;
+  let firstVisibleScan = null;
+  
+  scans.forEach(scan => {
+    let show = true;
+    
+    if (currentFilter === 'threats') {
+      show = scan.dataset.disease === 'true';
+    } else if (currentFilter === 'healthy') {
+      show = scan.dataset.disease === 'false';
+    }
+    
+    if (show && currentSearch) {
+      const searchText = scan.dataset.search.toLowerCase();
+      show = searchText.includes(currentSearch);
+    }
+    
+    scan.style.display = show ? 'flex' : 'none';
+    if (show) {
+      visibleCount++;
+      if (!firstVisibleScan) firstVisibleScan = scan;
+    }
+  });
+  
+  // Auto-select first visible scan if current selected is hidden
+  if (firstVisibleScan && firstVisibleScan.style.display !== 'none') {
+    const currentSelected = document.querySelector('.scan-row.selected');
+    if (!currentSelected || currentSelected.style.display === 'none') {
+      selectScan(firstVisibleScan, firstVisibleScan.dataset.scanId);
+    }
+  }
+  
+  // Hide date headers with no visible scans
+  document.querySelectorAll('.flex.items-center.gap-2.mb-2').forEach(header => {
+    let nextScans = [];
+    let sibling = header.nextElementSibling;
+    while (sibling && !sibling.classList.contains('flex') && sibling.classList.contains('scan-row')) {
+      nextScans.push(sibling);
+      sibling = sibling.nextElementSibling;
+    }
+    
+    const hasVisible = nextScans.some(scan => scan.style.display !== 'none');
+    header.style.display = hasVisible ? 'flex' : 'none';
+  });
+}
+
+function getTimeAgo(timestamp) {
+  const now = new Date();
+  const past = new Date(timestamp);
+  const diff = Math.floor((now - past) / 1000);
+  if (diff < 60) return diff + 's';
+  if (diff < 3600) return Math.floor(diff / 60) + 'm';
+  if (diff < 86400) return Math.floor(diff / 3600) + 'h';
+  return Math.floor(diff / 86400) + 'd';
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  // Initialize preview
+  if (window.innerWidth >= 1024 && document.querySelector('.scan-row')) {
+    const firstRow = document.querySelector('.scan-row');
+    if (firstRow) {
+      firstRow.classList.add('selected');
+      updateDesktopPreviewFromSelected(firstRow);
+    }
+  } else if (window.innerWidth < 1024 && document.querySelector('.scan-row')) {
+    const firstRow = document.querySelector('.scan-row');
+    if (firstRow) {
+      firstRow.classList.add('selected');
+      updateMobilePreviewFromSelected(firstRow);
+    }
+  }
+  
+  window.addEventListener('resize', function() {
+    if (window.innerWidth >= 1024) {
+      closeMobileMenu();
+      // If switching from mobile to desktop, update desktop preview
+      if (selectedScanId) {
+        const selectedRow = document.querySelector(`.scan-row[data-scan-id="${selectedScanId}"]`);
+        if (selectedRow) {
+          updateDesktopPreviewFromSelected(selectedRow);
+        }
+      }
+    } else {
+      // If switching from desktop to mobile, update mobile preview
+      if (selectedScanId) {
+        const selectedRow = document.querySelector(`.scan-row[data-scan-id="${selectedScanId}"]`);
+        if (selectedRow) {
+          updateMobilePreviewFromSelected(selectedRow);
+        }
+      }
+    }
+  });
+  
+  fetch('/api/dashboard-stats/')
+    .then(response => response.json())
+    .then(data => {
+      recentScansData = data.recent_scans || [];
+      updateNotificationCount(data.unread_notifications || 0);
+    })
+    .catch(error => console.error('Error fetching notification data:', error));
+});
+
+setInterval(() => {
+  if (document.visibilityState === 'visible') {
+    fetch('/api/dashboard-stats/')
+      .then(response => response.json())
+      .then(data => {
+        recentScansData = data.recent_scans || [];
+        updateNotificationCount(data.unread_notifications || 0);
+      })
+      .catch(error => console.error('Error refreshing notifications:', error));
+  }
+}, 30000);
+</script>
+</body>
+</html>
