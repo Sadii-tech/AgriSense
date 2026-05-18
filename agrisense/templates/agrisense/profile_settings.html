@@ -1,0 +1,1202 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover" name="viewport"/>
+    <title>AgriSense – Profile Settings</title>
+    <script src="{% static 'js/tailwind.min.js' %}"></script>
+    <link href="{% static 'css/inter.css' %}" rel="stylesheet"/>
+    <link href="{% static 'css/material-symbols.css' %}" rel="stylesheet"/>
+
+    <style>
+        /* Language Switcher Styles */
+        .language-switch {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .language-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            background: rgba(255,255,255,0.12);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: white;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+        
+        .language-btn:hover {
+            background: rgba(255,255,255,0.2);
+            border-color: rgba(255,255,255,0.3);
+        }
+        
+        .language-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            margin-top: 8px;
+            background: white;
+            border: 1px solid #d4e8ce;
+            border-radius: 0.75rem;
+            min-width: 140px;
+            overflow: hidden;
+            z-index: 1000;
+            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1);
+            display: none;
+        }
+        
+        body.dark .language-dropdown {
+            background: #121a12;
+            border-color: #2a3a2a;
+        }
+        
+        .language-dropdown.active {
+            display: block;
+            animation: dropdownFadeIn 0.2s ease;
+        }
+        
+        @keyframes dropdownFadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .language-option {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 16px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 0.875rem;
+            color: #1a2c1e;
+        }
+        
+        body.dark .language-option {
+            color: #e5ede3;
+        }
+        
+        .language-option:hover {
+            background: #e8f4e4;
+        }
+        
+        body.dark .language-option:hover {
+            background: #1a241a;
+        }
+        
+        .language-option.active {
+            background: #10b981;
+            color: white;
+        }
+        
+        .language-option .material-symbols-outlined {
+            font-size: 18px;
+        }
+
+        .translate-loader {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #10b981;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 12px;
+            z-index: 10000;
+            display: none;
+            align-items: center;
+            gap: 10px;
+            font-family: 'Inter', sans-serif;
+            font-size: 14px;
+        }
+        
+        .translate-loader.show {
+            display: flex;
+        }
+        
+        .spinner {
+            width: 18px;
+            height: 18px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .translate-toast {
+            position: fixed;
+            bottom: 80px;
+            right: 20px;
+            background: white;
+            border: 1px solid #d4e8ce;
+            border-radius: 12px;
+            padding: 12px 20px;
+            z-index: 10000;
+            font-family: 'Inter', sans-serif;
+            font-size: 14px;
+            display: none;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        body.dark .translate-toast {
+            background: #121a12;
+            border-color: #2a3a2a;
+            color: #e5ede3;
+        }
+        
+        .translate-toast.show {
+            display: block;
+        }
+
+        /* Delete Account Button */
+        .delete-account-btn {
+            background: #fee2e2;
+            border: 1px solid #fecaca;
+            color: #b91c1c;
+            padding: 12px 20px;
+            border-radius: 0.75rem;
+            font-weight: 600;
+            font-size: 0.875rem;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .delete-account-btn:hover {
+            background: #fecaca;
+            border-color: #f87171;
+        }
+        
+        body.dark .delete-account-btn {
+            background: #2d1a1a;
+            border-color: #5c2e2e;
+            color: #f87171;
+        }
+        
+        body.dark .delete-account-btn:hover {
+            background: #4a2c2c;
+            border-color: #f87171;
+        }
+        
+        .delete-account-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+    </style>
+
+    <script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#10b981",
+              "primary-dark": "#059669",
+              "primary-light": "#34d399",
+              "background-dark": "#0a0f0a",
+              "surface-dark": "#121a12",
+              "surface-darker": "#0d130d",
+              "surface-accent": "#1a241a",
+            },
+            fontFamily: { 
+              "display": ["'Inter'", "sans-serif"], 
+              "body": ["'Inter'", "sans-serif"] 
+            },
+            boxShadow: {
+              "premium": "0 10px 30px -10px rgba(0, 0, 0, 0.5)",
+              "glow-primary": "0 0 20px rgba(16, 185, 129, 0.15)",
+            }
+          },
+        },
+      }
+    </script>
+
+    <style type="text/tailwindcss">
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      
+      html, body {
+        overflow-x: hidden !important;
+        width: 100% !important;
+        max-width: 100% !important;
+      }
+      
+      body { 
+        font-family: 'Inter', sans-serif; 
+        background: #f0f7f0 !important;
+        color-scheme: light;
+        color: #1a2c1e !important;
+      }
+      
+      body.dark {
+        background: #0a0f0a !important;
+        color: #e5ede3 !important;
+      }
+      body.dark .glass-card { 
+        background: #121a12 !important;
+        border: 1px solid #2a3a2a !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      }
+      body.dark .glass-card:hover {
+        background: #1a241a !important;
+        border-color: #3c553c !important;
+      }
+      body.dark .settings-input {
+        background: #0f160f !important;
+        border-color: #2a3a2a !important;
+        color: #e5ede3 !important;
+      }
+      body.dark .settings-input:focus {
+        border-color: #10b981 !important;
+        box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.2);
+      }
+      body.dark .sidebar-link { color: #cbdcc8 !important; }
+      body.dark .sidebar-link:hover { background: rgba(255,255,255,0.1) !important; color: #ffffff !important; }
+      body.dark .sidebar-link.active { background: rgba(255,255,255,0.15) !important; color: #34d399 !important; border-color: rgba(255,255,255,0.2) !important; }
+      body.dark aside { background: #0b150b !important; border-right-color: #1f2c1f !important; }
+      body.dark header.sticky { background: #0b150b !important; border-bottom-color: #1f2c1f !important; }
+      body.dark .text-white, body.dark .text-gray-400, body.dark .text-gray-500 { color: #cbdcc8 !important; }
+      body.dark .gradient-text { -webkit-text-fill-color: transparent !important; }
+      body.dark aside .text-white, body.dark aside .text-gray-500,
+      body.dark aside p, body.dark aside span, body.dark aside a {
+        color: #cbdcc8 !important;
+      }
+      
+      /* Sidebar - Same color as Navbar (Deep Green) - NEVER TRANSLATE */
+      aside.no-translate {
+        background: #1a3a2a !important;
+        border-right-color: #2d5a3d !important;
+      }
+      
+      /* Sidebar text colors */
+      aside .text-white, aside .text-gray-500, aside .text-gray-400,
+      aside p, aside span, aside a, aside .font-bold {
+        color: white !important;
+      }
+      
+      /* Sidebar links - White text */
+      .sidebar-link { 
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.6rem 1rem;
+        border-radius: 1rem;
+        font-weight: 500;
+        font-size: 0.875rem;
+        transition: all 0.2s ease;
+        width: 100%;
+        color: white !important;
+      }
+      .sidebar-link:hover { 
+        background: rgba(255,255,255,0.15) !important;
+        color: white !important;
+      }
+      .sidebar-link.active { 
+        background: rgba(255,255,255,0.25) !important;
+        color: white !important;
+        border: 1px solid rgba(255,255,255,0.3) !important;
+      }
+      
+      /* Sidebar user card */
+      aside .glass-card {
+        background: rgba(255,255,255,0.1) !important;
+        border-color: rgba(255,255,255,0.2) !important;
+      }
+      aside .glass-card .text-white, aside .glass-card .text-gray-500 {
+        color: white !important;
+      }
+      
+      /* Sidebar section headers */
+      aside .text-[10px].font-bold {
+        color: rgba(255,255,255,0.6) !important;
+      }
+      
+      .glass-card { 
+        background: #ffffff !important;
+        backdrop-filter: none !important;
+        border: 1px solid #d4e8ce !important;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+      }
+      .glass-card:hover {
+        background: #ffffff !important;
+        border-color: #bcddae !important;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+      }
+      
+      .settings-input {
+        width: 100%;
+        background: #f9fff8 !important;
+        border: 1px solid #d4e8ce !important;
+        border-radius: 0.75rem;
+        padding: 0.75rem 1rem;
+        color: #1a2c1e !important;
+        transition: all 0.2s ease;
+      }
+      .settings-input:focus {
+        outline: none;
+        border-color: #10b981 !important;
+        box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1);
+      }
+      
+      .gradient-text {
+        background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+      
+      header.sticky {
+        background: #1a3a2a !important;
+        border-bottom-color: #2d5a3d !important;
+      }
+      body.dark header.sticky {
+        background: #0b150b !important;
+        border-bottom-color: #1f2c1f !important;
+      }
+      
+      .live-indicator {
+        position: relative;
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        background-color: #10b981;
+        border-radius: 50%;
+        margin-right: 6px;
+      }
+      .live-indicator::after {
+        content: '';
+        position: absolute;
+        top: -2px;
+        left: -2px;
+        width: 12px;
+        height: 12px;
+        background-color: rgba(16, 185, 129, 0.3);
+        border-radius: 50%;
+        animation: pulse-ring 1.5s infinite;
+      }
+      @keyframes pulse-ring {
+        0% { transform: scale(0.8); opacity: 0.7; }
+        70% { transform: scale(1.4); opacity: 0; }
+        100% { transform: scale(1.4); opacity: 0; }
+      }
+      
+      #toast {
+        background: white !important;
+        border-color: #bcddae !important;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+        position: fixed;
+        bottom: 2rem;
+        right: 2rem;
+        z-index: 1000;
+        padding: 1rem 1.5rem;
+        border-radius: 1rem;
+        display: none;
+      }
+      body.dark #toast {
+        background: #121a12 !important;
+        border-color: #2d6a4f !important;
+        color: #e5ede3 !important;
+      }
+      
+      .fade-in { animation: fadeIn 0.6s ease-out forwards; }
+      @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+      
+      #mobileMenu {
+        background: #1a3a2a !important;
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        width: 100% !important;
+        height: 100% !important;
+        z-index: 1000 !important;
+        overflow-y: auto !important;
+        display: none;
+        flex-direction: column;
+      }
+      body.dark #mobileMenu { background: #0b150b !important; }
+      #mobileMenu.show { display: flex !important; }
+      #mobileMenu .text-white, #mobileMenu .sidebar-link {
+        color: white !important;
+      }
+      #mobileMenu .sidebar-link.active {
+        background: rgba(255,255,255,0.2) !important;
+      }
+      
+      nav.lg\:hidden.fixed {
+        background: #1a3a2a !important;
+        border-top-color: #2d5a3d !important;
+      }
+      body.dark nav.lg\:hidden.fixed {
+        background: #0b150b !important;
+      }
+      
+      /* Password strength indicator */
+      .password-strength {
+        height: 4px;
+        transition: all 0.3s ease;
+        border-radius: 2px;
+      }
+      .strength-weak { background: #e53e3e; width: 25%; }
+      .strength-medium { background: #f59e0b; width: 50%; }
+      .strength-strong { background: #10b981; width: 75%; }
+      .strength-very-strong { background: #059669; width: 100%; }
+    </style>
+</head>
+
+<body class="min-h-screen flex" id="app"
+      data-user-id="{{ user.id }}"
+      data-username="{{ user.username }}">
+
+<!-- SIDEBAR (desktop) - NEVER TRANSLATE -->
+<aside class="hidden lg:flex flex-col w-64 xl:w-72 min-h-screen sticky top-0 shrink-0 z-40 no-translate" style="background: #1a3a2a; border-right: 1px solid #2d5a3d;">
+  <div class="flex items-center gap-3 px-6 py-8 border-b" style="border-color: #2d5a3d;">
+    <div class="w-10 h-10 rounded-2xl bg-white/20 border border-white/30 flex items-center justify-center">
+      <span class="material-symbols-outlined text-primary text-2xl">eco</span>
+    </div>
+    <div class="flex flex-col">
+      <span class="font-bold text-xl tracking-tight leading-none text-white">{{ branding.app_name|default:"AgriSense" }}</span>
+      <span class="text-[10px] text-primary/80 uppercase tracking-[0.2em] font-bold mt-1.5">
+        {{ branding.app_subtitle|default:"Edge Intelligence" }}
+      </span>
+    </div>
+  </div>
+  <nav class="flex-1 px-4 py-4 overflow-y-auto flex flex-col gap-1.5">
+    <div class="pb-2 px-3 text-[10px] font-bold uppercase tracking-widest text-white/50">General</div>
+    <a href="{% url 'dashboard' %}" class="sidebar-link"><span class="material-symbols-outlined text-[20px]">grid_view</span> Dashboard</a>
+    <a href="{% url 'scanner' %}" class="sidebar-link"><span class="material-symbols-outlined text-[20px]">filter_center_focus</span> Smart Scan</a>
+    <a href="{% url 'history' %}" class="sidebar-link"><span class="material-symbols-outlined text-[20px]">restore</span> History</a>
+    <div class="pt-6 pb-2 px-3 text-[10px] font-bold uppercase tracking-widest text-white/50">Management</div>
+    <a href="{% url 'setting' %}" class="sidebar-link"><span class="material-symbols-outlined text-[20px]">settings</span> Settings</a>
+    <!-- <a href="{% url 'profile_settings' %}" class="sidebar-link active"><span class="material-symbols-outlined text-[20px]">account_circle</span> Profile</a> -->
+    <a href="{% url 'about' %}" class="sidebar-link"><span class="material-symbols-outlined">info</span> About Us</a>
+  </nav>
+  <div class="p-4 border-t" style="border-color: #2d5a3d;">
+    <a href="{% url 'profile_settings' %}" class="rounded-2xl flex items-center gap-3 p-3 transition-all hover:bg-white/15" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15); text-decoration: none;">
+  <div class="w-9 h-9 rounded-xl bg-white/20 border border-white/30 flex items-center justify-center shrink-0">
+    <span class="material-symbols-outlined text-white text-xl">account_circle</span>
+  </div>
+  <div class="flex-1 min-w-0">
+    <p class="text-sm font-bold truncate text-white">{{ user.get_full_name|default:user.username }}</p>
+    <p class="text-[10px] truncate uppercase tracking-tighter text-white/60">{{ user.email|default:"AgriSense User" }}</p>
+  </div>
+</a>
+    <a href="{% url 'logout' %}" class="flex items-center justify-center mt-1 gap-2 px-3 py-2 rounded-lg transition-all text-white/80 hover:text-rose-400 hover:bg-white/10" style="background: rgba(255,255,255,0.08);">
+      <span class="material-symbols-outlined text-sm">logout</span>
+      <span class="text-xs font-medium">Logout</span>
+    </a>
+  </div>
+</aside>
+
+<!-- MAIN CONTENT -->
+<div class="flex-1 flex flex-col min-h-screen overflow-y-auto">
+  <header class="sticky top-0 z-30 px-4 lg:px-8 py-4 flex items-center justify-between gap-4" style="background: #1a3a2a; border-bottom: 1px solid #2d5a3d;">
+    <div class="flex items-center gap-2.5 lg:hidden">
+      <div class="w-9 h-9 rounded-xl bg-white/15 border border-white/25 flex items-center justify-center">
+        <span class="material-symbols-outlined text-primary text-xl">eco</span>
+      </div>
+      <span class="font-bold text-lg tracking-tight text-white">{{ branding.app_name|default:"AgriSense" }}</span>
+    </div>
+      {% include 'includes/floating_video_button.html' %}
+    
+
+    <div class="flex items-center gap-2 px-3 py-1.5 rounded-full border" style="background: rgba(255,255,255,0.12); border-color: rgba(255,255,255,0.25);">
+      <span class="live-indicator"></span>
+      <span class="text-[10px] font-bold uppercase tracking-wider text-primary">Live</span>
+    </div>
+    <div class="flex items-center gap-3">
+      <!-- Language Switcher -->
+      <div class="language-switch">
+        <button class="language-btn" id="languageBtn">
+          <span class="material-symbols-outlined text-[18px]">language</span>
+          <span id="currentLanguage">English</span>
+          <span class="material-symbols-outlined text-[16px]">expand_more</span>
+        </button>
+        <div class="language-dropdown" id="languageDropdown">
+          <div class="language-option active" data-lang="en"><span class="material-symbols-outlined">check_circle</span>English</div>
+          <div class="language-option" data-lang="ur"><span class="material-symbols-outlined">translate</span>اردو (Urdu)</div>
+        </div>
+      </div>
+      <a href="{% url 'scanner' %}" class="hidden sm:flex items-center gap-2.5 font-bold text-sm px-5 py-2.5 rounded-xl transition-all" style="background: #2f8b5c; color: white;">
+        <span class="material-symbols-outlined text-[20px]">add_a_photo</span>
+        <span>Quick Scan</span>
+      </a>
+      <button id="mobileMenuBtn" class="lg:hidden w-10 h-10 flex items-center justify-center rounded-xl transition-all" style="background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.2); color: white;">
+        <span class="material-symbols-outlined">menu</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Mobile Menu -->
+  <div id="mobileMenu" class="lg:hidden">
+    <div class="flex flex-col h-full p-6">
+      <div class="flex items-center justify-between mb-8">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-2xl bg-white/20 border border-white/30 flex items-center justify-center">
+            <span class="material-symbols-outlined text-primary text-2xl">eco</span>
+          </div>
+          <span class="font-bold text-xl tracking-tight text-white">{{ branding.app_name|default:"AgriSense" }}</span>
+        </div>
+        <button id="closeMenu" class="w-10 h-10 flex items-center justify-center rounded-2xl transition-all bg-white/10 border border-white/20 text-white">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+      <!-- Mobile Language Switcher -->
+      <div class="mb-4 px-3">
+        <div class="text-white text-xs font-bold mb-2 uppercase tracking-wider">Language</div>
+        <div class="flex gap-2">
+          <button class="mobile-lang-option active px-4 py-2 rounded-xl text-sm font-medium transition-all" data-lang="en" style="background: rgba(255,255,255,0.2); color: white;">English</button>
+          <button class="mobile-lang-option px-4 py-2 rounded-xl text-sm font-medium transition-all" data-lang="ur" style="background: rgba(255,255,255,0.1); color: white;">اردو</button>
+        </div>
+      </div>
+      <nav class="flex-1 flex flex-col gap-2">
+        <a href="{% url 'dashboard' %}" class="sidebar-link">Dashboard</a>
+        <a href="{% url 'scanner' %}" class="sidebar-link">New Scan</a>
+        <a href="{% url 'history' %}" class="sidebar-link">History</a>
+        <div class="pt-6 pb-2 px-3 text-[10px] font-bold uppercase tracking-widest text-white/50">Management</div>
+        <a href="{% url 'setting' %}" class="sidebar-link">Settings</a>
+        <a href="{% url 'profile_settings' %}" class="sidebar-link active">Profile</a>
+        <a href="{% url 'about' %}" class="sidebar-link">About Us</a>
+      </nav>
+      <div class="mt-auto pt-6 border-t" style="border-color: rgba(255,255,255,0.1);">
+        <div class="rounded-2xl mb-4 p-4" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15);">
+          <div class="flex items-center gap-4">
+            <div class="w-12 h-12 rounded-2xl bg-white/20 border border-white/30 flex items-center justify-center shrink-0">
+              <span class="material-symbols-outlined text-white text-2xl">person</span>
+            </div>
+            <div class="flex-1 min-w-0">
+              <p class="font-bold truncate text-white">{{ user.get_full_name|default:user.username }}</p>
+              <p class="text-xs truncate text-white/60">{{ user.email|default:"AgriSense User" }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <a href="{% url 'logout' %}" class="flex items-center justify-center mt-1 gap-2 px-3 py-2 rounded-lg transition-all text-white/80 hover:text-rose-400 hover:bg-white/10" style="background: rgba(255,255,255,0.08);">
+        <span class="material-symbols-outlined text-sm">logout</span>
+        <span class="text-xs font-medium">Logout</span>
+      </a>
+    </div>
+  </div>
+
+  <main class="flex-1 p-4 lg:p-8 max-w-screen-2xl mx-auto w-full">
+    <div class="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-6 fade-in">
+      <div>
+        <h1 class="text-3xl lg:text-4xl font-extrabold tracking-tight">Profile <span class="gradient-text">Settings</span></h1>
+        <p class="mt-2 text-sm md:text-base" style="color: #6b8c68;">Manage your account and security</p>
+      </div>
+    </div>
+
+    <div class="max-w-3xl mx-auto space-y-8">
+      <!-- Profile update card -->
+      <div class="glass-card p-8 rounded-[2rem] fade-in">
+        <div class="flex items-center gap-3 mb-6"><span class="material-symbols-outlined text-primary text-3xl">manage_accounts</span><h2 class="font-black text-2xl tracking-tight">Account Information</h2></div>
+        <form id="profileForm" method="post" class="space-y-6">
+          {% csrf_token %}
+          <div>
+            <label class="text-sm font-bold mb-2 block">Username</label>
+            <input type="text" name="username" id="usernameInput" value="{{ user.username }}" class="settings-input" placeholder="Username">
+            <p class="text-xs mt-1" style="color: #6b8c68;">Your unique identifier across AgriSense.</p>
+          </div>
+          <div>
+            <label class="text-sm font-bold mb-2 block">Email Address</label>
+            <input type="email" name="email" id="emailInput" value="{{ user.email }}" class="settings-input" placeholder="you@example.com">
+            <p class="text-xs mt-1" style="color: #6b8c68;">We'll send important updates to this email.</p>
+          </div>
+          <div class="pt-2">
+            <button type="submit" id="saveProfileBtn" class="px-6 py-3 rounded-xl font-bold text-sm transition-all" style="background: #2f8b5c; color: white;">
+              <span class="material-symbols-outlined text-sm align-middle mr-1">save</span>
+              Save Account Changes
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Change Password Card -->
+      <div class="glass-card p-8 rounded-[2rem] fade-in">
+        <div class="flex items-center gap-3 mb-6"><span class="material-symbols-outlined text-primary text-3xl">lock</span><h2 class="font-black text-2xl tracking-tight">Change Password</h2></div>
+        <form id="passwordForm" method="post" class="space-y-6">
+          {% csrf_token %}
+          <div>
+            <label class="text-sm font-bold mb-2 block">Current Password</label>
+            <input type="password" name="current_password" id="currentPassword" class="settings-input" placeholder="Enter current password">
+          </div>
+          <div>
+            <label class="text-sm font-bold mb-2 block">New Password</label>
+            <input type="password" name="new_password" id="newPassword" class="settings-input" placeholder="Enter new password">
+            <div class="mt-2">
+              <div class="password-strength" id="passwordStrength"></div>
+              <p class="text-xs mt-1" id="strengthText" style="color: #6b8c68;">Password strength indicator</p>
+            </div>
+          </div>
+          <div>
+            <label class="text-sm font-bold mb-2 block">Confirm New Password</label>
+            <input type="password" name="confirm_password" id="confirmPassword" class="settings-input" placeholder="Confirm new password">
+          </div>
+          <div class="pt-2">
+            <button type="submit" id="savePasswordBtn" class="px-6 py-3 rounded-xl font-bold text-sm transition-all" style="background: #2f8b5c; color: white;">
+              <span class="material-symbols-outlined text-sm align-middle mr-1">vpn_key</span>
+              Update Password
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Delete Account Card -->
+      <div class="glass-card p-8 rounded-[2rem] fade-in" style="border-color: #fecaca;">
+        <div class="flex items-center gap-3 mb-6">
+          <span class="material-symbols-outlined text-red-500 text-3xl">delete_forever</span>
+          <h2 class="font-black text-2xl tracking-tight" style="color: #b91c1c;">Delete Account</h2>
+        </div>
+        <div class="space-y-4">
+          <p class="text-sm" style="color: #6b8c68;">
+            Permanently delete your account and all associated data. This action cannot be undone. All your scan history, saved data, and personal information will be permanently removed.
+          </p>
+          <div id="deleteAccountSection">
+            <label class="text-sm font-bold mb-2 block">Confirm by typing <span class="font-bold text-red-500">DELETE</span> to proceed</label>
+            <input type="text" id="confirmDeleteInput" class="settings-input mb-3" placeholder="Type DELETE to confirm" style="border-color: #fecaca;">
+            <button id="deleteAccountBtn" class="delete-account-btn" disabled>
+              <span class="material-symbols-outlined text-[18px]">delete_forever</span>
+              Delete My Account Permanently
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <br><br><br><br>
+  </main>
+
+  <nav class="lg:hidden fixed bottom-0 left-0 right-0 z-30" style="background: #1a3a2a; border-top: 1px solid #2d5a3d; height: 65px;">
+    <div class="flex justify-around items-center h-full px-4">
+      <a href="{% url 'dashboard' %}" class="flex flex-col items-center justify-center text-white/60"><span class="material-symbols-outlined text-[24px]">grid_view</span><span class="text-[9px] font-black uppercase tracking-widest">HOME</span></a>
+      <a href="{% url 'scanner' %}" class="flex flex-col items-center justify-center -mt-8"><div class="w-14 h-14 rounded-2xl flex items-center justify-center shadow-premium" style="background: #2f8b5c; border: 4px solid #1a3a2a;"><span class="material-symbols-outlined text-[28px] text-white">filter_center_focus</span></div></a>
+      <a href="{% url 'profile_settings' %}" class="flex flex-col items-center justify-center text-primary"><span class="material-symbols-outlined text-[24px]">settings</span><span class="text-[9px] font-black uppercase tracking-widest">PROFILE</span></a>
+    </div>
+  </nav>
+</div>
+
+<div id="toast">
+  <div class="flex items-center gap-3"><span class="material-symbols-outlined text-primary" id="toastIcon">check_circle</span><span id="toastMessage" class="font-medium"></span></div>
+</div>
+
+<div id="translateLoader" class="translate-loader">
+  <div class="spinner"></div>
+  <span>Translating to Urdu...</span>
+</div>
+<div id="translateToast" class="translate-toast"></div>
+
+<script src="{% static 'js/theme-manager.js' %}"></script>
+
+<script>
+// ============================================
+// CSRF TOKEN HELPER
+// ============================================
+
+function getCsrfToken() {
+    try {
+        const cookieToken = document.cookie.split('; ').find(row => row.startsWith('csrftoken='))?.split('=')[1];
+        if (cookieToken) return cookieToken;
+        const inputToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value;
+        return inputToken || "";
+    } catch (e) {
+        console.error("Error retrieving CSRF token:", e);
+        return "";
+    }
+}
+
+// ============================================
+// THEME HANDLING - LOAD FROM SERVER
+// ============================================
+
+function applyTheme(theme) {
+    if (theme === 'dark') {
+        document.body.classList.add('dark');
+    } else {
+        document.body.classList.remove('dark');
+    }
+}
+
+async function loadThemeFromServer() {
+    try {
+        const response = await fetch('/api/get-theme/');
+        const data = await response.json();
+        if (data.success && data.theme) {
+            applyTheme(data.theme);
+            console.log('Theme loaded from server:', data.theme);
+            return;
+        }
+    } catch(e) {
+        console.log('Error loading theme from server:', e);
+    }
+    
+    // Fallback to localStorage
+    const savedTheme = localStorage.getItem('agrisense_theme') || 
+        (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    applyTheme(savedTheme);
+    console.log('Theme loaded from localStorage:', savedTheme);
+}
+
+// ============================================
+// TRANSLATION SYSTEM
+// ============================================
+
+let currentLang = 'en';
+let isTranslating = false;
+let originalTexts = new Map();
+
+function showTranslateToast(message, isError = false) {
+  let toast = document.getElementById('translateToast');
+  if (!toast) return;
+  toast.innerHTML = `<div style="display: flex; align-items: center; gap: 10px;"><span class="material-symbols-outlined" style="color: ${isError ? '#e53e3e' : '#10b981'}">${isError ? 'error' : 'info'}</span><span>${message}</span></div>`;
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 5000);
+}
+
+function showTranslateLoading(show) {
+  const loader = document.getElementById('translateLoader');
+  if (loader) {
+    if (show) loader.classList.add('show');
+    else loader.classList.remove('show');
+  }
+}
+
+async function translateText(text) {
+  if (!text || text.trim() === '') return text;
+  if (text.length < 3) return text;
+  
+  try {
+    const response = await fetch('/api/libre-translate/', {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json', 
+        'X-CSRFToken': getCsrfToken() 
+      },
+      body: JSON.stringify({ text: text, target_lang: 'ur' })
+    });
+    
+    if (response.ok) {
+      const data = await response.json();
+      return data.translated || text;
+    }
+  } catch (error) {
+    console.log('Translation error:', error);
+  }
+  return text;
+}
+
+async function translatePage() {
+  if (isTranslating) return;
+  isTranslating = true;
+  
+  const elements = document.querySelectorAll('h1, h2:not(.no-translate), h3, p:not(.no-translate), .glass-card p, button:not(.language-btn):not(.mobile-lang-option):not(#deleteAccountBtn):not(#saveProfileBtn):not(#savePasswordBtn), label, .glass-card h2, .glass-card .font-black, .glass-card .text-sm.font-bold, .glass-card .text-xs');
+  const texts = [];
+  const elementMap = [];
+  
+  elements.forEach(el => {
+    if (el.closest('.no-translate')) return;
+    if (el.classList.contains('no-translate')) return;
+    if (el.closest('.language-switch')) return;
+    if (el.closest('#toast')) return;
+    if (el.querySelector('.material-symbols-outlined')) return;
+    if (el.id === 'usernameInput' || el.id === 'emailInput' || el.id === 'currentPassword' || 
+        el.id === 'newPassword' || el.id === 'confirmPassword' || el.id === 'confirmDeleteInput') return;
+    if (el.id === 'passwordStrength' || el.id === 'strengthText') return;
+    
+    const text = el.innerText.trim();
+    if (text && text.length > 0 && text.length < 300 && !text.match(/^\d+$/)) {
+      if (!originalTexts.has(el)) originalTexts.set(el, text);
+      texts.push(text);
+      elementMap.push(el);
+    }
+  });
+  
+  if (texts.length === 0) {
+    isTranslating = false;
+    return;
+  }
+  
+  showTranslateLoading(true);
+  showTranslateToast(`Translating ${texts.length} items to Urdu...`);
+  
+  let translatedCount = 0;
+  
+  for (let i = 0; i < texts.length; i++) {
+    try {
+      const translated = await translateText(texts[i]);
+      if (translated && translated !== texts[i] && elementMap[i]) {
+        elementMap[i].innerText = translated;
+        translatedCount++;
+      }
+    } catch(e) { console.log(e); }
+    await new Promise(r => setTimeout(r, 100));
+  }
+  
+  showTranslateLoading(false);
+  
+  if (translatedCount > 0) {
+    showTranslateToast(`✓ Successfully translated ${translatedCount} items to Urdu!`);
+    localStorage.setItem('agrisense_language', 'ur');
+    currentLang = 'ur';
+  } else {
+    showTranslateToast('⚠️ Translation failed. Please try again.', true);
+  }
+  isTranslating = false;
+  updateLanguageUI();
+}
+
+function revertToEnglish() {
+  let restoredCount = 0;
+  originalTexts.forEach((original, el) => {
+    if (el.innerText !== original) {
+      el.innerText = original;
+      restoredCount++;
+    }
+  });
+  if (restoredCount > 0) showTranslateToast(`✓ Reverted ${restoredCount} items to English`);
+  localStorage.setItem('agrisense_language', 'en');
+  currentLang = 'en';
+  updateLanguageUI();
+}
+
+function updateLanguageUI() {
+  document.querySelectorAll('.language-option').forEach(opt => {
+    opt.classList.remove('active');
+    if (opt.dataset.lang === currentLang) opt.classList.add('active');
+  });
+  
+  document.querySelectorAll('.mobile-lang-option').forEach(opt => {
+    opt.classList.remove('active');
+    if (opt.dataset.lang === currentLang) {
+      opt.classList.add('active');
+      opt.style.background = 'rgba(255,255,255,0.2)';
+    } else {
+      opt.style.background = 'rgba(255,255,255,0.1)';
+    }
+  });
+  
+  const langSpan = document.getElementById('currentLanguage');
+  if (langSpan) langSpan.textContent = currentLang === 'en' ? 'English' : 'اردو';
+}
+
+function changeLanguage(lang) {
+  if (lang === currentLang) return;
+  if (lang === 'ur') translatePage();
+  else revertToEnglish();
+  updateLanguageUI();
+}
+
+// ============================================
+// TOAST FUNCTION
+// ============================================
+
+function showToast(message, type = 'success') {
+  const toast = document.getElementById('toast');
+  const msgSpan = document.getElementById('toastMessage');
+  const iconSpan = document.getElementById('toastIcon');
+  if (!toast) return;
+  
+  msgSpan.innerText = message;
+  if (type === 'error') {
+    iconSpan.textContent = 'error';
+    iconSpan.style.color = '#e53e3e';
+  } else {
+    iconSpan.textContent = 'check_circle';
+    iconSpan.style.color = '#10b981';
+  }
+  
+  toast.style.display = 'block';
+  setTimeout(() => { 
+    toast.style.display = 'none';
+  }, 3000);
+}
+
+// ============================================
+// PASSWORD STRENGTH METER
+// ============================================
+
+const newPassword = document.getElementById('newPassword');
+const strengthBar = document.getElementById('passwordStrength');
+const strengthText = document.getElementById('strengthText');
+
+function checkPasswordStrength(password) {
+  let strength = 0;
+  if (password.length >= 8) strength++;
+  if (password.match(/[a-z]/)) strength++;
+  if (password.match(/[A-Z]/)) strength++;
+  if (password.match(/[0-9]/)) strength++;
+  if (password.match(/[^a-zA-Z0-9]/)) strength++;
+  
+  if (password.length === 0) {
+    if (strengthBar) strengthBar.className = 'password-strength';
+    if (strengthText) {
+      strengthText.textContent = currentLang === 'ur' ? 'پاس ورڈ کی مضبوطی کا اشارہ' : 'Password strength indicator';
+      strengthText.style.color = '#6b8c68';
+    }
+    return;
+  }
+  
+  if (strength <= 2) {
+    if (strengthBar) strengthBar.className = 'password-strength strength-weak';
+    if (strengthText) {
+      strengthText.textContent = currentLang === 'ur' ? 'کمزور پاس ورڈ' : 'Weak password';
+      strengthText.style.color = '#e53e3e';
+    }
+  } else if (strength === 3) {
+    if (strengthBar) strengthBar.className = 'password-strength strength-medium';
+    if (strengthText) {
+      strengthText.textContent = currentLang === 'ur' ? 'درمیانی پاس ورڈ' : 'Medium password';
+      strengthText.style.color = '#f59e0b';
+    }
+  } else if (strength === 4) {
+    if (strengthBar) strengthBar.className = 'password-strength strength-strong';
+    if (strengthText) {
+      strengthText.textContent = currentLang === 'ur' ? 'مضبوط پاس ورڈ' : 'Strong password';
+      strengthText.style.color = '#10b981';
+    }
+  } else {
+    if (strengthBar) strengthBar.className = 'password-strength strength-very-strong';
+    if (strengthText) {
+      strengthText.textContent = currentLang === 'ur' ? 'بہت مضبوط پاس ورڈ' : 'Very strong password';
+      strengthText.style.color = '#059669';
+    }
+  }
+}
+
+if (newPassword) {
+  newPassword.addEventListener('input', (e) => checkPasswordStrength(e.target.value));
+}
+
+// ============================================
+// PROFILE FORM SUBMIT
+// ============================================
+
+const profileForm = document.getElementById('profileForm');
+if(profileForm) {
+  profileForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const username = document.getElementById('usernameInput').value.trim();
+    const email = document.getElementById('emailInput').value.trim();
+    const csrf = document.querySelector('[name=csrfmiddlewaretoken]')?.value || '';
+    const submitBtn = document.getElementById('saveProfileBtn');
+    const originalText = submitBtn.innerHTML;
+    
+    if (!username || username.length < 3) {
+      showToast(currentLang === 'ur' ? 'صارف نام کم از کم 3 حروف کا ہونا چاہیے' : 'Username must be at least 3 characters', 'error');
+      return;
+    }
+    if (!email || !email.includes('@') || !email.includes('.')) {
+      showToast(currentLang === 'ur' ? 'براہ کرم درست ای میل ایڈریس درج کریں' : 'Please enter a valid email address', 'error');
+      return;
+    }
+    
+    submitBtn.innerHTML = '<span class="material-symbols-outlined text-sm align-middle mr-1">hourglass_empty</span>Saving...';
+    submitBtn.disabled = true;
+    
+    try {
+      const response = await fetch('{% url "update_profile" %}', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrf },
+        body: JSON.stringify({ username, email })
+      });
+      const data = await response.json();
+      if(data.success) {
+        showToast(currentLang === 'ur' ? 'پروفائل کامیابی سے اپ ڈیٹ ہو گیا!' : 'Profile updated successfully!');
+      } else {
+        showToast(data.error || (currentLang === 'ur' ? 'اپ ڈیٹ ناکام' : 'Update failed'), 'error');
+      }
+    } catch(err) {
+      showToast(currentLang === 'ur' ? 'نیٹ ورک خرابی، براہ کرم دوبارہ کوشش کریں' : 'Network error, please try again', 'error');
+    } finally {
+      submitBtn.innerHTML = originalText;
+      submitBtn.disabled = false;
+    }
+  });
+}
+
+// ============================================
+// PASSWORD CHANGE FORM SUBMIT
+// ============================================
+
+const passwordForm = document.getElementById('passwordForm');
+if(passwordForm) {
+  passwordForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const currentPassword = document.getElementById('currentPassword').value;
+    const newPasswordVal = document.getElementById('newPassword').value;
+    const confirmPassword = document.getElementById('confirmPassword').value;
+    const csrf = document.querySelector('#passwordForm [name=csrfmiddlewaretoken]')?.value || '';
+    const submitBtn = document.getElementById('savePasswordBtn');
+    const originalText = submitBtn.innerHTML;
+    
+    if (!currentPassword) {
+      showToast(currentLang === 'ur' ? 'براہ کرم اپنا موجودہ پاس ورڈ درج کریں' : 'Please enter your current password', 'error');
+      return;
+    }
+    if (!newPasswordVal || newPasswordVal.length < 8) {
+      showToast(currentLang === 'ur' ? 'نیا پاس ورڈ کم از کم 8 حروف کا ہونا چاہیے' : 'New password must be at least 8 characters', 'error');
+      return;
+    }
+    if (newPasswordVal !== confirmPassword) {
+      showToast(currentLang === 'ur' ? 'نیا پاس ورڈ مماثل نہیں ہے' : 'New passwords do not match', 'error');
+      return;
+    }
+    
+    submitBtn.innerHTML = '<span class="material-symbols-outlined text-sm align-middle mr-1">hourglass_empty</span>Updating...';
+    submitBtn.disabled = true;
+    
+    try {
+      const response = await fetch('{% url "change_password" %}', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrf },
+        body: JSON.stringify({ current_password: currentPassword, new_password: newPasswordVal })
+      });
+      const data = await response.json();
+      if(data.success) {
+        showToast(currentLang === 'ur' ? 'پاس ورڈ کامیابی سے تبدیل ہو گیا!' : 'Password changed successfully!');
+        passwordForm.reset();
+        if (strengthBar) strengthBar.className = 'password-strength';
+        if (strengthText) {
+          strengthText.textContent = currentLang === 'ur' ? 'پاس ورڈ کی مضبوطی کا اشارہ' : 'Password strength indicator';
+          strengthText.style.color = '#6b8c68';
+        }
+      } else {
+        showToast(data.error || (currentLang === 'ur' ? 'پاس ورڈ تبدیلی ناکام' : 'Password change failed'), 'error');
+      }
+    } catch(err) {
+      showToast(currentLang === 'ur' ? 'نیٹ ورک خرابی، براہ کرم دوبارہ کوشش کریں' : 'Network error, please try again', 'error');
+    } finally {
+      submitBtn.innerHTML = originalText;
+      submitBtn.disabled = false;
+    }
+  });
+}
+
+// ============================================
+// DELETE ACCOUNT
+// ============================================
+
+const confirmDeleteInput = document.getElementById('confirmDeleteInput');
+const deleteAccountBtn = document.getElementById('deleteAccountBtn');
+
+if (confirmDeleteInput) {
+  confirmDeleteInput.addEventListener('input', function() {
+    if (this.value === 'DELETE') {
+      if (deleteAccountBtn) deleteAccountBtn.disabled = false;
+    } else {
+      if (deleteAccountBtn) deleteAccountBtn.disabled = true;
+    }
+  });
+}
+
+if (deleteAccountBtn) {
+  deleteAccountBtn.addEventListener('click', async function() {
+    const confirmText = currentLang === 'ur' ? 
+      '⚠️ کیا آپ واقعی اپنا اکاؤنٹ حذف کرنا چاہتے ہیں؟ یہ عمل واپس نہیں کیا جا سکتا۔ آپ کا تمام ڈیٹا مستقل طور پر حذف ہو جائے گا۔' :
+      '⚠️ Are you sure you want to permanently delete your account? This action cannot be undone. All your data will be permanently removed.';
+    
+    if (!confirm(confirmText)) return;
+    
+    const originalText = deleteAccountBtn.innerHTML;
+    deleteAccountBtn.innerHTML = '<span class="material-symbols-outlined text-[18px] animate-spin">progress_activity</span>Deleting Account...';
+    deleteAccountBtn.disabled = true;
+    
+    try {
+      const response = await fetch('/api/delete-account/', {
+        method: 'DELETE',
+        headers: { 'X-CSRFToken': getCsrfToken() }
+      });
+      const data = await response.json();
+      
+      if (data.success) {
+        showToast(currentLang === 'ur' ? 'اکاؤنٹ حذف کر دیا گیا۔ لاگ ان صفحے پر ری ڈائریکٹ کیا جا رہا ہے...' : 'Account deleted. Redirecting to login...');
+        setTimeout(() => {
+          window.location.href = '/login/';
+        }, 2000);
+      } else {
+        showToast(data.error || (currentLang === 'ur' ? 'اکاؤنٹ حذف کرنے میں ناکامی' : 'Failed to delete account'), 'error');
+        deleteAccountBtn.innerHTML = originalText;
+        deleteAccountBtn.disabled = false;
+        if (confirmDeleteInput) confirmDeleteInput.value = '';
+      }
+    } catch (error) {
+      console.error('Error deleting account:', error);
+      showToast(currentLang === 'ur' ? 'اکاؤنٹ حذف کرنے میں ناکامی' : 'Failed to delete account', 'error');
+      deleteAccountBtn.innerHTML = originalText;
+      deleteAccountBtn.disabled = false;
+      if (confirmDeleteInput) confirmDeleteInput.value = '';
+    }
+  });
+}
+
+// ============================================
+// MOBILE MENU
+// ============================================
+
+const btn = document.getElementById('mobileMenuBtn');
+const menu = document.getElementById('mobileMenu');
+const close = document.getElementById('closeMenu');
+function openMobileMenu() { menu.classList.add('show'); document.body.style.overflow = 'hidden'; }
+function closeMobileMenu() { menu.classList.remove('show'); document.body.style.overflow = ''; }
+btn?.addEventListener('click', openMobileMenu);
+close?.addEventListener('click', closeMobileMenu);
+document.querySelectorAll('#mobileMenu a').forEach(link => link.addEventListener('click', closeMobileMenu));
+
+// ============================================
+// INITIALIZATION
+// ============================================
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize language from localStorage or server default
+    const savedLang = localStorage.getItem('agrisense_language');
+    const serverLang = '{{ user_language|default:"en" }}';
+    currentLang = savedLang || serverLang || 'en';
+    
+    updateLanguageUI();
+    
+    if (currentLang === 'ur') {
+        translatePage();
+    }
+    
+    console.log('Profile Settings page loaded in:', currentLang);
+  
+  // Load theme preference first
+  loadThemeFromServer();
+  
+  // Initialize password strength meter labels in English
+  if (strengthText && currentLang === 'en') {
+    strengthText.textContent = 'Password strength indicator';
+  }
+  
+  // Language switcher event listeners
+  document.querySelectorAll('.language-option, .mobile-lang-option').forEach(opt => {
+    opt.addEventListener('click', () => changeLanguage(opt.dataset.lang));
+  });
+  
+  const langBtn = document.getElementById('languageBtn');
+  const langDropdown = document.getElementById('languageDropdown');
+  if (langBtn && langDropdown) {
+    langBtn.addEventListener('click', (e) => { 
+      e.stopPropagation(); 
+      langDropdown.classList.toggle('active'); 
+    });
+    document.addEventListener('click', () => langDropdown.classList.remove('active'));
+  }
+});
+</script>
+</body>
+</html>

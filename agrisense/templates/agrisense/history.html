@@ -1,0 +1,1693 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover" name="viewport"/>
+<title>AgriSense – Scan History</title>
+<script src="{% static 'js/tailwind.min.js' %}"></script>
+<script src="{% static 'js/agrisense_translations.js' %}"></script>
+<link href="{% static 'css/inter.css' %}" rel="stylesheet"/>
+<link href="{% static 'css/material-symbols.css' %}" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+    .language-switch {
+        position: relative;
+        display: inline-block;
+    }
+    
+    .language-btn {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 12px;
+        background: rgba(255,255,255,0.12);
+        border: 1px solid rgba(255,255,255,0.2);
+        border-radius: 0.75rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        color: white;
+        font-size: 0.875rem;
+        font-weight: 500;
+    }
+    
+    .language-btn:hover {
+        background: rgba(255,255,255,0.2);
+        border-color: rgba(255,255,255,0.3);
+    }
+    
+    .language-dropdown {
+        position: absolute;
+        top: 100%;
+        right: 0;
+        margin-top: 8px;
+        background: white;
+        border: 1px solid #d4e8ce;
+        border-radius: 0.75rem;
+        min-width: 140px;
+        overflow: hidden;
+        z-index: 1000;
+        box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1);
+        display: none;
+    }
+    
+    body.dark .language-dropdown {
+        background: #121a12;
+        border-color: #2a3a2a;
+    }
+    
+    .language-dropdown.active {
+        display: block;
+        animation: dropdownFadeIn 0.2s ease;
+    }
+    
+    @keyframes dropdownFadeIn {
+        from { opacity: 0; transform: translateY(-10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .language-option {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 16px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        font-size: 0.875rem;
+        color: #1a2c1e;
+    }
+    
+    body.dark .language-option {
+        color: #e5ede3;
+    }
+    
+    .language-option:hover {
+        background: #e8f4e4;
+    }
+    
+    body.dark .language-option:hover {
+        background: #1a241a;
+    }
+    
+    .language-option.active {
+        background: #10b981;
+        color: white;
+    }
+    
+    .language-option .material-symbols-outlined {
+        font-size: 18px;
+    }
+
+    .translate-loader {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: #10b981;
+        color: white;
+        padding: 12px 24px;
+        border-radius: 12px;
+        z-index: 10000;
+        display: none;
+        align-items: center;
+        gap: 10px;
+        font-family: 'Inter', sans-serif;
+        font-size: 14px;
+    }
+    /* FIX: Proper sidebar sticky behavior */
+body {
+    height: 100vh;
+    overflow: hidden;
+}
+
+.flex-1.overflow-y-auto {
+    overflow-y: auto;
+    height: 100vh;
+}
+
+aside {
+    height: 100vh;
+    position: sticky;
+    top: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+aside nav {
+    flex: 1;
+    overflow-y: auto;
+    min-height: 0;
+}
+
+.sticky-bottom-section {
+    flex-shrink: 0;
+    margin-top: auto;
+}
+    .translate-loader.show {
+        display: flex;
+    }
+    
+    .language-switch { position: relative; display: inline-block; }
+    .language-btn { display: flex; align-items: center; gap: 8px; padding: 8px 12px; background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.2); border-radius: 0.75rem; cursor: pointer; transition: all 0.2s ease; color: white; font-size: 0.875rem; font-weight: 500; }
+    .language-btn:hover { background: rgba(255,255,255,0.2); border-color: rgba(255,255,255,0.3); }
+    .language-dropdown { position: absolute; top: 100%; right: 0; margin-top: 8px; background: white; border: 1px solid #d4e8ce; border-radius: 0.75rem; min-width: 140px; overflow: hidden; z-index: 1000; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1); display: none; }
+    body.dark .language-dropdown { background: #121a12; border-color: #2a3a2a; }
+    .language-dropdown.active { display: block; animation: dropdownFadeIn 0.2s ease; }
+    @keyframes dropdownFadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+    .language-option { display: flex; align-items: center; gap: 10px; padding: 10px 16px; cursor: pointer; transition: all 0.2s ease; font-size: 0.875rem; color: #1a2c1e; }
+    body.dark .language-option { color: #e5ede3; }
+    .language-option:hover { background: #e8f4e4; }
+    body.dark .language-option:hover { background: #1a241a; }
+    .language-option.active { background: #10b981; color: white; }
+    .language-option .material-symbols-outlined { font-size: 18px; }
+
+    .spinner {
+        width: 18px;
+        height: 18px;
+        border: 2px solid rgba(255,255,255,0.3);
+        border-top-color: white;
+        border-radius: 50%;
+        animation: spin 0.6s linear infinite;
+    }
+    
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+    
+    .translate-toast {
+        position: fixed;
+        bottom: 80px;
+        right: 20px;
+        background: white;
+        border: 1px solid #d4e8ce;
+        border-radius: 12px;
+        padding: 12px 20px;
+        z-index: 10000;
+        font-family: 'Inter', sans-serif;
+        font-size: 14px;
+        display: none;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    
+    body.dark .translate-toast {
+        background: #121a12;
+        border-color: #2a3a2a;
+        color: #e5ede3;
+    }
+    
+    .translate-toast.show {
+        display: block;
+    }
+
+    .no-translate {
+        -webkit-translate: none !important;
+        translate: none !important;
+    }
+    
+    .material-symbols-outlined,
+    .material-icons,
+    [class*="material-symbols"] {
+        -webkit-translate: none !important;
+        translate: none !important;
+    }
+    
+    /* Store original text in data attributes */
+    .scan-row {
+        transition: all 0.2s;
+    }
+</style>
+
+<script>
+  tailwind.config = {
+    darkMode:"class",
+    theme:{extend:{colors:{"primary":"#10b981","primary-dark":"#059669","background-dark":"#0a0f0a","surface-dark":"#121a12","surface-darker":"#0d130d"},fontFamily:{display:["Inter","sans-serif"]},boxShadow:{"glow-green":"0 0 20px rgba(16,185,129,0.2)","glow-green-sm":"0 0 10px rgba(16,185,129,0.1)"}}}
+  }
+</script>
+<style type="text/tailwindcss">
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { overflow-x: hidden !important; width: 100% !important; max-width: 100% !important; }
+  body { font-family: 'Inter', sans-serif; background: #f0f7f0 !important; color-scheme: light; color: #1a2c1e !important; }
+  body.dark { background: #0a0f0a !important; color: #e5ede3 !important; }
+  body.dark .glass-card { background: #121a12 !important; border: 1px solid #2a3a2a !important; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2); }
+  body.dark .glass-card:hover { background: #1a241a !important; border-color: #3c553c !important; }
+  body.dark .scan-row { background: #121a12 !important; border-color: #2a3a2a !important; }
+  body.dark .scan-row:hover { background: #1a241a !important; border-color: #3c553c !important; }
+  body.dark .scan-row.selected { background: #1a3a2a !important; border-color: #2d6a4f !important; }
+  body.dark .sidebar-link { color: #cbdcc8 !important; }
+  body.dark .sidebar-link:hover { background: rgba(255,255,255,0.1) !important; color: #ffffff !important; }
+  body.dark .sidebar-link.active { background: rgba(255,255,255,0.15) !important; color: #34d399 !important; border-color: rgba(255,255,255,0.2) !important; }
+  body.dark aside { background: #0b150b !important; border-right-color: #1f2c1f !important; }
+  body.dark header.sticky { background: #0b150b !important; border-bottom-color: #1f2c1f !important; }
+  body.dark .text-white, body.dark .text-gray-400, body.dark .text-gray-500 { color: #cbdcc8 !important; }
+  body.dark #search-input { background: #0f160f !important; border-color: #2a3a2a !important; color: #e5ede3 !important; }
+  body.dark #search-input::placeholder { color: #5a7355 !important; }
+  body.dark .filter-btn:not(.active) { background: #0f160f !important; border-color: #2a3a2a !important; color: #7a9a75 !important; }
+  body.dark .filter-btn:not(.active):hover { background: #1a241a !important; border-color: #3c553c !important; }
+  body.dark .mobile-menu { background: #0b150b !important; }
+  body.dark .mobile-menu .sidebar-link { color: #cbdcc8 !important; }
+  body.dark #notification-dropdown { background: #121a12 !important; border-color: #2a3a2a !important; }
+  body.dark #notification-dropdown .text-white { color: #e5ede3 !important; }
+  body.dark .delete-scan-btn:hover { background: #2d1a1a !important; border-color: #5c2e2e !important; color: #f87171 !important; }
+  body.dark aside .text-white, body.dark aside .text-gray-500, body.dark aside p, body.dark aside span, body.dark aside a { color: #cbdcc8 !important; }
+  ::-webkit-scrollbar{width:4px} ::-webkit-scrollbar-track{background:#d4e8ce} ::-webkit-scrollbar-thumb{background:#9bc48f;border-radius:2px}
+  body.dark ::-webkit-scrollbar-track{background:#1a241a} body.dark ::-webkit-scrollbar-thumb{background:#2d6a4f}
+  aside { background: #1a3a2a !important; border-right-color: #2d5a3d !important; }
+  aside .text-white, aside .text-gray-500, aside .text-gray-400, aside p, aside span, aside a, aside .font-bold { color: white !important; }
+  .sidebar-link{ display:flex; align-items:center; gap:.75rem; padding:.75rem 1rem; border-radius:.75rem; font-weight:500; transition:all .2s; width:100%; color: white !important; }
+  .sidebar-link:hover{ background: rgba(255,255,255,0.15) !important; color: white !important; }
+  .sidebar-link.active{ background: rgba(255,255,255,0.25) !important; color: white !important; border: 1px solid rgba(255,255,255,0.3) !important; }
+  aside .glass-card { background: rgba(255,255,255,0.1) !important; border-color: rgba(255,255,255,0.2) !important; }
+  aside .glass-card .text-white, aside .glass-card .text-gray-500 { color: white !important; }
+  aside .text-[10px].font-bold { color: rgba(255,255,255,0.6) !important; }
+  .glass-card { background: #ffffff !important; backdrop-filter: none !important; border: 1px solid #d4e8ce !important; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03); }
+  .scan-row{ background: #ffffff !important; border: 1px solid #d4e8ce !important; border-radius: 0.75rem; transition:all .2s; cursor:pointer; width: 100%; position: relative; }
+  .scan-row:hover{ background: #f9fff8 !important; border-color: #bcddae !important; }
+  .scan-row.selected{ background: #e8f4e4 !important; border-color: #9bc48f !important; }
+  body.dark .scan-row.selected{ background: #1a3a2a !important; border-color: #2d6a4f !important; }
+  .delete-scan-btn { opacity: 0; transition: all 0.2s ease; cursor: pointer; padding: 6px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.05); border: 1px solid transparent; }
+  .scan-row:hover .delete-scan-btn { opacity: 1; }
+  .delete-scan-btn:hover { background: #fee2e2 !important; border-color: #fecaca !important; color: #b91c1c !important; }
+  #search-input { background: #ffffff !important; border: 1px solid #d4e8ce !important; color: #1a2c1e !important; width: 100%; }
+  #search-input:focus { border-color: #10b981 !important; box-shadow: 0 0 0 3px rgba(16,185,129,0.1); }
+  .filter-btn { transition: all 0.2s; cursor: pointer; white-space: nowrap; }
+  .filter-btn.active { background: #d0e8c8 !important; color: #0f5c2f !important; border-color: #9bc48f !important; }
+  .filter-btn:not(.active) { background: #ffffff !important; border-color: #d4e8ce !important; color: #6b8c68 !important; }
+  .live-indicator { position: relative; display: inline-block; width: 8px; height: 8px; background-color: #10b981; border-radius: 50%; margin-right: 6px; }
+  .live-indicator::after { content: ''; position: absolute; top: -2px; left: -2px; width: 12px; height: 12px; background-color: rgba(16, 185, 129, 0.3); border-radius: 50%; animation: pulse-ring 1.5s infinite; }
+  @keyframes pulse-ring { 0% { transform: scale(0.8); opacity: 0.7; } 70% { transform: scale(1.4); opacity: 0; } 100% { transform: scale(1.4); opacity: 0; } }
+  header.sticky { background: #1a3a2a !important; border-bottom-color: #2d5a3d !important; }
+  header .text-white, header span[style*="color: white"] { color: white !important; }
+  header .bg-primary\/10 { background: rgba(255,255,255,0.15) !important; border-color: rgba(255,255,255,0.25) !important; }
+  header .text-primary { color: #34d399 !important; }
+  a.bg-primary { background: #2f8b5c !important; color: white !important; }
+  .mobile-menu { position: fixed; top: 0; left: -280px; width: 280px; height: 100%; z-index: 1000; transition: left 0.3s ease; background: #1a3a2a !important; box-shadow: 2px 0 20px rgba(0,0,0,0.1); }
+  .mobile-menu.active { left: 0; }
+  .mobile-menu-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 999; display: none; }
+  .mobile-menu-overlay.active { display: block; }
+  .mobile-menu .sidebar-link { color: white !important; }
+  .mobile-menu .sidebar-link.active { background: rgba(255,255,255,0.2) !important; color: white !important; }
+  .mobile-menu .text-white, .mobile-menu .text-gray-500 { color: white !important; }
+  #notification-dropdown { background: #ffffff !important; border: 1px solid #d4e8ce !important; position: fixed !important; top: 70px !important; right: 20px !important; left: auto !important; width: 380px !important; max-width: calc(100vw - 40px) !important; z-index: 1000 !important; }
+  @media (max-width: 640px) { #notification-dropdown { right: 10px !important; left: 10px !important; width: auto !important; } }
+  nav.lg\:hidden.fixed { background: #1a3a2a !important; border-top-color: #2d5a3d !important; }
+  body.dark nav.lg\:hidden.fixed { background: #0b150b !important; border-top-color: #1f2c1f !important; }
+  .fade-in { animation: fadeIn 0.6s ease-out forwards; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  .filter-scroll-container { overflow-x: auto; overflow-y: hidden; white-space: nowrap; -webkit-overflow-scrolling: touch; scrollbar-width: thin; }
+  #toast { position: fixed; bottom: 80px; right: 20px; z-index: 1100; background: white; border: 1px solid #d4e8ce; border-radius: 1rem; padding: 0.75rem 1.25rem; display: none; box-shadow: 0 8px 20px rgba(0,0,0,0.1); }
+  body.dark #toast { background: #121a12; border-color: #2a3a2a; color: #e5ede3; }
+  #toast.show { display: flex; }
+  .clear-history-btn { transition: all 0.2s; }
+  .clear-history-btn:hover { background: #fee2e2 !important; border-color: #fecaca !important; color: #b91c1c !important; }
+  body.dark .clear-history-btn:hover { background: #2d1a1a !important; border-color: #5c2e2e !important; color: #f87171 !important; }
+</style>
+</head>
+<body class="min-h-screen flex" 
+      data-total-scans="{{ total_scans }}"
+      data-threat-count="{{ threat_count }}"
+      data-healthy-count="{{ healthy_count }}">
+
+<!-- Sidebar (Desktop) - NEVER TRANSLATE -->
+<aside class="hidden lg:flex flex-col w-64 xl:w-72 min-h-screen sticky top-0 shrink-0 no-translate" style="background: #1a3a2a; border-right: 1px solid #2d5a3d;">
+  <div class="flex items-center gap-3 px-6 py-6 border-b" style="border-color: #2d5a3d;">
+    <div class="w-9 h-9 rounded-xl bg-white/20 border border-white/30 flex items-center justify-center">
+      <span class="material-symbols-outlined text-primary text-xl">eco</span>
+    </div>
+    <div class="flex flex-col">
+      <span class="font-bold text-xl tracking-tight leading-none text-white">{{ branding.app_name|default:"AgriSense" }}</span>
+      <span class="text-[10px] text-primary/80 uppercase tracking-[0.2em] font-bold mt-1.5">{{ branding.app_subtitle|default:"Edge Intelligence" }}</span>
+    </div>
+  </div>
+  <nav class="flex-1 px-3 py-5 flex flex-col gap-1">
+    <a href="{% url 'dashboard' %}" class="sidebar-link"><span class="material-symbols-outlined text-xl">dashboard</span>Dashboard</a>
+    <a href="{% url 'scanner' %}" class="sidebar-link"><span class="material-symbols-outlined text-xl">center_focus_strong</span>New Scan</a>
+    <a href="{% url 'history' %}" class="sidebar-link active"><span class="material-symbols-outlined text-xl">history</span>History</a>
+    <div class="pt-6 pb-2 px-3 text-[10px] font-bold uppercase tracking-widest text-white/50">Management</div>
+    <a href="{% url 'setting' %}" class="sidebar-link"><span class="material-symbols-outlined text-[20px]">settings</span> Settings</a>
+    <!-- <a href="{% url 'profile_settings' %}" class="sidebar-link"><span class="material-symbols-outlined text-[20px]">account_circle</span> Profile</a> -->
+    <a href="{% url 'about' %}" class="sidebar-link"><span class="material-symbols-outlined">info</span> About Us</a>
+  </nav>
+  <div class="p-4 border-t" style="border-color: #2d5a3d;">
+  <a href="{% url 'profile_settings' %}" class="rounded-2xl flex items-center gap-3 p-3 transition-all hover:bg-white/15" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15); text-decoration: none;">
+  <div class="w-9 h-9 rounded-xl bg-white/20 border border-white/30 flex items-center justify-center shrink-0">
+    <span class="material-symbols-outlined text-white text-xl">account_circle</span>
+  </div>
+  <div class="flex-1 min-w-0">
+    <p class="text-sm font-bold truncate text-white">{{ user.get_full_name|default:user.username }}</p>
+    <p class="text-[10px] truncate uppercase tracking-tighter text-white/60">{{ user.email|default:"AgriSense User" }}</p>
+  </div>
+</a>
+    <a href="{% url 'logout' %}" class="flex items-center justify-center mt-1 gap-2 px-3 py-2 rounded-lg transition-all text-white/80 hover:text-rose-400 hover:bg-white/10" style="background: rgba(255,255,255,0.08);">
+      <span class="material-symbols-outlined text-sm">logout</span><span class="text-xs font-medium">Logout</span>
+    </a>
+  </div>
+</aside>
+
+<!-- Mobile Menu Overlay -->
+<div class="mobile-menu-overlay no-translate" id="mobileMenuOverlay" onclick="closeMobileMenu()"></div>
+
+<!-- Mobile Menu (NEVER TRANSLATE) -->
+<div class="mobile-menu lg:hidden no-translate" id="mobileMenu" style="background: #1a3a2a; border-right: 1px solid #2d5a3d;">
+  <div class="flex items-center justify-between p-4 border-b" style="border-color: #2d5a3d;">
+    <div class="flex items-center gap-3">
+      <div class="w-9 h-9 rounded-xl bg-white/20 border border-white/30 flex items-center justify-center">
+        <span class="material-symbols-outlined text-primary text-xl">eco</span>
+      </div>
+      <div><span class="font-bold text-xl tracking-tight text-white">{{ branding.app_name|default:"AgriSense" }}</span></div>
+    </div>
+    <button onclick="closeMobileMenu()" class="w-9 h-9 flex items-center justify-center rounded-full bg-white/10 border border-white/20 text-white">
+      <span class="material-symbols-outlined text-xl">close</span>
+    </button>
+  </div>
+  <nav class="flex-1 px-3 py-5 flex flex-col gap-1">
+    <a href="{% url 'dashboard' %}" class="sidebar-link">Dashboard</a>
+    <a href="{% url 'scanner' %}" class="sidebar-link">New Scan</a>
+    <a href="{% url 'history' %}" class="sidebar-link active">History</a>
+    <div class="pt-6 pb-2 px-3 text-[10px] font-bold uppercase tracking-widest text-white/50">Management</div>
+    <a href="{% url 'setting' %}" class="sidebar-link">Settings</a>
+    <a href="{% url 'profile_settings' %}" class="sidebar-link">Profile</a>
+    <a href="{% url 'about' %}" class="sidebar-link">About Us</a>
+  </nav>
+  <div class="p-4 border-t" style="border-color: #2d5a3d;">
+    <div class="rounded-xl p-3 flex items-center gap-3" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15);">
+      <div class="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center"><span class="material-symbols-outlined text-white text-lg">person</span></div>
+      <div class="flex-1"><p class="text-sm font-semibold text-white">{{ user.get_full_name|default:user.username }}</p><p class="text-xs text-white/60">{{ user.email|default:"AgriSense User" }}</p></div>
+    </div>
+    <a href="{% url 'logout' %}" class="flex items-center justify-center mt-1 gap-2 px-3 py-2 rounded-lg transition-all text-white/80 hover:text-rose-400 hover:bg-white/10" style="background: rgba(255,255,255,0.08);">
+      <span class="material-symbols-outlined text-sm">logout</span><span class="text-xs font-medium">Logout</span>
+    </a>
+  </div>
+</div>
+
+<div class="flex-1 flex flex-col min-h-screen w-full overflow-x-hidden">
+  <header class="sticky top-0 z-30 px-4 lg:px-8 py-4 flex flex-wrap items-center gap-3 w-full" style="background: #1a3a2a; border-bottom: 1px solid #2d5a3d;">
+    <a href="{% url 'dashboard' %}" class="flex items-center gap-2 shrink-0">
+      <button class="w-9 h-9 flex items-center justify-center rounded-full transition-all" style="background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.2); color: white;">
+        <span class="material-symbols-outlined text-xl">arrow_back</span>
+      </button>
+    </a>
+    <h1 class="font-bold text-white text-lg flex-1" id="page-title">Scan History</h1>
+    <div class="flex items-center gap-3 relative shrink-0">
+      <div class="language-switch">
+        <button class="language-btn" id="languageBtn">
+          <span class="material-symbols-outlined text-[18px]">language</span>
+          <span id="currentLanguage">English</span>
+          <span class="material-symbols-outlined text-[16px]">expand_more</span>
+        </button>
+        <div class="language-dropdown" id="languageDropdown">
+          <div class="language-option active" data-lang="en"><span class="material-symbols-outlined">check_circle</span>English</div>
+          <div class="language-option" data-lang="ur"><span class="material-symbols-outlined">translate</span>اردو (Urdu)</div>
+        </div>
+      </div>
+       {% include 'includes/floating_video_button.html' %}
+      <!-- <button id="notifications-btn" class="w-10 h-10 flex items-center justify-center rounded-xl transition-all relative" style="background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.2); color: white;">
+        <span class="material-symbols-outlined text-[22px]">notifications</span>
+        <span id="notification-count" class="absolute -top-1 -right-1 bg-rose-500 text-white text-[10px] font-bold min-w-[18px] h-[18px] flex items-center justify-center rounded-full px-1 border-2 border-[#1a3a2a] hidden">0</span>
+      </button> -->
+      <button onclick="toggleMobileMenu()" class="lg:hidden w-10 h-10 flex items-center justify-center rounded-xl transition-all" style="background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.2); color: white;">
+        <span class="material-symbols-outlined text-xl">menu</span>
+      </button>
+    </div>
+  </header>
+
+  <div id="notification-dropdown" class="hidden rounded-3xl shadow-premium p-5" style="background: #ffffff; border: 1px solid #d4e8ce;">
+    <div class="flex items-center justify-between mb-4"><div class="flex items-center gap-2" style="color: #e53e3e;"><span class="material-symbols-outlined">warning</span><span class="font-bold text-sm" id="alerts-title">Disease Alerts</span></div><span id="alert-count-in-dropdown" class="text-xs font-bold" style="color: #e53e3e;"></span></div>
+    <div id="alert-list" class="space-y-4 max-h-80 overflow-y-auto pr-2"></div>
+    <button id="mark-all-read-btn" class="mt-6 w-full py-3 font-bold text-sm rounded-2xl flex items-center justify-center gap-2 transition-all" style="background: #2f8b5c; color: white;"><span class="material-symbols-outlined text-lg">done_all</span> <span id="mark-read-text">Mark All as Read</span></button>
+  </div>
+
+  <main class="flex-1 p-4 lg:p-8 w-full pb-24 lg:pb-8 overflow-x-hidden">
+    <div class="flex flex-col sm:flex-row gap-3 mb-4 w-full">
+      <div class="relative flex-1">
+        <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[#9bbf95] text-[18px]">search</span>
+        <input id="search-input" type="text" placeholder="Search by plant, disease, sector…" onkeyup="searchScans()" class="w-full pl-10 pr-4 py-3 rounded-xl text-sm focus:outline-none transition-all" style="background: #ffffff; border: 1px solid #d4e8ce; color: #1a2c1e;" />
+      </div>
+      <button id="clear-history-btn" class="clear-history-btn px-5 py-3 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 transition-all shrink-0" style="background: #ffffff; border: 1px solid #d4e8ce; color: #e53e3e;">
+        <span class="material-symbols-outlined text-[18px]">delete_sweep</span>
+        <span id="clear-history-text">Clear All History</span>
+      </button>
+    </div>
+
+    <!-- <div class="mb-6 filter-scroll-container lg:overflow-visible w-full">
+      <div class="flex gap-2 lg:justify-start" id="filter-container">
+        <button onclick="filterScans('all', this)" class="filter-btn active px-4 py-2 text-sm font-semibold rounded-full border whitespace-nowrap" style="background: #d0e8c8; color: #0f5c2f; border-color: #9bc48f;" id="filter-all-btn">All ({{ total_scans }})</button>
+        <button onclick="filterScans('threats', this)" class="filter-btn px-4 py-2 text-sm font-semibold rounded-full border whitespace-nowrap" style="background: #ffffff; border-color: #d4e8ce; color: #6b8c68;" id="filter-threats-btn">Threats ({{ threat_count }})</button>
+        <button onclick="filterScans('healthy', this)" class="filter-btn px-4 py-2 text-sm font-semibold rounded-full border whitespace-nowrap" style="background: #ffffff; border-color: #d4e8ce; color: #6b8c68;" id="filter-healthy-btn">Healthy ({{ healthy_count }})</button>
+      </div>
+    </div> -->
+
+    <div class="w-full">
+      <div class="w-full lg:w-3/5 lg:float-left lg:pr-6 space-y-4" id="scans-container">
+        {% regroup scans by created_at|date:"Y-m-d" as scan_dates %}
+        {% for date_group in scan_dates %}
+          <div class="flex items-center gap-2 mb-2 mt-{% if not forloop.first %}4{% else %}0{% endif %} w-full">
+            <div class="h-px flex-1" style="background: #d4e8ce;"></div>
+            <span class="text-xs font-semibold uppercase tracking-wider whitespace-nowrap date-header-text" style="color: #6b8c68;">
+              {% with date=date_group.list.0.created_at %}
+                {% if date|date:"Y-m-d" == today|date:"Y-m-d" %}Today{% elif date|date:"Y-m-d" == yesterday|date:"Y-m-d" %}Yesterday{% else %}{{ date|date:"l, F j" }}{% endif %}
+              {% endwith %}
+            </span>
+            <div class="h-px flex-1" style="background: #d4e8ce;"></div>
+          </div>
+          {% for scan in date_group.list %}
+            <div class="scan-row rounded-xl p-4 flex items-center gap-3 cursor-pointer group transition-all w-full relative scan-item" 
+                 data-scan-id="{{ scan.id }}"
+                 data-disease="{% if scan.disease_detected %}true{% else %}false{% endif %}"
+                 data-name="{{ scan.disease_name }}"
+                 data-plant="{{ scan.crop_type }}"
+                 data-search="{{ scan.crop_type|default:'' }} {{ scan.disease_name|default:'' }} {{ scan.severity|default:'' }}"
+                 data-image="{% if scan.image %}{{ scan.image.url }}{% else %}https://via.placeholder.com/600x400/e8f4e4/9bc48f?text=No+Image{% endif %}"
+                 data-scientific="{{ scan.scientific_name|default:''|escapejs }}"
+                 data-description="{{ scan.treatment_recommended|default:'No treatment needed.'|escapejs }}"
+                 data-confidence="{{ scan.confidence|floatformat:1 }}"
+                 data-name-ur="{{ scan.disease_name_ur|default:'' }}"
+                 data-plant-ur="{{ scan.crop_type_ur|default:'' }}"
+                 data-description-ur="{{ scan.treatment_recommended_ur|default:''|escapejs }}"
+                 data-severity-ur="{{ scan.severity_ur|default:'' }}"
+                 data-original-plant="{{ scan.crop_type }}"
+                 data-original-disease="{% if scan.disease_detected %}{{ scan.disease_name }}{% else %}Healthy{% endif %}"
+                 data-original-severity="{{ scan.severity|default:'Normal' }}">
+              <div class="relative w-20 h-20 rounded-xl overflow-hidden flex-shrink-0 flex items-center justify-center" style="background: #e8f4e4;">
+                {% if scan.image %}<img src="{{ scan.image.url }}" alt="{{ scan.crop_type }}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"/>{% else %}<span class="material-symbols-outlined {% if scan.disease_detected %}text-red-500{% else %}text-primary{% endif %} text-3xl">{% if scan.disease_detected %}pest_control{% else %}spa{% endif %}</span>{% endif %}
+                <div class="absolute inset-0 {% if scan.disease_detected %}bg-red-500/10{% else %}bg-primary/10{% endif %} mix-blend-overlay"></div>
+              </div>
+              <div class="flex-1 min-w-0">
+                <div class="flex justify-between items-start flex-wrap gap-1">
+                  <h3 class="font-bold text-base leading-tight break-words scan-plant-text">{{ scan.crop_type|default:"Plant" }}</h3>
+                  <span class="text-xs font-mono shrink-0" style="color: #6b8c68;">{{ scan.created_at|date:"H:i" }}</span>
+                </div>
+                <p class="{% if scan.disease_detected %}text-red-500{% else %}text-primary{% endif %} text-sm font-semibold break-words scan-disease-name">{{ scan.disease_name|default:"Healthy" }}</p>
+                <div class="flex items-center justify-between mt-2 flex-wrap gap-2">
+                  <span class="text-xs scan-severity" style="color: #6b8c68;">{{ scan.severity|default:"Normal" }}</span>
+                  <div class="px-2 py-0.5 rounded-md border {% if scan.disease_detected %}border-red-500/20{% else %}border-primary/20{% endif %}"><span class="{% if scan.disease_detected %}text-red-600{% else %}text-primary-dark{% endif %} text-xs font-bold scan-confidence">{{ scan.confidence|floatformat:1 }}%</span></div>
+                </div>
+              </div>
+              <div class="flex items-center gap-2">
+                <div class="delete-scan-btn" onclick="event.stopPropagation(); deleteSingleScan('{{ scan.id }}', this)" title="Delete scan">
+                  <span class="material-symbols-outlined text-[18px]">close</span>
+                </div>
+                <span class="material-symbols-outlined transition-colors shrink-0 hidden sm:block" style="color: #9bc48f;">chevron_right</span>
+              </div>
+            </div>
+          {% endfor %}
+        {% empty %}
+          <div class="text-center py-12 w-full" id="empty-state">
+            <span class="material-symbols-outlined text-6xl mb-4" style="color: #c8dbc2;">scan_delete</span>
+            <h3 class="text-xl font-bold mb-2" id="empty-title">No Scans Yet</h3>
+            <p class="mb-6" style="color: #6b8c68;" id="empty-desc">Start your first scan to see history here</p>
+            <a href="{% url 'scanner' %}" class="inline-block font-bold px-6 py-3 rounded-xl" style="background: #2f8b5c; color: white;" id="empty-btn">Start Scanning</a>
+          </div>
+        {% endfor %}
+        {% if scans %}<div class="flex items-center justify-center py-6 text-sm gap-2 w-full" style="color: #9bc48f;" id="end-of-history"><span class="material-symbols-outlined text-sm">history_toggle_off</span> End of history</div>{% endif %}
+      </div>
+
+      <!-- Detail Preview Desktop -->
+      <div class="hidden lg:block lg:w-2/5 lg:float-left" id="detail-preview-container">
+        <div class="sticky top-24 space-y-4 w-full" id="detail-preview">
+          <div class="rounded-2xl overflow-hidden w-full" style=" border: 1px solid #9bc48f;">
+            <div class="aspect-video relative w-full" id="preview-image-container"><img id="preview-image" src="" class="w-full h-full object-cover"/><div class="absolute bottom-3 right-3 backdrop-blur-md px-2 py-1 rounded-full"><span class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse inline-block mr-1"></span><span class="text-[10px] text-primary font-bold" id="ai-badge">AI Analyzed</span></div></div>
+            <div class="p-5 w-full" id="preview-content">
+              <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full mb-3" id="preview-badge"><span class="material-symbols-outlined text-sm" id="preview-badge-icon">check_circle</span><span class="text-xs font-bold uppercase" id="preview-badge-text">Healthy</span></div>
+              <h2 class="text-2xl font-bold break-words" id="preview-disease">Select a scan</h2>
+              <p class="text-xs font-mono mt-0.5 break-words" id="preview-scientific"></p>
+              <p class="text-sm mt-3 leading-relaxed break-words" id="preview-description"></p>
+              <div class="mt-4 space-y-2 w-full"><a href="#" id="preview-report-link" class="w-full border font-semibold py-3 rounded-xl flex items-center justify-center gap-2 text-sm" style="border-color: #d4e8ce;"><span class="material-symbols-outlined text-[18px]">open_in_new</span> <span id="full-report-text">Full Report</span></a></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Mobile Detail Panel -->
+      <div class="lg:hidden mt-6 w-full" id="mobile-detail-panel">
+        <div class="rounded-2xl overflow-hidden w-full" style="background: #ffffff; border: 1px solid #9bc48f;">
+          <div class="aspect-video relative w-full"><img id="mobile-preview-image" src="" class="w-full h-full object-cover"/><div class="absolute bottom-3 right-3 backdrop-blur-md px-2 py-1 rounded-full"><span class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse inline-block mr-1"></span><span class="text-[10px] text-primary font-bold" id="mobile-ai-badge">AI Analyzed</span></div></div>
+          <div class="p-5 w-full">
+            <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full mb-3" id="mobile-preview-badge"><span class="material-symbols-outlined text-sm" id="mobile-preview-badge-icon">check_circle</span><span class="text-xs font-bold uppercase" id="mobile-preview-badge-text">Healthy</span></div>
+            <h2 class="text-2xl font-bold break-words" id="mobile-preview-disease">Select a scan</h2>
+            <p class="text-xs font-mono mt-0.5 break-words" id="mobile-preview-scientific" style="color: #6b8c68;"></p>
+            <p class="text-sm mt-3 leading-relaxed break-words" id="mobile-preview-description" style="color: #4a6747;"></p>
+            <div class="mt-4 space-y-2 w-full"><a href="#" id="mobile-preview-report-link" class="w-full border font-semibold py-3 rounded-xl flex items-center justify-center gap-2 text-sm" style="border-color: #d4e8ce; color: #2d3e2d;"><span class="material-symbols-outlined text-[18px]">open_in_new</span> <span id="mobile-full-report-text">Full Report</span></a></div>
+          </div>
+        </div>
+      </div>
+      <div class="clearfix"></div>
+    </div>
+  </main>
+
+  <nav class="lg:hidden fixed bottom-0 left-0 right-0 z-30 w-full no-translate" style="background: #1a3a2a; border-top: 1px solid #2d5a3d; height: 65px;">
+    <div class="flex justify-around items-center h-full px-4 w-full">
+      <a href="{% url 'dashboard' %}" class="flex flex-col items-center" style="color: #9bc48f;"><span class="material-symbols-outlined text-[24px]">grid_view</span><span class="text-[9px] font-black uppercase">HOME</span></a>
+      <a href="{% url 'scanner' %}" class="flex flex-col items-center -mt-8"><div class="w-14 h-14 rounded-2xl flex items-center justify-center shadow-premium" style="background: #2f8b5c; border: 4px solid #1a3a2a;"><span class="material-symbols-outlined text-[28px]" style="color: white;">filter_center_focus</span></div></a>
+      <a href="{% url 'history' %}" class="flex flex-col items-center" style="color: #34d399;"><span class="material-symbols-outlined text-[24px]">restore</span><span class="text-[9px] font-black uppercase">HISTORY</span></a>
+    </div>
+  </nav>
+</div>
+
+<div id="toast"><div class="flex items-center gap-3"><span class="material-symbols-outlined text-primary">check_circle</span><span id="toastMessage"></span></div></div>
+
+<!-- Translation Loader & Toast -->
+<div id="translateLoader" class="translate-loader">
+  <div class="spinner"></div>
+  <span id="loader-text">Translating to Urdu...</span>
+</div>
+<div id="translateToast" class="translate-toast"></div>
+
+<script src="{% static 'js/theme-manager.js' %}"></script>
+
+<script>
+// ==================== COMPLETE BIDIRECTIONAL TRANSLATION MAPPINGS ====================
+
+// English to Urdu - Crop names
+const enToUrduCrop = {
+    'Guava': 'امرود',
+    'Apple': 'سیب',
+    'Banana': 'کیلا',
+    'Orange': 'نارنجی',
+    'Lemon': 'لیموں',
+    'Mango': 'آم',
+    'Corn': 'مکئی',
+    'Rice': 'چاول',
+    'Pomegranate': 'انار',
+    'Plant': 'پودا'
+};
+
+// Urdu to English - Crop names (for reverting)
+const urduToEnCrop = {
+    'امرود': 'Guava',
+    'سیب': 'Apple',
+    'کیلا': 'Banana',
+    'نارنجی': 'Orange',
+    'لیموں': 'Lemon',
+    'آم': 'Mango',
+    'مکئی': 'Corn',
+    'چاول': 'Rice',
+    'انار': 'Pomegranate',
+    'پودا': 'Plant'
+};
+
+// English to Urdu - Disease names (COMPLETE MAPPING)
+const enToUrduDisease = {
+    // Guava
+    'Guava Rot': 'امرود کی سڑاند',
+    'Healthy Guava': 'صحت مند امرود',
+    // Lemon
+    'Lemon Rot': 'لیموں کی سڑاند',
+    'Healthy Lemon': 'صحت مند لیموں',
+    // Mango
+    'Mango Leaf Gall': 'آم کے پتے کی گال',
+    // Corn
+    'Corn Ear Rot': 'مکئی کی بال کی سڑاند',
+    'Northern Corn Leaf Blight': 'شمالی مکئی کی پتی کی جھلسن',
+    // Rice
+    'Rice Neck Blast': 'چاول کی گردن کی جھلسن',
+    'Rice Brown Spot': 'چاول کا بھورا دھبہ',
+    // Apple
+    'Apple Rot': 'سیب کی سڑاند',
+    'Healthy Apple': 'صحت مند سیب',
+    // Banana
+    'Banana Rot': 'کیلے کی سڑاند',
+    'Healthy Banana': 'صحت مند کیلا',
+    // Orange
+    'Orange Rot': 'نارنجی کی سڑاند',
+    'Healthy Orange': 'صحت مند نارنجی',
+    // Pomegranate
+    'Pomegranate Rot': 'انار کی سڑاند',
+    'Healthy Pomegranate': 'صحت مند انار',
+    // Generic
+    'Healthy': 'صحت مند'
+};
+
+// Urdu to English - Disease names (COMPLETE REVERSE MAPPING)
+const urduToEnDisease = {
+    // Guava
+    'امرود کی سڑاند': 'Guava Rot',
+    'صحت مند امرود': 'Healthy Guava',
+    // Lemon
+    'لیموں کی سڑاند': 'Lemon Rot',
+    'صحت مند لیموں': 'Healthy Lemon',
+    // Mango
+    'آم کے پتے کی گال': 'Mango Leaf Gall',
+    // Corn
+    'مکئی کی بال کی سڑاند': 'Corn Ear Rot',
+    'شمالی مکئی کی پتی کی جھلسن': 'Northern Corn Leaf Blight',
+    // Rice
+    'چاول کی گردن کی جھلسن': 'Rice Neck Blast',
+    'چاول کا بھورا دھبہ': 'Rice Brown Spot',
+    // Apple
+    'سیب کی سڑاند': 'Apple Rot',
+    'صحت مند سیب': 'Healthy Apple',
+    // Banana
+    'کیلے کی سڑاند': 'Banana Rot',
+    'صحت مند کیلا': 'Healthy Banana',
+    // Orange
+    'نارنجی کی سڑاند': 'Orange Rot',
+    'صحت مند نارنجی': 'Healthy Orange',
+    // Pomegranate
+    'انار کی سڑاند': 'Pomegranate Rot',
+    'صحت مند انار': 'Healthy Pomegranate',
+    // Generic
+    'صحت مند': 'Healthy'
+};
+
+// English to Urdu - Severity
+const enToUrduSeverity = {
+    'High': 'شدید',
+    'Medium': 'درمیانی',
+    'Low': 'کم',
+    'Normal': 'معمول'
+};
+
+// Urdu to English - Severity (for reverting)
+const urduToEnSeverity = {
+    'شدید': 'High',
+    'درمیانی': 'Medium',
+    'کم': 'Low',
+    'معمول': 'Normal'
+};
+
+// Urdu treatment texts for diseases
+const urduTreatments = {
+    "Guava Rot": `🍐 امرود کا مخصوص علاج:
+• متاثرہ پھلوں کو ہٹا کر باغ سے دور تباہ کریں
+• copper oxychloride (3g/L) یا carbendazim (1g/L) لگائیں
+• چنائی سے 14 دن پہلے azoxystrobin کا سپرے کریں
+• جلد کو نقصان پہنچنے سے بچنے کے لیے احتیاط سے کٹائی کریں
+• کٹائی کے بعد: گرم پانی کا علاج (50°C پر 5 منٹ)
+• 85-90% نمی کے ساتھ 45-50°F پر اسٹور کریں`,
+    
+    "Lemon Rot": `🍋 لیموں کا مخصوص علاج:
+• سڑاند یا پھپھوندی والے تمام پھلوں کو ہٹا دیں
+• کٹائی کے بعد imazalil (2ml/L) یا potassium sorbate (25g/L) لگائیں
+• کٹائی سے پہلے: 30 دن پہلے copper hydroxide (2g/L) کا سپرے کریں
+• بٹن گرنے سے روکنے کے لیے 2,4-D (10ppm) استعمال کریں
+• معتدل نمی کے ساتھ ٹھنڈے درجہ حرارت (45-48°F) پر اسٹور کریں`,
+    
+    "Mango Leaf Gall": `🥭 آم کا مخصوص علاج:
+• تمام گال والے پتوں اور ٹہنیوں کو فوری طور پر کاٹ کر جلا دیں
+• سلفر 80% WP (3g/L) یا abamectin (0.5ml/L) لگائیں
+• نئی ٹہنیوں کے نکلنے کے دوران سپرے کریں (ہر 10-14 دن بعد)`,
+    
+    "Corn Ear Rot": `🌽 مکئی کا مخصوص علاج:
+• پکنے پر فوری طور پر مکئی کی کٹائی کریں (نمی 20% سے کم)
+• اناج کو 48 گھنٹوں کے اندر 15% نمی یا اس سے کم خشک کریں
+• کٹائی کے دوران متاثرہ بالوں کو دستی طور پر ہٹا دیں`,
+    
+    "Rice Brown Spot": `🌾 چاول کا مخصوص علاج:
+• ٹیلرنگ کے مرحلے پر mancozeb (2g/L) یا propiconazole (1ml/L) لگائیں
+• متوازن NPK کھاد لگائیں (120:60:40 kg/ha)
+• زنک سلفیٹ کا استعمال (25kg/ha) بیماری کی شدت کو کم کرتا ہے`,
+    
+    "Apple Rot": `🍎 سیب کا مخصوص علاج:
+• تمام متاثرہ سیبوں کو فوری طور پر ہٹا کر تباہ کریں
+• کٹائی سے پہلے captan (3g/L) یا thiophanate-methyl لگائیں
+• باغ کی صفائی برقرار رکھیں - ممی شدہ پھل ہٹائیں`,
+    
+    "Banana Rot": `🍌 کیلا کا مخصوص علاج:
+• متاثرہ ہاتھوں کو فوری طور پر گچھے سے ہٹا دیں
+• کٹائی کے بعد ڈپ کے لیے موم کے ساتھ ملا ہوا carbendazim (1ml/L) لگائیں
+• کٹائی سے پہلے: کٹائی سے 3 ہفتے پہلے chlorothalonil کا سپرے کریں`,
+    
+    "Orange Rot": `🍊 نارنجی کا مخصوص علاج:
+• سڑاند والے متاثرہ پھلوں کو فوری طور پر ہٹا دیں
+• کٹائی کے بعد imazalil (2ml/L) یا thiabendazole لگائیں
+• 85-90% نمی کے ساتھ 40°F پر اسٹور کریں`,
+    
+    "Pomegranate Rot": `🍑 انار کا مخصوص علاج:
+• تاریک دھبوں والے متاثرہ پھلوں کو فوری طور پر ہٹا دیں
+• مانسون سے پہلے تانبے پر مبنی فنگسائڈز (2.5g/L) لگائیں
+• پھل لگنے کے 30 دن بعد پھل کی تھیلی بندی کریں`
+};
+
+// English treatment texts (for reverting)
+const englishTreatments = {
+    "Guava Rot": `🍐 GUAVA ROT Specific Treatment:
+• Remove infected fruits and destroy away from orchard
+• Apply copper oxychloride (3g/L) or carbendazim (1g/L)
+• Spray azoxystrobin 14 days before harvest
+• Harvest carefully to avoid skin damage
+• Post-harvest: Hot water treatment (50°C for 5 minutes)
+• Store at 45-50°F with 85-90% humidity`,
+    
+    "Lemon Rot": `🍋 LEMON ROT Specific Treatment:
+• Remove all fruits with rot or mold
+• Apply imazalil (2ml/L) or potassium sorbate (25g/L) after harvest
+• Pre-harvest: Spray copper hydroxide (2g/L) 30 days before
+• Use 2,4-D (10ppm) to prevent button drop
+• Store at cool temperature (45-48°F) with moderate humidity`,
+    
+    "Mango Leaf Gall": `🥭 MANGO LEAF GALL Specific Treatment:
+• Immediately prune and burn all galled leaves and shoots
+• Apply Sulfur 80% WP (3g/L) or abamectin (0.5ml/L)
+• Spray during new shoot emergence (every 10-14 days)`,
+    
+    "Corn Ear Rot": `🌽 CORN EAR ROT Specific Treatment:
+• Harvest corn immediately upon maturity (moisture <20%)
+• Dry grain to 15% moisture or less within 48 hours
+• Remove infected silks manually during harvest`,
+    
+    "Rice Brown Spot": `🌾 RICE BROWN SPOT Specific Treatment:
+• Apply mancozeb (2g/L) or propiconazole (1ml/L) at tillering stage
+• Apply balanced NPK fertilizer (120:60:40 kg/ha)
+• Use zinc sulfate (25kg/ha) to reduce disease severity`,
+    
+    "Apple Rot": `🍎 APPLE ROT Specific Treatment:
+• Remove and destroy all infected apples immediately
+• Apply captan (3g/L) or thiophanate-methyl before harvest
+• Maintain orchard sanitation - remove mummified fruits`,
+    
+    "Banana Rot": `🍌 BANANA ROT Specific Treatment:
+• Remove infected hands from bunch immediately
+• Apply carbendazim (1ml/L) mixed with wax for post-harvest dip
+• Pre-harvest: Spray chlorothalonil 3 weeks before harvest`,
+    
+    "Orange Rot": `🍊 ORANGE ROT Specific Treatment:
+• Remove infected fruits with rot immediately
+• Apply imazalil (2ml/L) or thiabendazole post-harvest
+• Store at 40°F with 85-90% humidity`,
+    
+    "Pomegranate Rot": `🍑 POMEGRANATE ROT Specific Treatment:
+• Remove infected fruits with dark spots immediately
+• Apply copper-based fungicides (2.5g/L) before monsoon
+• Bag fruits 30 days after fruit set`
+};
+
+// ==================== TRANSLATION SYSTEM ====================
+let currentLang = 'en';  // FORCE DEFAULT TO ENGLISH
+let isTranslating = false;
+
+function getCsrfToken() {
+    return document.cookie.split('; ').find(row => row.startsWith('csrftoken='))?.split('=')[1];
+}
+
+function showTranslateToast(message, isError = false) {
+    let toast = document.getElementById('translateToast');
+    if (!toast) return;
+    toast.innerHTML = `<div style="display: flex; align-items: center; gap: 10px;"><span class="material-symbols-outlined" style="color: ${isError ? '#e53e3e' : '#10b981'}">${isError ? 'error' : 'info'}</span><span>${message}</span></div>`;
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 5000);
+}
+
+function showTranslateLoading(show) {
+    const loader = document.getElementById('translateLoader');
+    if (loader) {
+        if (show) loader.classList.add('show');
+        else loader.classList.remove('show');
+    }
+}
+
+// Translate all scan items to Urdu
+function translateAllScanItemsToUrdu() {
+    document.querySelectorAll('.scan-row').forEach(item => {
+        // Store original text if not already stored
+        const plantNameEl = item.querySelector('.scan-plant-text');
+        if (plantNameEl && plantNameEl.innerText && !item.dataset.originalPlantShown) {
+            item.dataset.originalPlantShown = plantNameEl.innerText;
+        }
+        
+        const diseaseNameEl = item.querySelector('.scan-disease-name');
+        if (diseaseNameEl && diseaseNameEl.innerText && !item.dataset.originalDiseaseShown) {
+            item.dataset.originalDiseaseShown = diseaseNameEl.innerText;
+        }
+        
+        const severityEl = item.querySelector('.scan-severity');
+        if (severityEl && severityEl.innerText && !item.dataset.originalSeverityShown) {
+            item.dataset.originalSeverityShown = severityEl.innerText;
+        }
+        
+        // Translate plant name
+        if (plantNameEl) {
+            if (item.dataset.plantUr) {
+                plantNameEl.innerText = item.dataset.plantUr;
+            } else {
+                let plantText = plantNameEl.innerText.trim();
+                if (enToUrduCrop[plantText]) {
+                    plantNameEl.innerText = enToUrduCrop[plantText];
+                } else {
+                    for (const [en, ur] of Object.entries(enToUrduCrop)) {
+                        if (plantText.toLowerCase().includes(en.toLowerCase())) {
+                            plantNameEl.innerText = ur;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        
+        // Translate disease name
+        if (diseaseNameEl) {
+            if (item.dataset.nameUr) {
+                diseaseNameEl.innerText = item.dataset.nameUr;
+            } else {
+                let diseaseText = diseaseNameEl.innerText.trim();
+                diseaseText = diseaseText.replace(/\([\d.]+%\)/, '').trim();
+                
+                if (enToUrduDisease[diseaseText]) {
+                    diseaseNameEl.innerText = enToUrduDisease[diseaseText];
+                } else {
+                    for (const [en, ur] of Object.entries(enToUrduDisease)) {
+                        if (diseaseText.toLowerCase().includes(en.toLowerCase()) || 
+                            en.toLowerCase().includes(diseaseText.toLowerCase())) {
+                            diseaseNameEl.innerText = ur;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        
+        // Translate severity
+        if (severityEl) {
+            if (item.dataset.severityUr) {
+                severityEl.innerText = item.dataset.severityUr;
+            } else {
+                let severityText = severityEl.innerText.trim();
+                if (enToUrduSeverity[severityText]) {
+                    severityEl.innerText = enToUrduSeverity[severityText];
+                }
+            }
+        }
+    });
+}
+
+// Revert all scan items to English
+function revertAllScanItemsToEnglish() {
+    document.querySelectorAll('.scan-row').forEach(item => {
+        const plantNameEl = item.querySelector('.scan-plant-text');
+        if (plantNameEl) {
+            if (item.dataset.originalPlantShown) {
+                plantNameEl.innerText = item.dataset.originalPlantShown;
+            } else {
+                let currentText = plantNameEl.innerText.trim();
+                if (urduToEnCrop[currentText]) {
+                    plantNameEl.innerText = urduToEnCrop[currentText];
+                }
+            }
+        }
+        
+        const diseaseNameEl = item.querySelector('.scan-disease-name');
+        if (diseaseNameEl) {
+            if (item.dataset.originalDiseaseShown) {
+                diseaseNameEl.innerText = item.dataset.originalDiseaseShown;
+            } else {
+                let currentText = diseaseNameEl.innerText.trim();
+                if (urduToEnDisease[currentText]) {
+                    diseaseNameEl.innerText = urduToEnDisease[currentText];
+                }
+            }
+        }
+        
+        const severityEl = item.querySelector('.scan-severity');
+        if (severityEl) {
+            if (item.dataset.originalSeverityShown) {
+                severityEl.innerText = item.dataset.originalSeverityShown;
+            } else {
+                let currentText = severityEl.innerText.trim();
+                if (urduToEnSeverity[currentText]) {
+                    severityEl.innerText = urduToEnSeverity[currentText];
+                }
+            }
+        }
+    });
+}
+
+// Translate static UI elements to Urdu
+function translateStaticElementsToUrdu() {
+    const pageTitle = document.getElementById('page-title');
+    if (pageTitle && pageTitle.innerText === 'Scan History') {
+        pageTitle.dataset.originalText = 'Scan History';
+        pageTitle.innerText = 'اسکین کی تاریخ';
+    }
+    
+    const clearHistoryText = document.getElementById('clear-history-text');
+    if (clearHistoryText && clearHistoryText.innerText === 'Clear All History') {
+        clearHistoryText.dataset.originalText = 'Clear All History';
+        clearHistoryText.innerText = 'تمام تاریخ صاف کریں';
+    }
+    
+    const emptyTitle = document.getElementById('empty-title');
+    if (emptyTitle && emptyTitle.innerText === 'No Scans Yet') {
+        emptyTitle.dataset.originalText = 'No Scans Yet';
+        emptyTitle.innerText = 'ابھی تک کوئی اسکین نہیں';
+    }
+    
+    const emptyDesc = document.getElementById('empty-desc');
+    if (emptyDesc && emptyDesc.innerText === 'Start your first scan to see history here') {
+        emptyDesc.dataset.originalText = 'Start your first scan to see history here';
+        emptyDesc.innerText = 'تاریخ دیکھنے کے لیے اپنا پہلا اسکین شروع کریں';
+    }
+    
+    const emptyBtn = document.getElementById('empty-btn');
+    if (emptyBtn && emptyBtn.innerText === 'Start Scanning') {
+        emptyBtn.dataset.originalText = 'Start Scanning';
+        emptyBtn.innerText = 'اسکین شروع کریں';
+    }
+    
+    const endOfHistory = document.getElementById('end-of-history');
+    if (endOfHistory && endOfHistory.innerText.includes('End of history')) {
+        endOfHistory.dataset.originalText = endOfHistory.innerHTML;
+        endOfHistory.innerHTML = endOfHistory.innerHTML.replace('End of history', 'تاریخ کا اختتام');
+    }
+    
+    const fullReportText = document.getElementById('full-report-text');
+    if (fullReportText && fullReportText.innerText === 'Full Report') {
+        fullReportText.dataset.originalText = 'Full Report';
+        fullReportText.innerText = 'مکمل رپورٹ';
+    }
+    
+    const mobileFullReport = document.getElementById('mobile-full-report-text');
+    if (mobileFullReport && mobileFullReport.innerText === 'Full Report') {
+        mobileFullReport.dataset.originalText = 'Full Report';
+        mobileFullReport.innerText = 'مکمل رپورٹ';
+    }
+    
+    const aiBadge = document.getElementById('ai-badge');
+    if (aiBadge && aiBadge.innerText === 'AI Analyzed') {
+        aiBadge.dataset.originalText = 'AI Analyzed';
+        aiBadge.innerText = 'اے آئی تجزیہ کردہ';
+    }
+    
+    const mobileAiBadge = document.getElementById('mobile-ai-badge');
+    if (mobileAiBadge && mobileAiBadge.innerText === 'AI Analyzed') {
+        mobileAiBadge.dataset.originalText = 'AI Analyzed';
+        mobileAiBadge.innerText = 'اے آئی تجزیہ کردہ';
+    }
+    
+    const alertsTitle = document.getElementById('alerts-title');
+    if (alertsTitle && alertsTitle.innerText === 'Disease Alerts') {
+        alertsTitle.dataset.originalText = 'Disease Alerts';
+        alertsTitle.innerText = 'بیماری کے الرٹس';
+    }
+    
+    const markReadText = document.getElementById('mark-read-text');
+    if (markReadText && markReadText.innerText === 'Mark All as Read') {
+        markReadText.dataset.originalText = 'Mark All as Read';
+        markReadText.innerText = 'سب کو پڑھا ہوا مارک کریں';
+    }
+    
+    const loaderText = document.getElementById('loader-text');
+    if (loaderText && loaderText.innerText === 'Translating to Urdu...') {
+        loaderText.dataset.originalText = 'Translating to Urdu...';
+        loaderText.innerText = 'اردو میں ترجمہ ہو رہا ہے...';
+    }
+    
+    const searchInput = document.getElementById('search-input');
+    if (searchInput && currentLang === 'ur') {
+        if (!searchInput.dataset.originalPlaceholder) {
+            searchInput.dataset.originalPlaceholder = searchInput.placeholder;
+        }
+        searchInput.placeholder = 'پودے، بیماری، سیکٹر سے تلاش کریں…';
+    }
+    
+    const filterAll = document.getElementById('filter-all-btn');
+    const filterThreats = document.getElementById('filter-threats-btn');
+    const filterHealthy = document.getElementById('filter-healthy-btn');
+    
+    if (filterAll && !filterAll.dataset.originalText) {
+        filterAll.dataset.originalText = filterAll.innerHTML;
+        filterAll.innerHTML = filterAll.innerHTML.replace('All', 'سب');
+    }
+    if (filterThreats && !filterThreats.dataset.originalText) {
+        filterThreats.dataset.originalText = filterThreats.innerHTML;
+        filterThreats.innerHTML = filterThreats.innerHTML.replace('Threats', 'خطرات');
+    }
+    if (filterHealthy && !filterHealthy.dataset.originalText) {
+        filterHealthy.dataset.originalText = filterHealthy.innerHTML;
+        filterHealthy.innerHTML = filterHealthy.innerHTML.replace('Healthy', 'صحت مند');
+    }
+    
+    document.querySelectorAll('.date-header-text').forEach(header => {
+        if (!header.dataset.originalText) {
+            header.dataset.originalText = header.innerText;
+        }
+        const text = header.innerText;
+        if (text === 'Today') header.innerText = 'آج';
+        else if (text === 'Yesterday') header.innerText = 'کل';
+        else if (text.includes('Monday')) header.innerText = text.replace('Monday', 'پیر');
+        else if (text.includes('Tuesday')) header.innerText = text.replace('Tuesday', 'منگل');
+        else if (text.includes('Wednesday')) header.innerText = text.replace('Wednesday', 'بدھ');
+        else if (text.includes('Thursday')) header.innerText = text.replace('Thursday', 'جمعرات');
+        else if (text.includes('Friday')) header.innerText = text.replace('Friday', 'جمعہ');
+        else if (text.includes('Saturday')) header.innerText = text.replace('Saturday', 'ہفتہ');
+        else if (text.includes('Sunday')) header.innerText = text.replace('Sunday', 'اتوار');
+        else if (text.includes('January')) header.innerText = text.replace('January', 'جنوری');
+        else if (text.includes('February')) header.innerText = text.replace('February', 'فروری');
+        else if (text.includes('March')) header.innerText = text.replace('March', 'مارچ');
+        else if (text.includes('April')) header.innerText = text.replace('April', 'اپریل');
+        else if (text.includes('May')) header.innerText = text.replace('May', 'مئی');
+        else if (text.includes('June')) header.innerText = text.replace('June', 'جون');
+        else if (text.includes('July')) header.innerText = text.replace('July', 'جولائی');
+        else if (text.includes('August')) header.innerText = text.replace('August', 'اگست');
+        else if (text.includes('September')) header.innerText = text.replace('September', 'ستمبر');
+        else if (text.includes('October')) header.innerText = text.replace('October', 'اکتوبر');
+        else if (text.includes('November')) header.innerText = text.replace('November', 'نومبر');
+        else if (text.includes('December')) header.innerText = text.replace('December', 'دسمبر');
+    });
+    
+    const previewBadge = document.getElementById('preview-badge-text');
+    if (previewBadge && previewBadge.innerText === 'Healthy') {
+        previewBadge.dataset.originalText = 'Healthy';
+        previewBadge.innerText = 'صحت مند';
+    }
+    
+    const mobilePreviewBadge = document.getElementById('mobile-preview-badge-text');
+    if (mobilePreviewBadge && mobilePreviewBadge.innerText === 'Healthy') {
+        mobilePreviewBadge.dataset.originalText = 'Healthy';
+        mobilePreviewBadge.innerText = 'صحت مند';
+    }
+}
+
+// Revert static UI elements to English
+function revertStaticElementsToEnglish() {
+    const pageTitle = document.getElementById('page-title');
+    if (pageTitle && pageTitle.dataset.originalText) {
+        pageTitle.innerText = pageTitle.dataset.originalText;
+    }
+    
+    const clearHistoryText = document.getElementById('clear-history-text');
+    if (clearHistoryText && clearHistoryText.dataset.originalText) {
+        clearHistoryText.innerText = clearHistoryText.dataset.originalText;
+    }
+    
+    const emptyTitle = document.getElementById('empty-title');
+    if (emptyTitle && emptyTitle.dataset.originalText) {
+        emptyTitle.innerText = emptyTitle.dataset.originalText;
+    }
+    
+    const emptyDesc = document.getElementById('empty-desc');
+    if (emptyDesc && emptyDesc.dataset.originalText) {
+        emptyDesc.innerText = emptyDesc.dataset.originalText;
+    }
+    
+    const emptyBtn = document.getElementById('empty-btn');
+    if (emptyBtn && emptyBtn.dataset.originalText) {
+        emptyBtn.innerText = emptyBtn.dataset.originalText;
+    }
+    
+    const endOfHistory = document.getElementById('end-of-history');
+    if (endOfHistory && endOfHistory.dataset.originalText) {
+        endOfHistory.innerHTML = endOfHistory.dataset.originalText;
+    }
+    
+    const fullReportText = document.getElementById('full-report-text');
+    if (fullReportText && fullReportText.dataset.originalText) {
+        fullReportText.innerText = fullReportText.dataset.originalText;
+    }
+    
+    const mobileFullReport = document.getElementById('mobile-full-report-text');
+    if (mobileFullReport && mobileFullReport.dataset.originalText) {
+        mobileFullReport.innerText = mobileFullReport.dataset.originalText;
+    }
+    
+    const aiBadge = document.getElementById('ai-badge');
+    if (aiBadge && aiBadge.dataset.originalText) {
+        aiBadge.innerText = aiBadge.dataset.originalText;
+    }
+    
+    const mobileAiBadge = document.getElementById('mobile-ai-badge');
+    if (mobileAiBadge && mobileAiBadge.dataset.originalText) {
+        mobileAiBadge.innerText = mobileAiBadge.dataset.originalText;
+    }
+    
+    const alertsTitle = document.getElementById('alerts-title');
+    if (alertsTitle && alertsTitle.dataset.originalText) {
+        alertsTitle.innerText = alertsTitle.dataset.originalText;
+    }
+    
+    const markReadText = document.getElementById('mark-read-text');
+    if (markReadText && markReadText.dataset.originalText) {
+        markReadText.innerText = markReadText.dataset.originalText;
+    }
+    
+    const loaderText = document.getElementById('loader-text');
+    if (loaderText && loaderText.dataset.originalText) {
+        loaderText.innerText = loaderText.dataset.originalText;
+    }
+    
+    const searchInput = document.getElementById('search-input');
+    if (searchInput && searchInput.dataset.originalPlaceholder) {
+        searchInput.placeholder = searchInput.dataset.originalPlaceholder;
+    }
+    
+    const filterAll = document.getElementById('filter-all-btn');
+    const filterThreats = document.getElementById('filter-threats-btn');
+    const filterHealthy = document.getElementById('filter-healthy-btn');
+    
+    if (filterAll && filterAll.dataset.originalText) {
+        filterAll.innerHTML = filterAll.dataset.originalText;
+    }
+    if (filterThreats && filterThreats.dataset.originalText) {
+        filterThreats.innerHTML = filterThreats.dataset.originalText;
+    }
+    if (filterHealthy && filterHealthy.dataset.originalText) {
+        filterHealthy.innerHTML = filterHealthy.dataset.originalText;
+    }
+    
+    document.querySelectorAll('.date-header-text').forEach(header => {
+        if (header.dataset.originalText) {
+            header.innerText = header.dataset.originalText;
+        }
+    });
+    
+    const previewBadge = document.getElementById('preview-badge-text');
+    if (previewBadge && previewBadge.dataset.originalText) {
+        previewBadge.innerText = previewBadge.dataset.originalText;
+    }
+    
+    const mobilePreviewBadge = document.getElementById('mobile-preview-badge-text');
+    if (mobilePreviewBadge && mobilePreviewBadge.dataset.originalText) {
+        mobilePreviewBadge.innerText = mobilePreviewBadge.dataset.originalText;
+    }
+}
+
+// Get translated treatment text
+function getTranslatedTreatment(diseaseName, isUrdu) {
+    if (isUrdu) {
+        if (urduTreatments[diseaseName]) {
+            return urduTreatments[diseaseName];
+        }
+        for (const [en, ur] of Object.entries(urduTreatments)) {
+            if (diseaseName.includes(en.split(' ')[0])) {
+                return ur;
+            }
+        }
+        return `🍃 ${diseaseName} کا علاج: متاثرہ حصوں کو ہٹا دیں اور مناسب فنگسائڈ لگائیں۔`;
+    } else {
+        if (englishTreatments[diseaseName]) {
+            return englishTreatments[diseaseName];
+        }
+        for (const [en, eng] of Object.entries(englishTreatments)) {
+            if (diseaseName.toLowerCase().includes(en.toLowerCase().split(' ')[0])) {
+                return eng;
+            }
+        }
+        return `🍃 ${diseaseName} Treatment: Remove infected parts and apply appropriate fungicide.`;
+    }
+}
+
+// Update preview panel with correct language
+function updatePreviewWithLanguage(scanElement, isUrdu) {
+    const isDisease = scanElement.dataset.disease === 'true';
+    let diseaseName = scanElement.dataset.name;
+    const imageUrl = scanElement.dataset.image;
+    const scientific = scanElement.dataset.scientific;
+    const confidence = scanElement.dataset.confidence;
+    
+    let displayName = diseaseName;
+    let displayDescription = scanElement.dataset.description;
+    
+    if (isUrdu) {
+        // PRIORITIZE STORED URDU FIELDS FROM DATABASE
+        if (scanElement.dataset.nameUr) {
+            displayName = scanElement.dataset.nameUr;
+        } else if (enToUrduDisease[displayName]) {
+            displayName = enToUrduDisease[displayName];
+        } else {
+            for (const [en, ur] of Object.entries(enToUrduDisease)) {
+                if (displayName.toLowerCase().includes(en.toLowerCase()) || 
+                    en.toLowerCase().includes(displayName.toLowerCase())) {
+                    displayName = ur;
+                    break;
+                }
+            }
+        }
+        
+        if (scanElement.dataset.descriptionUr) {
+            displayDescription = scanElement.dataset.descriptionUr;
+        } else {
+            displayDescription = getTranslatedTreatment(diseaseName, true);
+        }
+    } else {
+        if (urduToEnDisease[displayName]) {
+            displayName = urduToEnDisease[displayName];
+        }
+        displayDescription = getTranslatedTreatment(displayName, false);
+    }
+    
+    // Update desktop preview
+    const desktopImg = document.getElementById('preview-image');
+    const desktopDisease = document.getElementById('preview-disease');
+    const desktopScientific = document.getElementById('preview-scientific');
+    const desktopDesc = document.getElementById('preview-description');
+    const desktopReportLink = document.getElementById('preview-report-link');
+    const desktopBadge = document.getElementById('preview-badge');
+    const desktopBadgeIcon = document.getElementById('preview-badge-icon');
+    const desktopBadgeText = document.getElementById('preview-badge-text');
+    
+    if (desktopImg) desktopImg.src = imageUrl;
+    if (desktopDisease) desktopDisease.textContent = displayName;
+    if (desktopScientific) desktopScientific.innerHTML = `${scientific || ''} · ${confidence}% confidence`;
+    if (desktopDesc) desktopDesc.textContent = displayDescription;
+    if (desktopReportLink) desktopReportLink.href = `/diagnosis/${scanElement.dataset.scanId}/`;
+    
+    if (desktopBadge) {
+        if (isDisease) {
+            desktopBadge.style.background = '#fee2e2';
+            desktopBadge.style.border = '1px solid #fecaca';
+            if (desktopBadgeIcon) { desktopBadgeIcon.textContent = 'warning'; desktopBadgeIcon.style.color = '#e53e3e'; }
+            if (desktopBadgeText) { desktopBadgeText.textContent = isUrdu ? 'خطرے کا پتہ چلا' : 'Threat Detected'; }
+        } else {
+            desktopBadge.style.background = '#e0f2e0';
+            desktopBadge.style.border = '1px solid #bbf7d0';
+            if (desktopBadgeIcon) { desktopBadgeIcon.textContent = 'check_circle'; desktopBadgeIcon.style.color = '#10b981'; }
+            if (desktopBadgeText) { desktopBadgeText.textContent = isUrdu ? 'صحت مند' : 'Healthy'; }
+        }
+    }
+    
+    // Update mobile preview
+    const mobileImg = document.getElementById('mobile-preview-image');
+    const mobileDisease = document.getElementById('mobile-preview-disease');
+    const mobileScientific = document.getElementById('mobile-preview-scientific');
+    const mobileDesc = document.getElementById('mobile-preview-description');
+    const mobileReportLink = document.getElementById('mobile-preview-report-link');
+    const mobileBadge = document.getElementById('mobile-preview-badge');
+    const mobileBadgeIcon = document.getElementById('mobile-preview-badge-icon');
+    const mobileBadgeText = document.getElementById('mobile-preview-badge-text');
+    
+    if (mobileImg) mobileImg.src = imageUrl;
+    if (mobileDisease) mobileDisease.textContent = displayName;
+    if (mobileScientific) mobileScientific.innerHTML = `${scientific || ''} · ${confidence}% confidence`;
+    if (mobileDesc) mobileDesc.textContent = displayDescription;
+    if (mobileReportLink) mobileReportLink.href = `/diagnosis/${scanElement.dataset.scanId}/`;
+    
+    if (mobileBadge) {
+        if (isDisease) {
+            mobileBadge.style.background = '#fee2e2';
+            mobileBadge.style.border = '1px solid #fecaca';
+            if (mobileBadgeIcon) { mobileBadgeIcon.textContent = 'warning'; mobileBadgeIcon.style.color = '#e53e3e'; }
+            if (mobileBadgeText) { mobileBadgeText.textContent = isUrdu ? 'خطرے کا پتہ چلا' : 'Threat Detected'; }
+        } else {
+            mobileBadge.style.background = '#e0f2e0';
+            mobileBadge.style.border = '1px solid #bbf7d0';
+            if (mobileBadgeIcon) { mobileBadgeIcon.textContent = 'check_circle'; mobileBadgeIcon.style.color = '#10b981'; }
+            if (mobileBadgeText) { mobileBadgeText.textContent = isUrdu ? 'صحت مند' : 'Healthy'; }
+        }
+    }
+}
+
+// Main translate function - English to Urdu
+function translateAllContent() {
+    if (isTranslating) return;
+    isTranslating = true;
+    showTranslateToast('Translating to Urdu...');
+    showTranslateLoading(true);
+    
+    setTimeout(() => {
+        translateStaticElementsToUrdu();
+        translateAllScanItemsToUrdu();
+        
+        const selectedScan = document.querySelector('.scan-row.selected');
+        if (selectedScan && selectedScan.dataset.scanId) {
+            updatePreviewWithLanguage(selectedScan, true);
+        }
+        
+        showTranslateLoading(false);
+        showTranslateToast('✓ Page translated to Urdu successfully!');
+        isTranslating = false;
+    }, 100);
+}
+
+// Main revert function - Urdu to English
+function revertToEnglish() {
+    if (isTranslating) return;
+    isTranslating = true;
+    showTranslateToast('Switching to English...');
+    showTranslateLoading(true);
+    
+    setTimeout(() => {
+        revertStaticElementsToEnglish();
+        revertAllScanItemsToEnglish();
+        
+        const selectedScan = document.querySelector('.scan-row.selected');
+        if (selectedScan && selectedScan.dataset.scanId) {
+            updatePreviewWithLanguage(selectedScan, false);
+        }
+        
+        updateFilterButtonCounts();
+        
+        showTranslateLoading(false);
+        showTranslateToast('✓ Switched to English successfully!');
+        isTranslating = false;
+    }, 100);
+}
+
+function updateFilterButtonCounts() {
+    const total = document.querySelectorAll('.scan-row').length;
+    const threats = document.querySelectorAll('.scan-row[data-disease="true"]').length;
+    const healthy = total - threats;
+    
+    const allBtn = document.getElementById('filter-all-btn');
+    const threatBtn = document.getElementById('filter-threats-btn');
+    const healthyBtn = document.getElementById('filter-healthy-btn');
+    
+    if (allBtn) {
+        const baseText = allBtn.dataset.originalText || 'All';
+        allBtn.innerHTML = baseText.replace(/\(.*\)/, `(${total})`);
+        allBtn.dataset.originalText = allBtn.innerHTML;
+    }
+    if (threatBtn) {
+        const baseText = threatBtn.dataset.originalText || 'Threats';
+        threatBtn.innerHTML = baseText.replace(/\(.*\)/, `(${threats})`);
+        threatBtn.dataset.originalText = threatBtn.innerHTML;
+    }
+    if (healthyBtn) {
+        const baseText = healthyBtn.dataset.originalText || 'Healthy';
+        healthyBtn.innerHTML = baseText.replace(/\(.*\)/, `(${healthy})`);
+        healthyBtn.dataset.originalText = healthyBtn.innerHTML;
+    }
+}
+
+function updateLanguageUI() {
+    document.querySelectorAll('.language-option').forEach(opt => {
+        opt.classList.remove('active');
+        if (opt.dataset.lang === currentLang) opt.classList.add('active');
+    });
+    
+    const langSpan = document.getElementById('currentLanguage');
+    if (langSpan) langSpan.textContent = currentLang === 'en' ? 'English' : 'اردو';
+}
+
+async function changeLanguage(lang) {
+    if (lang === currentLang) return;
+    
+    localStorage.setItem('agrisense_language', lang);
+    currentLang = lang;
+    updateLanguageUI();
+    
+    if (lang === 'ur') {
+        translateAllContent();
+    } else {
+        revertToEnglish();
+    }
+}
+
+// ==================== MAIN INITIALIZATION ====================
+document.addEventListener('DOMContentLoaded', function() {
+    // 1. Language button handlers - ATTACH FIRST
+    const langBtn = document.getElementById('languageBtn');
+    const langDropdown = document.getElementById('languageDropdown');
+    if (langBtn && langDropdown) {
+        langBtn.addEventListener('click', (e) => { 
+            e.stopPropagation(); 
+            langDropdown.classList.toggle('active'); 
+        });
+        document.addEventListener('click', () => langDropdown.classList.remove('active'));
+    }
+
+    document.querySelectorAll('.language-option').forEach(opt => {
+        opt.addEventListener('click', () => changeLanguage(opt.dataset.lang));
+    });
+
+    // Initialize language from localStorage or server default
+    const savedLang = localStorage.getItem('agrisense_language');
+    const serverLang = '{{ user_language|default:"en" }}';
+    currentLang = savedLang || serverLang || 'en';
+    
+    updateLanguageUI();
+    
+    if (currentLang === 'ur') {
+        translateAllContent();
+    } else {
+        revertToEnglish();
+    }
+    
+    updateFilterButtonCounts();
+    
+    // Update preview if a scan is selected
+    const selectedScan = document.querySelector('.scan-row.selected');
+    if (selectedScan) {
+        updatePreviewWithLanguage(selectedScan, currentLang === 'ur');
+    } else if (document.querySelector('.scan-row')) {
+        // Select first scan if none selected
+        const firstScan = document.querySelector('.scan-row');
+        selectScan(firstScan, firstScan.dataset.scanId);
+        updatePreviewWithLanguage(firstScan, currentLang === 'ur');
+    }
+    
+    console.log('History page loaded in:', currentLang);
+});
+
+// ==================== THEME HANDLING ====================
+const body = document.body;
+function applyThemeFromSettings(theme) {
+    if (theme === 'dark') { body.classList.add('dark'); }
+    else { body.classList.remove('dark'); }
+}
+const savedThemeFromStorage = localStorage.getItem('agrisense_theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+applyThemeFromSettings(savedThemeFromStorage);
+
+// ==================== TOAST FUNCTION ====================
+function showToast(message) {
+    const toast = document.getElementById('toast');
+    const msgSpan = document.getElementById('toastMessage');
+    if (!toast) return;
+    msgSpan.innerText = message;
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 3000);
+}
+
+// ==================== DELETE FUNCTIONS ====================
+function deleteSingleScan(scanId, element) {
+    if (!confirm('Are you sure you want to delete this scan?')) return;
+    fetch(`/api/delete-scan/${scanId}/`, { 
+        method: 'DELETE', 
+        headers: { 'X-CSRFToken': getCookie('csrftoken') } 
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            const row = element.closest('.scan-row');
+            const wasSelected = row.classList.contains('selected');
+            row.remove();
+            updateFilterButtonCounts();
+            if (wasSelected) {
+                const firstVisible = document.querySelector('.scan-row:not([style*="display: none"])');
+                if (firstVisible) {
+                    selectScan(firstVisible, firstVisible.dataset.scanId);
+                    updatePreviewWithLanguage(firstVisible, currentLang === 'ur');
+                } else {
+                    clearPreview();
+                }
+            }
+            showToast('Scan deleted');
+        } else showToast('Delete failed', 'error');
+    }).catch(() => showToast('Error deleting', 'error'));
+}
+
+document.getElementById('clear-history-btn')?.addEventListener('click', () => {
+    if (!confirm('⚠️ Delete ALL scan history? This action cannot be undone.')) return;
+    fetch('/api/clear-all-scans/', { 
+        method: 'DELETE', 
+        headers: { 'X-CSRFToken': getCookie('csrftoken') } 
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) { location.reload(); }
+        else showToast('Failed to clear history', 'error');
+    }).catch(() => showToast('Error', 'error'));
+});
+
+function clearPreview() {
+    const previewImg = document.getElementById('preview-image');
+    if(previewImg) previewImg.src = '';
+    const mobileImg = document.getElementById('mobile-preview-image');
+    if(mobileImg) mobileImg.src = '';
+    document.getElementById('preview-disease').textContent = 'No scans available';
+    document.getElementById('preview-scientific').innerHTML = '';
+    document.getElementById('preview-description').textContent = 'Start a new scan to see results here.';
+    document.getElementById('mobile-preview-disease').textContent = 'No scans available';
+    document.getElementById('mobile-preview-scientific').innerHTML = '';
+    document.getElementById('mobile-preview-description').textContent = 'Start a new scan to see results here.';
+}
+
+function getCookie(name) {
+    try {
+        let value = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let cookie of cookies) {
+                const trimmed = cookie.trim();
+                if (trimmed.substring(0, name.length + 1) === (name + '=')) {
+                    value = decodeURIComponent(trimmed.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        if (!value && name === 'csrftoken') {
+            return document.querySelector('[name=csrfmiddlewaretoken]')?.value || "";
+        }
+        return value || "";
+    } catch (e) {
+        console.error("Error retrieving cookie:", name, e);
+        return "";
+    }
+}
+
+// ==================== FILTER FUNCTIONS ====================
+let currentFilter = 'all', currentSearch = '';
+
+function filterScans(filter, btn) {
+    currentFilter = filter;
+    document.querySelectorAll('.filter-btn').forEach(b => { 
+        b.classList.remove('active'); 
+        b.style.background = '#ffffff'; 
+        b.style.borderColor = '#d4e8ce'; 
+        b.style.color = '#6b8c68'; 
+    });
+    btn.classList.add('active'); 
+    btn.style.background = '#d0e8c8'; 
+    btn.style.borderColor = '#9bc48f'; 
+    btn.style.color = '#0f5c2f';
+    applyFilters();
+}
+
+function searchScans() { 
+    currentSearch = document.getElementById('search-input').value.toLowerCase(); 
+    applyFilters(); 
+}
+
+function applyFilters() {
+    const scans = document.querySelectorAll('.scan-row');
+    let firstVisible = null;
+    scans.forEach(scan => {
+        let show = true;
+        if (currentFilter === 'threats') show = scan.dataset.disease === 'true';
+        else if (currentFilter === 'healthy') show = scan.dataset.disease === 'false';
+        if (show && currentSearch) show = scan.dataset.search.toLowerCase().includes(currentSearch);
+        scan.style.display = show ? 'flex' : 'none';
+        if (show && !firstVisible) firstVisible = scan;
+    });
+    const currentSelected = document.querySelector('.scan-row.selected');
+    if ((!currentSelected || currentSelected.style.display === 'none') && firstVisible) {
+        selectScan(firstVisible, firstVisible.dataset.scanId);
+        updatePreviewWithLanguage(firstVisible, currentLang === 'ur');
+    } else if (!firstVisible) clearPreview();
+    
+    document.querySelectorAll('.flex.items-center.gap-2.mb-2').forEach(header => {
+        let sibling = header.nextElementSibling;
+        let hasVisible = false;
+        while (sibling && sibling.classList && sibling.classList.contains('scan-row')) {
+            if (sibling.style.display !== 'none') { hasVisible = true; break; }
+            sibling = sibling.nextElementSibling;
+        }
+        header.style.display = hasVisible ? 'flex' : 'none';
+    });
+}
+
+function selectScan(element, scanId) {
+    document.querySelectorAll('.scan-row').forEach(r => r.classList.remove('selected'));
+    element.classList.add('selected');
+    updatePreviewWithLanguage(element, currentLang === 'ur');
+}
+
+// Attach click handlers to scan rows
+document.querySelectorAll('.scan-row').forEach(row => {
+    row.addEventListener('click', (e) => { 
+        if (!e.target.closest('.delete-scan-btn')) {
+            selectScan(row, row.dataset.scanId);
+        }
+    });
+});
+
+// ==================== MOBILE MENU ====================
+function toggleMobileMenu() {
+    document.getElementById('mobileMenu').classList.toggle('active');
+    document.getElementById('mobileMenuOverlay').classList.toggle('active');
+}
+
+function closeMobileMenu() {
+    document.getElementById('mobileMenu')?.classList.remove('active');
+    document.getElementById('mobileMenuOverlay')?.classList.remove('active');
+}
+
+document.querySelectorAll('#mobileMenu a').forEach(l => l.addEventListener('click', closeMobileMenu));
+
+// ==================== NOTIFICATIONS ====================
+let recentScansData = [];
+
+function updateNotificationCount(count) {
+    const badge = document.getElementById('notification-count');
+    if (badge) { 
+        badge.textContent = count; 
+        badge.classList.toggle('hidden', count === 0); 
+    }
+}
+
+function renderDiseaseAlerts() {
+    const container = document.getElementById('alert-list');
+    const countEl = document.getElementById('alert-count-in-dropdown');
+    const alerts = recentScansData.filter(s => s.disease_detected);
+    if (countEl) countEl.textContent = alerts.length + ' alerts';
+    if (container) {
+        container.innerHTML = alerts.map(scan => {
+            let diseaseName = scan.disease_name;
+            if (currentLang === 'ur') {
+                diseaseName = enToUrduDisease[diseaseName] || diseaseName;
+            }
+            return `<div class="flex gap-4 p-3 rounded-2xl" style="background: #e8f4e4;">
+                <div class="w-11 h-11 rounded-xl overflow-hidden"><img src="${scan.image_url || ''}" class="w-full h-full object-cover"></div>
+                <div><p class="font-bold text-sm">${diseaseName}</p><p class="text-xs text-rose-500">Confidence: ${scan.confidence}%</p></div>
+            </div>`;
+        }).join('') || `<p class="text-center py-8">${currentLang === 'ur' ? 'کوئی الرٹ نہیں' : 'No alerts'}</p>`;
+    }
+}
+
+function positionDropdown() {
+    const dropdown = document.getElementById('notification-dropdown'), bell = document.getElementById('notifications-btn');
+    if (!dropdown || !bell) return;
+    const rect = bell.getBoundingClientRect();
+    dropdown.style.right = (window.innerWidth - rect.right + 10) + 'px';
+    dropdown.style.top = (rect.bottom + 10) + 'px';
+}
+
+const bell = document.getElementById('notifications-btn');
+const dropdown = document.getElementById('notification-dropdown');
+
+bell?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (dropdown.classList.contains('hidden')) { 
+        positionDropdown(); 
+        fetch('/api/dashboard-stats/').then(r=>r.json()).then(data=>{ 
+            recentScansData=data.recent_scans||[]; 
+            updateNotificationCount(data.unread_notifications||0); 
+            renderDiseaseAlerts(); 
+            dropdown.classList.remove('hidden'); 
+        }); 
+    } else dropdown.classList.add('hidden');
+});
+
+document.addEventListener('click', (e) => { 
+    if (bell && dropdown && !bell.contains(e.target) && !dropdown.contains(e.target)) {
+        dropdown.classList.add('hidden');
+    }
+});
+
+document.getElementById('mark-all-read-btn')?.addEventListener('click', () => { 
+    fetch('/api/mark-notifications-read/', { 
+        method: 'POST', 
+        headers: { 'X-CSRFToken': getCookie('csrftoken') } 
+    }).then(() => { 
+        dropdown.classList.add('hidden'); 
+        updateNotificationCount(0); 
+    }); 
+});
+
+fetch('/api/dashboard-stats/').then(r=>r.json()).then(data=>{ 
+    recentScansData=data.recent_scans||[]; 
+    updateNotificationCount(data.unread_notifications||0); 
+});
+
+// Update filter counts periodically
+setInterval(() => { 
+    if (document.visibilityState === 'visible') {
+        updateFilterButtonCounts();
+        fetch('/api/dashboard-stats/').then(r=>r.json()).then(data=>{ 
+            recentScansData=data.recent_scans||[]; 
+            updateNotificationCount(data.unread_notifications||0); 
+        });
+    }
+}, 300000);
+</script>
+</body>
+</html>

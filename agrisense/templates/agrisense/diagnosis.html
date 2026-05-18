@@ -1,0 +1,1484 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover" name="viewport"/>
+<title>AgriSense – Diagnosis Result</title>
+<script src="{% static 'js/tailwind.min.js' %}"></script>
+<script src="{% static 'js/agrisense_translations.js' %}"></script>
+<link href="{% static 'css/inter.css' %}" rel="stylesheet"/>
+<link href="{% static 'css/material-symbols.css' %}" rel="stylesheet"/>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<style>
+    .language-switch {
+        position: relative;
+        display: inline-block;
+    }
+    
+    .language-btn {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 12px;
+        background: rgba(255,255,255,0.12);
+        border: 1px solid rgba(255,255,255,0.2);
+        border-radius: 0.75rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        color: white;
+        font-size: 0.875rem;
+        font-weight: 500;
+    }
+    
+    .language-btn:hover {
+        background: rgba(255,255,255,0.2);
+        border-color: rgba(255,255,255,0.3);
+    }
+    
+    .language-dropdown {
+        position: absolute;
+        top: 100%;
+        right: 0;
+        margin-top: 8px;
+        background: white;
+        border: 1px solid #d4e8ce;
+        border-radius: 0.75rem;
+        min-width: 140px;
+        overflow: hidden;
+        z-index: 1000;
+        box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1);
+        display: none;
+    }
+    
+    body.dark .language-dropdown {
+        background: #121a12;
+        border-color: #2a3a2a;
+    }
+    
+    .language-dropdown.active {
+        display: block;
+        animation: dropdownFadeIn 0.2s ease;
+    }
+    
+    /* FIX: Proper sidebar sticky behavior - SCROLLBAR FIXED */
+    body {
+        min-height: 100vh;
+        overflow: auto;
+        margin: 0;
+        padding: 0;
+    }
+    
+    aside {
+        height: 100vh;
+        position: sticky;
+        top: 0;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+    }
+    
+    aside nav {
+        flex: 1;
+        overflow-y: auto;
+        min-height: 0;
+    }
+    
+    .main-content-area {
+        overflow-y: auto;
+        height: 100vh;
+    }
+    
+    /* Visible scrollbar styles */
+    ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+        background: #e8f4e4;
+        border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb {
+        background: #9bc48f;
+        border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+        background: #10b981;
+    }
+    
+    /* Firefox scrollbar */
+    * {
+        scrollbar-width: thin;
+        scrollbar-color: #9bc48f #e8f4e4;
+    }
+    
+    @keyframes dropdownFadeIn {
+        from { opacity: 0; transform: translateY(-10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .language-option {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 16px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        font-size: 0.875rem;
+        color: #1a2c1e;
+    }
+    
+    body.dark .language-option {
+        color: #e5ede3;
+    }
+    
+    .language-option:hover {
+        background: #e8f4e4;
+    }
+    
+    body.dark .language-option:hover {
+        background: #1a241a;
+    }
+    
+    .language-option.active {
+        background: #10b981;
+        color: white;
+    }
+    
+    .language-option .material-symbols-outlined {
+        font-size: 18px;
+    }
+
+    .translate-loader {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: #10b981;
+        color: white;
+        padding: 12px 24px;
+        border-radius: 12px;
+        z-index: 10000;
+        display: none;
+        align-items: center;
+        gap: 10px;
+        font-family: 'Inter', sans-serif;
+        font-size: 14px;
+    }
+    
+    .translate-loader.show {
+        display: flex;
+    }
+    
+    .spinner {
+        width: 18px;
+        height: 18px;
+        border: 2px solid rgba(255,255,255,0.3);
+        border-top-color: white;
+        border-radius: 50%;
+        animation: spin 0.6s linear infinite;
+    }
+    
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+    
+    .translate-toast {
+        position: fixed;
+        bottom: 80px;
+        right: 20px;
+        background: white;
+        border: 1px solid #d4e8ce;
+        border-radius: 12px;
+        padding: 12px 20px;
+        z-index: 10000;
+        font-family: 'Inter', sans-serif;
+        font-size: 14px;
+        display: none;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    
+    body.dark .translate-toast {
+        background: #121a12;
+        border-color: #2a3a2a;
+        color: #e5ede3;
+    }
+    
+    .translate-toast.show {
+        display: block;
+    }
+
+    .no-translate {
+        -webkit-translate: none !important;
+        translate: none !important;
+    }
+    
+    .material-symbols-outlined,
+    .material-icons,
+    [class*="material-symbols"] {
+        -webkit-translate: none !important;
+        translate: none !important;
+    }
+</style>
+
+<script>
+  tailwind.config = {
+    darkMode:"class",
+    theme:{extend:{colors:{"primary":"#10b981","primary-dark":"#059669","background-dark":"#0a0f0a","surface-dark":"#121a12","surface-darker":"#0d130d"},fontFamily:{display:["Inter","sans-serif"]},boxShadow:{"glow-green":"0 0 20px rgba(16,185,129,0.2)","glow-green-sm":"0 0 10px rgba(16,185,129,0.1)"}}}
+  }
+</script>
+<style type="text/tailwindcss">
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { overflow-x: hidden !important; width: 100% !important; max-width: 100% !important; }
+  body { font-family: 'Inter', sans-serif; background: #f0f7f0 !important; color-scheme: light; color: #1a2c1e !important; }
+  body.dark { background: #0a0f0a !important; color: #e5ede3 !important; }
+  body.dark .glass-card { background: #121a12 !important; border: 1px solid #2a3a2a !important; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2); }
+  body.dark .glass-card:hover { background: #1a241a !important; border-color: #3c553c !important; }
+  body.dark .bg-surface-dark { background: #121a12 !important; border-color: #2a3a2a !important; }
+  body.dark .bg-surface-darker { background: #0f160f !important; border-color: #2a3a2a !important; }
+  body.dark .sidebar-link { color: #cbdcc8 !important; }
+  body.dark .sidebar-link:hover { background: rgba(255,255,255,0.1) !important; color: #ffffff !important; }
+  body.dark .sidebar-link.active { background: rgba(255,255,255,0.15) !important; color: #34d399 !important; border-color: rgba(255,255,255,0.2) !important; }
+  body.dark aside { background: #0b150b !important; border-right-color: #1f2c1f !important; }
+  body.dark header.sticky { background: #0b150b !important; border-bottom-color: #1f2c1f !important; }
+  body.dark .text-white, body.dark .text-gray-400, body.dark .text-gray-500 { color: #cbdcc8 !important; }
+  body.dark .rounded-2xl.p-6, body.dark .rounded-2xl.p-5 { background: #121a12 !important; border-color: #2a3a2a !important; }
+  body.dark .rounded-xl.p-4 { background: #0f160f !important; border-color: #2a3a2a !important; }
+  body.dark #treatmentModal .relative { background: #121a12 !important; border-color: #2a3a2a !important; }
+  body.dark .rounded-xl.p-4[style*="background: #f9fff8"] { background: #0f160f !important; }
+  body.dark #toast { background: #121a12 !important; border-color: #2a3a2a !important; color: #e5ede3 !important; }
+  body.dark .leaflet-container { background: #1a241a; }
+  body.dark .modal-animation { background: #121a12 !important; }
+  body.dark aside .text-white, body.dark aside .text-gray-500, body.dark aside p, body.dark aside span, body.dark aside a { color: #cbdcc8 !important; }
+  @keyframes fillGauge{from{stroke-dasharray:0,100}to{stroke-dasharray:94,100}} .gauge-fill{animation:fillGauge 1.5s ease-out forwards;}
+  aside { background: #1a3a2a !important; border-right-color: #2d5a3d !important; }
+  aside .text-white, aside .text-gray-500, aside .text-gray-400, aside p, aside span, aside a, aside .font-bold { color: white !important; }
+  .sidebar-link{ display:flex; align-items:center; gap:.75rem; padding:.75rem 1rem; border-radius:.75rem; font-weight:500; transition:all .2s; width:100%; color: white !important; }
+  .sidebar-link:hover{ background: rgba(255,255,255,0.15) !important; color: white !important; }
+  .sidebar-link.active{ background: rgba(255,255,255,0.25) !important; color: white !important; border: 1px solid rgba(255,255,255,0.3) !important; }
+  aside .rounded-xl.p-3 { background: rgba(255,255,255,0.1) !important; border: 1px solid rgba(255,255,255,0.15) !important; }
+  aside .text-[10px].font-bold { color: rgba(255,255,255,0.6) !important; }
+  .bg-surface-dark { background: #ffffff !important; border: 1px solid #d4e8ce !important; }
+  .bg-surface-darker { background: #f9fff8 !important; border: 1px solid #d4e8ce !important; }
+  @keyframes modalFadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+  .modal-animation { animation: modalFadeIn 0.2s ease-out forwards; }
+  .leaflet-container { background: #e8f4e4; }
+  body.dark .leaflet-container { background: #1a241a; }
+  .toast-notification { position: fixed; bottom: 20px; right: 20px; background: #ffffff; border: 1px solid #9bc48f; border-radius: 12px; padding: 12px 20px; color: #2d3e2d; font-weight: 500; box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.1); transform: translateY(100px); opacity: 0; transition: all 0.3s ease; z-index: 9999; }
+  .toast-notification.show { transform: translateY(0); opacity: 1; }
+  .loading-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.8); backdrop-filter: blur(4px); z-index: 10000; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 16px; }
+  .loading-spinner { width: 48px; height: 48px; border: 3px solid rgba(16, 185, 129, 0.2); border-top-color: #10b981; border-radius: 50%; animation: spin 1s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  header.sticky { background: #1a3a2a !important; border-bottom-color: #2d5a3d !important; }
+  header h1, header .font-bold.text-white { color: white !important; }
+  header a .bg-surface-dark { background: rgba(255,255,255,0.12) !important; border-color: rgba(255,255,255,0.2) !important; color: white !important; }
+  button.border-white\/10 { border-color: rgba(255,255,255,0.2) !important; color: rgba(255,255,255,0.8) !important; }
+  button.bg-primary { background: #2f8b5c !important; color: white !important; }
+  .text-white, .text-gray-300, .text-gray-400 { color: #2d3e2d !important; }
+  body.dark .text-white, body.dark .text-gray-300, body.dark .text-gray-400 { color: #cbdcc8 !important; }
+  .text-gray-500, .text-gray-400.text-sm { color: #6b8c68 !important; }
+  .text-primary { color: #10b981 !important; }
+  body.dark .text-primary { color: #34d399 !important; }
+  .text-red-400 { color: #e53e3e !important; }
+  .text-green-400 { color: #10b981 !important; }
+  .text-yellow-400 { color: #d97706 !important; }
+  .text-orange-400 { color: #ea580c !important; }
+  .border-white\/5, .border-white\/10, .border-white\/20 { border-color: #d4e8ce !important; }
+  .border-primary\/20, .border-primary\/30 { border-color: #9bc48f !important; }
+  .border-red-500\/30 { border-color: #fecaca !important; }
+  .border-green-500\/30 { border-color: #bbf7d0 !important; }
+  .bg-primary\/10, .bg-primary\/20 { background-color: rgba(16, 185, 129, 0.1) !important; }
+  .bg-red-500\/10 { background-color: rgba(229, 62, 62, 0.1) !important; }
+  .bg-green-500\/10 { background-color: rgba(16, 185, 129, 0.1) !important; }
+  .bg-black\/60 { background: rgba(0, 0, 0, 0.6) !important; }
+  svg path:first-child { stroke: #d4e8ce !important; }
+  svg path.gauge-fill { stroke: #10b981 !important; }
+  .bg-surface-dark.rounded-2xl { background: #ffffff !important; }
+  .bg-surface-darker.rounded-xl { background: #f9fff8 !important; }
+  nav.lg\:hidden.fixed { background: #1a3a2a !important; border-top-color: #2d5a3d !important; }
+  body.dark nav.lg\:hidden.fixed { background: #0b150b !important; }
+  nav.lg\:hidden.fixed .text-gray-500 { color: #9bc48f !important; }
+  nav.lg\:hidden.fixed .bg-primary { background: #2f8b5c !important; }
+  .hover\:bg-white\/5:hover { background: #e8f4e4 !important; }
+  header .text-white, header span[style*="color: white"] { color: white !important; }
+  button.bg-primary span, button.bg-primary { color: white !important; }
+  #location-name { color: #2d3e2d !important; }
+  body.dark #location-name { color: #cbdcc8 !important; }
+  .logout-icon { transition: background 0.2s ease; }
+  .logout-icon:hover { background: rgba(255,255,255,0.2) !important; color: #f87171 !important; }
+</style>
+</head>
+<body class="min-h-screen flex">
+
+<div id="toast" class="toast-notification flex items-center gap-3">
+  <span class="material-symbols-outlined text-primary">check_circle</span>
+  <span id="toast-message">Action completed successfully</span>
+</div>
+
+<div id="loadingOverlay" class="loading-overlay" style="display: none;">
+  <div class="loading-spinner"></div>
+  <p class="text-primary font-semibold" id="analyzing-text">Analyzing image...</p>
+  <p class="text-gray-400 text-sm" id="ai-examining-text">Our AI is examining your plant</p>
+</div>
+
+<!-- Sidebar - NEVER TRANSLATE -->
+<aside class="hidden lg:flex flex-col w-64 xl:w-72 shrink-0 no-translate" style="background: #1a3a2a; border-right: 1px solid #2d5a3d;">
+  <div class="flex items-center gap-3 px-6 py-6 border-b flex-shrink-0" style="border-color: #2d5a3d;">
+    <div class="w-9 h-9 rounded-xl bg-white/20 border border-white/30 flex items-center justify-center">
+      <span class="material-symbols-outlined text-primary text-xl">eco</span>
+    </div>
+    <div class="flex flex-col">
+      <span class="font-bold text-xl tracking-tight leading-none text-white">{{ branding.app_name|default:"AgriSense" }}</span>
+      <span class="text-[10px] text-primary/80 uppercase tracking-[0.2em] font-bold mt-1.5">{{ branding.app_subtitle|default:"Edge Intelligence" }}</span>
+    </div>
+  </div>
+  <nav class="flex-1 px-3 py-5 flex flex-col gap-1 overflow-y-auto min-h-0">
+    <a href="{% url 'dashboard' %}" class="sidebar-link"><span class="material-symbols-outlined text-xl">dashboard</span>Dashboard</a>
+    <a href="{% url 'scanner' %}" class="sidebar-link"><span class="material-symbols-outlined text-xl">center_focus_strong</span>New Scan</a>
+    <a href="{% url 'history' %}" class="sidebar-link"><span class="material-symbols-outlined text-xl">history</span>History</a>
+    <div class="pt-6 pb-2 px-3 text-[10px] font-bold uppercase tracking-widest text-white/50">Management</div>
+    <a href="{% url 'setting' %}" class="sidebar-link"><span class="material-symbols-outlined text-[20px]">settings</span> Settings</a>
+    <a href="{% url 'about' %}" class="sidebar-link"><span class="material-symbols-outlined">info</span> About Us</a>
+  </nav>
+  <div class="p-4 border-t flex-shrink-0" style="border-color: #2d5a3d;">
+   <a href="{% url 'profile_settings' %}" class="rounded-2xl flex items-center gap-3 p-3 transition-all hover:bg-white/15" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15); text-decoration: none;">
+  <div class="w-9 h-9 rounded-xl bg-white/20 border border-white/30 flex items-center justify-center shrink-0">
+    <span class="material-symbols-outlined text-white text-xl">account_circle</span>
+  </div>
+  <div class="flex-1 min-w-0">
+    <p class="text-sm font-bold truncate text-white">{{ user.get_full_name|default:user.username }}</p>
+    <p class="text-[10px] truncate uppercase tracking-tighter text-white/60">{{ user.email|default:"AgriSense User" }}</p>
+  </div>
+</a>
+    <a href="{% url 'logout' %}" class="flex items-center justify-center mt-3 gap-2 px-3 py-2 rounded-lg transition-all text-white/80 hover:text-rose-400 hover:bg-white/10" style="background: rgba(255,255,255,0.08);">
+      <span class="material-symbols-outlined text-sm">logout</span><span class="text-xs font-medium">Logout</span>
+    </a>
+  </div>
+</aside>
+
+<div class="flex-1 flex flex-col h-screen overflow-y-auto">
+  <header class="sticky top-0 z-30 px-4 lg:px-8 py-4 flex items-center gap-4 flex-shrink-0" style="background: #1a3a2a; border-bottom: 1px solid #2d5a3d;">
+    <a href="{% url 'scanner' %}" class="flex items-center gap-2">
+      <button class="w-9 h-9 flex items-center justify-center rounded-full transition-all" style="background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.2); color: white;">
+        <span class="material-symbols-outlined text-xl">arrow_back</span>
+      </button>
+    </a>
+    <div>
+      <h1 class="font-bold text-white text-lg leading-none" id="page-title">Diagnosis Result</h1>
+      <p class="text-white/60 text-xs mt-0.5" id="scan-info">
+        {% if scan %}Scan #{{ scan.id|stringformat:".8s" }} · {{ scan.created_at|date:"M d, Y" }}{% else %}New Analysis{% endif %}
+      </p>
+    </div>
+    <div class="ml-auto flex items-center gap-2">
+      <div class="language-switch">
+        <button class="language-btn" id="languageBtn">
+          <span class="material-symbols-outlined text-[18px]">language</span>
+          <span id="currentLanguage">English</span>
+          <span class="material-symbols-outlined text-[16px]">expand_more</span>
+        </button>
+        <div class="language-dropdown" id="languageDropdown">
+          <div class="language-option active" data-lang="en"><span class="material-symbols-outlined">check_circle</span>English</div>
+          <div class="language-option" data-lang="ur"><span class="material-symbols-outlined">translate</span>اردو (Urdu)</div>
+        </div>
+      </div>
+      <button onclick="shareReport()" class="hidden sm:flex px-4 py-2 text-sm font-semibold rounded-xl transition-all items-center gap-2" style="background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.2); color: rgba(255,255,255,0.9);">
+        <span class="material-symbols-outlined text-[18px]">share</span><span id="share-text">Share Report</span>
+      </button>
+      <button onclick="exportReport()" class="hidden sm:flex px-4 py-2 text-sm font-semibold rounded-xl transition-all items-center gap-2" style="background: #2f8b5c; color: white;">
+        <span class="material-symbols-outlined text-[18px]">download</span><span id="export-text">Export</span>
+      </button>
+    </div>
+  </header>
+  
+  {% include 'includes/floating_video_button.html' %}
+  
+  <main class="flex-1 p-4 lg:p-8 max-w-screen-xl mx-auto w-full pb-24 lg:pb-8">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
+      <div class="space-y-5">
+        <div class="relative w-full aspect-[4/3] rounded-2xl overflow-hidden shadow-xl border" style="border-color: #9bc48f;">
+          <img id="diagnosis-image" src="{% if scan and scan.image %}{{ scan.image.url }}{% else %}https://placehold.co/800x600/e8f4e4/9bc48f?text=Upload+Plant+Image{% endif %}" alt="Plant analysis" class="w-full h-full object-cover"/>
+          <div class="absolute bottom-4 right-4 backdrop-blur-md px-3 py-1.5 rounded-full flex items-center gap-2" style="background: rgba(0,0,0,0.6); border: 1px solid rgba(16,185,129,0.3);">
+            <span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+            <span class="text-xs font-bold text-primary tracking-widest uppercase" id="ai-analyzed-badge">AI Analyzed</span>
+          </div>
+          <div class="absolute top-4 left-4 backdrop-blur-md px-3 py-1.5 rounded-full flex items-center gap-2" 
+               style="background: rgba(0,0,0,0.6); border: 1px solid {% if scan.disease_detected %}#fecaca{% else %}#bbf7d0{% endif %};">
+            <span class="material-symbols-outlined {% if scan.disease_detected %}text-red-400{% else %}text-green-400{% endif %} text-sm">{% if scan.disease_detected %}warning{% else %}check_circle{% endif %}</span>
+            <span class="text-xs font-bold {% if scan.disease_detected %}text-red-400{% else %}text-green-400{% endif %} uppercase tracking-wide" id="status-badge-text">{% if scan.disease_detected %}Threat Detected{% else %}Healthy{% endif %}</span>
+          </div>
+        </div>
+
+        <div class="rounded-2xl p-6 flex flex-col items-center" style="background: #ffffff; border: 1px solid #d4e8ce;">
+          <h3 class="text-xs font-bold uppercase tracking-widest mb-5" style="color: #6b8c68;" id="ai-confidence-title">AI Confidence Score</h3>
+          <div class="relative w-56 h-28 flex items-end justify-center overflow-visible">
+            <svg class="w-full h-full overflow-visible" viewBox="0 0 100 50">
+              <path d="M 10 50 A 40 40 0 0 1 90 50" fill="none" stroke="#d4e8ce" stroke-linecap="round" stroke-width="8"></path>
+              <path class="gauge-fill" d="M 10 50 A 40 40 0 0 1 90 50" fill="none" stroke="#10b981" stroke-dasharray="{% if scan %}{{ scan.confidence }}{% else %}0{% endif %},100" stroke-linecap="round" stroke-width="8"></path>
+            </svg>
+            <div class="absolute bottom-0 flex flex-col items-center mb-1">
+              <span class="text-5xl font-bold tracking-tighter" id="confidence-percent">{% if scan %}{{ scan.confidence|floatformat:0 }}{% else %}0{% endif %}<span class="text-2xl text-primary">%</span></span>
+              <span class="text-xs uppercase tracking-widest mt-1" style="color: #6b8c68;" id="confidence-label">Confidence</span>
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-3 w-full mt-6">
+            <div class="rounded-xl p-4 text-center" style="background: #f9fff8; border: 1px solid #d4e8ce;">
+              <span class="material-symbols-outlined text-primary text-xl">dataset</span>
+              <p class="text-xs font-medium uppercase mt-1" style="color: #6b8c68;" id="model-label">Disease</p>
+              <p class="font-bold mt-1" id="disease-card-value">{% if scan.disease_name %}{{ scan.disease_name|truncatechars:20 }}{% else %}Unknown{% endif %}</p>
+            </div>
+            <div class="rounded-xl p-4 text-center" id="latency-cell" style="background: #f9fff8; border: 1px solid #d4e8ce;">
+              <span class="material-symbols-outlined text-primary text-xl">bolt</span>
+              <p class="text-xs font-medium uppercase mt-1" style="color: #6b8c68;" id="latency-label">Latency</p>
+              <p class="font-bold mt-1" id="latency-value">-- ms</p>
+            </div>
+            <div class="rounded-xl p-4 text-center" style="background: #f9fff8; border: 1px solid #d4e8ce;">
+              <span class="material-symbols-outlined text-blue-500 text-xl">location_on</span>
+              <p class="text-xs font-medium uppercase mt-1" style="color: #6b8c68;" id="location-label">Location</p>
+              <p class="font-bold mt-1" id="location-name">Detecting...</p>
+            </div>
+            <div class="rounded-xl p-4 text-center cursor-pointer hover:bg-purple-50/50 transition-all active:scale-95 group" 
+                 id="crop-type-card" 
+                 onclick="openCropInfoModal()"
+                 style="background: #f9fff8; border: 1px solid #d4e8ce;">
+              <span class="material-symbols-outlined text-purple-500 text-xl group-hover:scale-110 transition-transform" id="crop-icon">memory</span>
+              <p class="text-xs font-medium uppercase mt-1" style="color: #6b8c68;" id="device-label">Crop Type</p>
+              <p class="font-bold mt-1" id="crop-type-value">Plant</p>
+            </div>
+          </div>
+          <div class="w-full mt-4 h-32 rounded-xl overflow-hidden border" id="location-map-container" style="display: none; border-color: #d4e8ce;"><div id="location-map" class="w-full h-full"></div></div>
+        </div>
+      </div>
+
+      <div class="space-y-5">
+        <div class="rounded-2xl p-6" style="background: #ffffff; border: 1px solid #d4e8ce;">
+          <h2 class="text-4xl font-bold leading-tight" id="disease-name">{% if scan.disease_name %}{{ scan.disease_name }}{% else %}No Analysis Yet{% endif %}</h2>
+          <p class="text-sm font-mono mt-1" id="scientific-name">{% if scan.scientific_name %}{{ scan.scientific_name }}{% else %}Upload an image to analyze{% endif %}</p>
+          
+          <p class="text-sm mt-4 leading-relaxed" id="treatment-description">{% if scan.treatment_recommended %}{{ scan.treatment_recommended }}{% elif scan %}Analysis complete. View treatment details below.{% else %}Please upload a clear image of a plant leaf or fruit from supported crops.{% endif %}</p>
+
+          <div class="mt-5 space-y-3">
+            <div><div class="flex justify-between text-xs mb-1"><span class="font-medium" style="color: #6b8c68;" id="severity-label">Severity</span><span class="{% if scan.severity == 'high' %}text-red-500{% elif scan.severity == 'medium' %}text-orange-500{% else %}text-yellow-600{% endif %} font-bold" id="severity-value">{% if scan.severity == 'high' %}High{% elif scan.severity == 'medium' %}Medium{% else %}Low{% endif %}</span></div><div class="h-2 rounded-full overflow-hidden" style="background: #e8f4e4;"><div class="h-full rounded-full {% if scan.severity == 'high' %}bg-red-500{% elif scan.severity == 'medium' %}bg-orange-400{% else %}bg-yellow-500{% endif %}" style="--width: {% if scan.severity == 'high' %}82{% elif scan.severity == 'medium' %}55{% else %}30{% endif %}%; width: var(--width);"></div></div></div>
+            <div><div class="flex justify-between text-xs mb-1"><span class="font-medium" style="color: #6b8c68;" id="spread-risk-label">Spread Risk</span><span class="{% if scan.severity == 'high' %}text-orange-500{% else %}text-yellow-600{% endif %} font-bold" id="spread-risk-value">{% if scan.severity == 'high' %}High{% else %}Medium{% endif %}</span></div><div class="h-2 rounded-full overflow-hidden" style="background: #e8f4e4;"><div class="h-full rounded-full {% if scan.severity == 'high' %}bg-orange-400{% else %}bg-yellow-500{% endif %}" style="--width: {% if scan.severity == 'high' %}75{% else %}45{% endif %}%; width: var(--width);"></div></div></div>
+            <div><div class="flex justify-between text-xs mb-1"><span class="font-medium" style="color: #6b8c68;" id="urgency-label">Treatment Urgency</span><span class="text-yellow-600 font-bold" id="urgency-value">{% if scan.severity == 'high' %}Immediate{% else %}Within 48h{% endif %}</span></div><div class="h-2 rounded-full overflow-hidden" style="background: #e8f4e4;"><div class="h-full rounded-full bg-yellow-500" style="--width: {% if scan.severity == 'high' %}90{% else %}60{% endif %}%; width: var(--width);"></div></div></div>
+          </div>
+        </div>
+
+        <div class="rounded-2xl p-6" style="background: #ffffff; border: 1px solid #d4e8ce;">
+          <h3 class="font-bold text-lg mb-4 flex items-center gap-2"><span class="material-symbols-outlined text-primary">healing</span><span id="recommended-actions-title">Recommended Actions</span></h3>
+          <div class="space-y-3"><button id="action-button" data-scan="{{ scan|yesno:'true,false' }}" class="w-full font-bold py-4 rounded-xl flex items-center justify-center gap-3 transition-all active:scale-[0.98]" style="background: #2f8b5c; color: white;"><span class="material-symbols-outlined">{% if scan %}medication_liquid{% else %}photo_camera{% endif %}</span><span id="action-button-text">{% if scan %}{% if scan.disease_detected %}View Treatment Details{% else %}Continue Monitoring{% endif %}{% else %}Scan New Image{% endif %}</span></button></div>
+          <div class="mt-5 flex items-center justify-center gap-2" style="color: #9bc48f;"><span class="material-symbols-outlined text-sm">memory</span><span class="text-xs font-mono" id="edge-text">Processed locally on Edge TPU</span></div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <div id="treatmentModal" class="fixed inset-0 z-50 flex items-center justify-center hidden">
+    <div class="absolute inset-0 bg-black/80 backdrop-blur-sm" onclick="closeTreatmentModal()"></div>
+    <div class="relative rounded-2xl max-w-2xl w-full mx-4 modal-animation" style="background: #ffffff; border: 1px solid #9bc48f;">
+      <div class="p-6"><div class="flex items-center justify-between mb-4"><div class="flex items-center gap-3"><div class="w-12 h-12 rounded-xl flex items-center justify-center" style="background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.3);"><span class="material-symbols-outlined text-primary text-2xl">healing</span></div><div><h3 class="text-xl font-bold" id="modal-title">Treatment Plan</h3><p class="text-sm" id="modal-disease-name">{{ scan.disease_name|default:"Plant Disease" }}</p></div></div><button onclick="closeTreatmentModal()" class="w-10 h-10 rounded-full flex items-center justify-center transition-all" style="background: #e8f4e4;"><span class="material-symbols-outlined">close</span></button></div>
+        <div class="space-y-4 max-h-96 overflow-y-auto pr-2">
+          <div class="rounded-xl p-4" style="background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.3);"><div class="flex items-center gap-3"><span class="material-symbols-outlined text-primary">emergency</span><span class="font-bold" id="modal-immediate-title">Immediate Action Required</span></div><p class="text-sm mt-2 ml-9" id="modal-immediate-text">Apply treatment within the next 24 hours to prevent spread.</p></div>
+          <div class="rounded-xl p-4" style="background: #f9fff8; border: 1px solid #d4e8ce;"><h4 class="font-bold flex items-center gap-2 mb-3"><span class="material-symbols-outlined text-primary text-sm">science</span><span id="modal-chemical-title">Chemical Control</span></h4><p class="text-sm leading-relaxed whitespace-pre-line" id="modal-treatment-text">{% if scan.treatment_recommended %}{{ scan.treatment_recommended }}{% else %}Consult agricultural expert for treatment.{% endif %}</p></div>
+        </div>
+        <div class="mt-6 flex gap-3"><button onclick="closeTreatmentModal()" class="flex-1 bg-transparent border font-semibold py-3 rounded-xl transition-all" style="border-color: #d4e8ce;" id="modal-close-btn">Close</button></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Crop Information Modal -->
+  <div id="cropInfoModal" class="fixed inset-0 z-[9999] flex items-center justify-center hidden">
+    <div class="absolute inset-0 bg-black/80 backdrop-blur-sm" onclick="closeCropInfoModal()"></div>
+    <div class="relative rounded-2xl max-w-lg w-full mx-4 modal-animation overflow-hidden" style="background: #ffffff; border: 1px solid #9c27b0;">
+      <div class="p-6">
+        <div class="flex items-center justify-between mb-6">
+          <div class="flex items-center gap-4">
+            <div class="w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg" style="background: rgba(156, 39, 176, 0.1); border: 1px solid rgba(156, 39, 176, 0.2);">
+              <span class="material-symbols-outlined text-purple-600 text-3xl" id="crop-modal-icon">{% if crop_info %}{{ crop_info.icon }}{% else %}psychology{% endif %}</span>
+            </div>
+            <div>
+              <h3 class="text-2xl font-bold text-gray-800" id="crop-modal-title">{% if user_language == 'ur' and crop_info.name_ur %}{{ crop_info.name_ur }}{% else %}{{ crop_info.name|default:"Crop Details" }}{% endif %}</h3>
+              <p class="text-xs uppercase tracking-[0.2em] text-purple-600 font-black" id="crop-modal-subtitle">Variety Insights</p>
+            </div>
+          </div>
+          <button onclick="closeCropInfoModal()" class="w-10 h-10 rounded-full flex items-center justify-center transition-all hover:bg-purple-100 bg-purple-50">
+            <span class="material-symbols-outlined text-purple-900">close</span>
+          </button>
+        </div>
+        
+        <div class="bg-gradient-to-br from-purple-50/50 to-white rounded-2xl p-6 border border-purple-100/50 mb-6">
+           <div class="flex items-center gap-2 mb-3 text-purple-800 opacity-70">
+             <span class="material-symbols-outlined text-sm">info</span>
+             <span class="text-[10px] font-bold uppercase tracking-widest" id="crop-modal-about-label">About this category</span>
+           </div>
+           <p class="text-sm leading-relaxed text-gray-700 whitespace-pre-line" id="crop-modal-description">
+             {% if user_language == 'ur' and crop_info.description_ur %}
+                {{ crop_info.description_ur }}
+             {% else %}
+                {{ crop_info.description|default:"Detailed information for this crop category is not available yet. Please check back later." }}
+             {% endif %}
+           </p>
+        </div>
+        
+        <div class="flex gap-3">
+          <button onclick="closeCropInfoModal()" class="flex-1 bg-purple-600 hover:bg-purple-700 text-white font-bold py-4 rounded-xl transition-all shadow-lg shadow-purple-200 active:scale-[0.98] border-none outline-none" id="crop-modal-close-btn" style="color: white !important;">
+            Got it
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="errorModal" class="fixed inset-0 z-50 hidden items-center justify-center">
+    <div class="absolute inset-0 bg-black/80 backdrop-blur-sm" onclick="closeErrorModal()"></div>
+    <div class="relative rounded-2xl max-w-md w-full mx-4 p-6 modal-animation" style="background: #ffffff; border: 1px solid #fecaca;">
+      <div class="flex items-center gap-3 mb-4"><div class="w-12 h-12 rounded-xl flex items-center justify-center" style="background: rgba(229,62,62,0.1); border: 1px solid rgba(229,62,62,0.3);"><span class="material-symbols-outlined text-red-500 text-2xl">error</span></div><div><h3 class="text-xl font-bold" id="errorTitle">Upload Failed</h3><p class="text-sm" style="color: #6b8c68;" id="errorSubtitle">Please try again</p></div></div>
+      <div class="rounded-xl p-4 mb-6" style="background: rgba(229,62,62,0.1); border: 1px solid rgba(229,62,62,0.3);"><p class="text-sm leading-relaxed whitespace-pre-line" style="color: #4a6747;" id="errorMessage">An error occurred</p></div>
+      <div class="flex gap-3"><button onclick="closeErrorModal()" class="flex-1 font-semibold py-3 rounded-xl transition-all" style="background: #2f8b5c; color: white;" id="error-try-btn">Try Again</button><button onclick="window.location.href='/scanner/'" class="flex-1 bg-transparent border font-semibold py-3 rounded-xl transition-all" style="border-color: #d4e8ce; color: #2d3e2d;" id="error-scanner-btn">Go to Scanner</button></div>
+    </div>
+  </div>
+
+  <!-- Data Store for Crop Info -->
+  <div id="crop-data-store" 
+       data-name-ur="{{ crop_info.name_ur }}" 
+       data-desc-ur="{{ crop_info.description_ur }}"
+       data-name-en="{{ crop_info.name|default:'Crop Details' }}"
+       data-desc-en="{{ crop_info.description|default:'Detailed information for this crop category is not available yet.' }}"
+       style="display: none;"></div>
+
+  <nav class="lg:hidden fixed bottom-0 left-0 right-0 z-30 no-translate" style="background: #1a3a2a; border-top: 1px solid #2d5a3d;">
+    <div class="flex justify-around items-center px-4 py-3 pb-safe">
+      <a href="{% url 'dashboard' %}" class="flex flex-col items-center gap-1 transition-colors" style="color: #9bc48f;"><span class="material-symbols-outlined text-[24px]">grid_view</span><span class="text-[9px] font-black uppercase tracking-widest">Home</span></a>
+      <a href="{% url 'scanner' %}" class="flex flex-col items-center -mt-8"><div class="w-14 h-14 rounded-2xl flex items-center justify-center shadow-premium active:scale-90 transition-transform" style="background: #2f8b5c; border: 4px solid #1a3a2a;"><span class="material-symbols-outlined text-[28px]" style="color: white;">filter_center_focus</span></div></a>
+      <a href="{% url 'history' %}" class="flex flex-col items-center gap-1 transition-colors" style="color: #9bc48f;"><span class="material-symbols-outlined text-[24px]">restore</span><span class="text-[9px] font-black uppercase tracking-widest">History</span></a>
+    </div>
+  </nav>
+</div>
+
+<!-- Translation Loader & Toast -->
+<div id="translateLoader" class="translate-loader"><div class="spinner"></div><span id="loader-text">Translating to Urdu...</span></div>
+<div id="translateToast" class="translate-toast"></div>
+
+<script src="{% static 'js/theme-manager.js' %}"></script>
+
+<script>
+// ==================== COMPLETE BIDIRECTIONAL TRANSLATION DICTIONARY ====================
+
+// English to Urdu - Disease names
+const enToUrduDisease = {
+    'Guava Rot': 'امرود کی سڑاند',
+    'Healthy Guava': 'صحت مند امرود',
+    'Lemon Rot': 'لیموں کی سڑاند',
+    'Healthy Lemon': 'صحت مند لیموں',
+    'Mango Leaf Gall': 'آم کے پتے کی گال',
+    'Corn Ear Rot': 'مکئی کی بال کی سڑاند',
+    'Northern Corn Leaf Blight': 'شمالی مکئی کی پتی کی جھلسن',
+    'Rice Neck Blast': 'چاول کی گردن کی جھلسن',
+    'Rice Brown Spot': 'چاول کا بھورا دھبہ',
+    'Apple Rot': 'سیب کی سڑاند',
+    'Healthy Apple': 'صحت مند سیب',
+    'Banana Rot': 'کیلے کی سڑاند',
+    'Healthy Banana': 'صحت مند کیلا',
+    'Orange Rot': 'نارنجی کی سڑاند',
+    'Healthy Orange': 'صحت مند نارنجی',
+    'Pomegranate Rot': 'انار کی سڑاند',
+    'Healthy Pomegranate': 'صحت مند انار',
+    'Healthy': 'صحت مند'
+};
+
+// Urdu to English - Disease names (for reverting)
+const urduToEnDisease = {
+    'امرود کی سڑاند': 'Guava Rot',
+    'صحت مند امرود': 'Healthy Guava',
+    'لیموں کی سڑاند': 'Lemon Rot',
+    'صحت مند لیموں': 'Healthy Lemon',
+    'آم کے پتے کی گال': 'Mango Leaf Gall',
+    'مکئی کی بال کی سڑاند': 'Corn Ear Rot',
+    'شمالی مکئی کی پتی کی جھلسن': 'Northern Corn Leaf Blight',
+    'چاول کی گردن کی جھلسن': 'Rice Neck Blast',
+    'چاول کا بھورا دھبہ': 'Rice Brown Spot',
+    'سیب کی سڑاند': 'Apple Rot',
+    'صحت مند سیب': 'Healthy Apple',
+    'کیلے کی سڑاند': 'Banana Rot',
+    'صحت مند کیلا': 'Healthy Banana',
+    'نارنجی کی سڑاند': 'Orange Rot',
+    'صحت مند نارنجی': 'Healthy Orange',
+    'انار کی سڑاند': 'Pomegranate Rot',
+    'صحت مند انار': 'Healthy Pomegranate',
+    'صحت مند': 'Healthy'
+};
+
+// English to Urdu - Severity
+const enToUrduSeverity = {
+    'High': 'شدید',
+    'Medium': 'درمیانی',
+    'Low': 'کم',
+    'Normal': 'معمول'
+};
+
+// Urdu to English - Severity
+const urduToEnSeverity = {
+    'شدید': 'High',
+    'درمیانی': 'Medium',
+    'کم': 'Low',
+    'معمول': 'Normal'
+};
+
+// English to Urdu - Treatment texts
+const enToUrduTreatment = {
+    "Guava Rot": `🍐 امرود کا مخصوص علاج:
+• متاثرہ پھلوں کو ہٹا کر باغ سے دور تباہ کریں
+• copper oxychloride (3g/L) یا carbendazim (1g/L) لگائیں
+• چنائی سے 14 دن پہلے azoxystrobin کا سپرے کریں
+• جلد کو نقصان پہنچنے سے بچنے کے لیے احتیاط سے کٹائی کریں
+• کٹائی کے بعد: گرم پانی کا علاج (50°C پر 5 منٹ)
+• 85-90% نمی کے ساتھ 45-50°F پر اسٹور کریں`,
+    
+    "Healthy Guava": `🍐 امرود کا مخصوص مشورہ:
+• کوئی علاج ضروری نہیں - صحت مند امرود کا پھل
+• جب رنگ گہرے سبز سے ہلکے سبز میں بدل جائے تو کٹائی کریں
+• پکا ہوا امرود تیار ہوتا ہے جب ہلکا پیلا نظر آئے
+• 2-3 ہفتوں کے لیے 45-50°F پر اسٹور کریں
+• باقاعدہ کٹائی ہوا کی گردش کو بہتر بناتی ہے`,
+    
+    "Lemon Rot": `🍋 لیموں کا مخصوص علاج:
+• سڑاند یا پھپھوندی والے تمام پھلوں کو ہٹا دیں
+• کٹائی کے بعد imazalil (2ml/L) یا potassium sorbate (25g/L) لگائیں
+• کٹائی سے پہلے: 30 دن پہلے copper hydroxide (2g/L) کا سپرے کریں
+• بٹن گرنے سے روکنے کے لیے 2,4-D (10ppm) استعمال کریں
+• معتدل نمی کے ساتھ ٹھنڈے درجہ حرارت (45-48°F) پر اسٹور کریں`,
+    
+    "Healthy Lemon": `🍋 لیموں کا مخصوص مشورہ:
+• کوئی علاج ضروری نہیں - صحت مند لیموں کا پھل
+• جب پھل مکمل طور پر پیلا ہو جائے تو کٹائی کریں (سبز نہیں)
+• بہترین پختگی: پھول آنے کے 6-8 ماہ بعد
+• 85-90% نمی کے ساتھ 45-48°F پر اسٹور کریں
+• مناسب حالات میں 3-6 ماہ تک ذخیرہ کر سکتے ہیں`,
+    
+    "Mango Leaf Gall": `🥭 آم کا مخصوص علاج:
+• تمام گال والے پتوں اور ٹہنیوں کو فوری طور پر کاٹ کر جلا دیں
+• سلفر 80% WP (3g/L) یا abamectin (0.5ml/L) لگائیں
+• نئی ٹہنیوں کے نکلنے کے دوران سپرے کریں (ہر 10-14 دن بعد)
+• متوازن NPK (200:100:100g/درخت) کے ساتھ درخت کی صحت برقرار رکھیں
+• چھتری کی کٹائی کے ذریعے ہوا کی اچھی گردش کو یقینی بنائیں
+• غیر فعال موسم کے دوران horticultural oil (10ml/L) لگائیں`,
+    
+    "Corn Ear Rot": `🌽 مکئی کا مخصوص علاج:
+• پکنے پر فوری طور پر مکئی کی کٹائی کریں (نمی 20% سے کم)
+• اناج کو 48 گھنٹوں کے اندر 15% نمی یا اس سے کم خشک کریں
+• کٹائی کے دوران متاثرہ بالوں کو دستی طور پر ہٹا دیں
+• ذخیرہ کرنے سے پہلے اسٹوریج بنوں کو فنگسائڈ سے صاف کریں
+• سلکنگ اسٹیج (R1) پر فولیئر فنگسائڈ لگائیں
+• اچھی ہوا کی گردش کے ساتھ 50-60°F پر اسٹور کریں`,
+    
+    "Healthy Banana": `🍌 کیلا کا مخصوص مشورہ:
+• کوئی علاج ضروری نہیں - صحت مند کیلا
+• کٹائی کریں جب پھل پر زاویے گول ہو جائیں
+• بہترین کٹائی: 75-80% پختگی (ہلکا سبز)
+• سبز کیلوں کے لیے 56-58°F پر اسٹور کریں
+• یکساں رنگ کے لیے ethylene کے ساتھ 60-65°F پر پکائیں`,
+    
+    "Orange Rot": `🍊 نارنجی کا مخصوص علاج:
+• سڑاند والے متاثرہ پھلوں کو فوری طور پر ہٹا دیں
+• کٹائی کے بعد imazalil (2ml/L) یا thiabendazole لگائیں
+• کٹائی سے پہلے: 3 ہفتے کی فنگسائڈ گردش برقرار رکھیں
+• نامیاتی متبادل کے طور پر sodium bicarbonate (5g/L) استعمال کریں
+• 85-90% نمی کے ساتھ 40°F پر اسٹور کریں`,
+
+    "Apple Rot": `🍎 سیب کا مخصوص علاج:
+• متاثرہ گرے ہوئے سیبوں کو ہٹا دیں
+• کٹائی سے پہلے thiophanate-methyl (0.5g/L) کا سپرے کریں
+• کٹائی کے بعد fludioxonil (0.25g/L) کا ٹریٹمنٹ کریں
+• ہوا کی گردش کو بہتر بنانے کے لیے کٹائی کریں
+• 90-95% نمی کے ساتھ 30-32°F پر اسٹور کریں`,
+
+    "Healthy Apple": `🍎 سیب کا مخصوص مشورہ:
+• کوئی علاج ضروری نہیں - پھل صحت مند دکھائی دیتا ہے
+• مناسب پکنے پر کٹائی کریں (رنگ کی تبدیلی، مضبوطی)
+• 90-95% نمی کے ساتھ 30-32°F پر اسٹور کریں
+• کوڈنگ موتھ اور ایپل سکاب کے لیے باقاعدہ نگرانی کریں
+• اگلے سیزن کی فصل کے لیے سردیوں کے آخر میں کٹائی کریں`,
+
+    "Rice Neck Blast": `🌾 چاول کا مخصوص علاج:
+• ٹرائی سائیکلازول (0.6g/L) یا ازوکسیسٹروبن لگائیں
+• ضرورت سے زیادہ نائٹروجن کھاد سے پرہیز کریں
+• کھیت میں پانی کی سطح برقرار رکھیں
+• کٹائی کے بعد بھوسے کو جلا دیں یا دفن کریں`,
+
+    "Rice Brown Spot": `🌾 چاول کا مخصوص علاج:
+• مینکوزیب (2g/L) یا پروپیکونازول (1ml/L) کا سپرے کریں
+• مٹی میں پوٹاشیم کی مقدار میں اضافہ کریں
+• تصدیق شدہ صحت مند بیج استعمال کریں
+• پانی کا نکاسی کا مناسب انتظام کریں`,
+
+    "Northern Corn Leaf Blight": `🌽 مکئی کا مخصوص علاج:
+• پروپیکونازول یا ازوکسیسٹروبن کا سپرے کریں
+• فصلوں کی گردش (crop rotation) اپنائیں
+• مزاحم اقسام (resistant varieties) کاشت کریں
+• پچھلی فصل کی باقیات کو ہل چلا کر مٹی میں دبائیں`,
+
+    "Pomegranate Rot": `🍑 انار کا مخصوص علاج:
+• تاریک دھبوں والے متاثرہ پھلوں کو فوری طور پر ہٹا دیں
+• مانسون سے پہلے تانبے پر مبنی فنگسائڈز (2.5g/L) لگائیں
+• پھل لگنے کے 30 دن بعد پھل کی تھیلی بندی کریں
+• اوور ہیڈ اریگیشن سے بچیں - ڈرپ سسٹم استعمال کریں
+• جب مکمل پک جائے لیکن جلد پھٹنے سے پہلے کٹائی کریں
+• کٹائی کے بعد: carbendazim (1g/L) + 2% موم کوٹنگ میں ڈبوئیں`
+};
+
+// UI Translations
+const uiTranslations = {
+    en: {
+        'page-title': 'Diagnosis Result',
+        'share-text': 'Share Report',
+        'export-text': 'Export',
+        'ai-analyzed-badge': 'AI Analyzed',
+        'ai-confidence-title': 'AI Confidence Score',
+        'confidence-label': 'Confidence',
+        'model-label': 'Disease',
+        'latency-label': 'Latency',
+        'location-label': 'Location',
+        'device-label': 'Crop Type',
+        'severity-label': 'Severity',
+        'spread-risk-label': 'Spread Risk',
+        'urgency-label': 'Treatment Urgency',
+        'recommended-actions-title': 'Recommended Actions',
+        'edge-text': 'Processed locally on Edge TPU',
+        'modal-title': 'Treatment Plan',
+        'modal-immediate-title': 'Immediate Action Required',
+        'modal-immediate-text': 'Apply treatment within the next 24 hours to prevent spread.',
+        'modal-chemical-title': 'Chemical Control',
+        'modal-close-btn': 'Close',
+        'errorTitle': 'Upload Failed',
+        'errorSubtitle': 'Please try again',
+        'errorMessage': 'An error occurred',
+        'error-try-btn': 'Try Again',
+        'error-scanner-btn': 'Go to Scanner',
+        'action-view': 'View Treatment Details',
+        'action-monitor': 'Continue Monitoring',
+        'action-scan': 'Scan New Image',
+        'threat-detected': 'Threat Detected',
+        'healthy': 'Healthy',
+        'analyzing-text': 'Analyzing image...',
+        'ai-examining-text': 'Our AI is examining your plant',
+        'crop-modal-about-label': 'About this category',
+        'crop-modal-close-btn': 'Got it'
+    },
+    ur: {
+        'page-title': 'تشخیص کا نتیجہ',
+        'share-text': 'رپورٹ شیئر کریں',
+        'export-text': 'برآمد کریں',
+        'ai-analyzed-badge': 'اے آئی تجزیہ کردہ',
+        'ai-confidence-title': 'اے آئی اعتماد اسکور',
+        'confidence-label': 'اعتماد',
+        'model-label': 'بیماری',
+        'latency-label': 'تاخیر',
+        'location-label': 'محل وقوع',
+        'device-label': 'فصل کی قسم',
+        'severity-label': 'شدت',
+        'spread-risk-label': 'پھیلاؤ کا خطرہ',
+        'urgency-label': 'علاج کی فوری ضرورت',
+        'recommended-actions-title': 'تجویز کردہ اقدامات',
+        'edge-text': 'کنارے TPU پر مقامی طور پر پراسیس کیا گیا',
+        'modal-title': 'علاج کا منصوبہ',
+        'modal-immediate-title': 'فوری کارروائی ضروری',
+        'modal-immediate-text': 'پھیلاؤ کو روکنے کے لیے اگلے 24 گھنٹوں کے اندر علاج کریں۔',
+        'modal-chemical-title': 'کیمیائی کنٹرول',
+        'modal-close-btn': 'بند کریں',
+        'errorTitle': 'اپ لوڈ ناکام',
+        'errorSubtitle': 'براہ کرم دوبارہ کوشش کریں',
+        'errorMessage': 'ایک خرابی پیش آگئی',
+        'error-try-btn': 'دوبارہ کوشش کریں',
+        'error-scanner-btn': 'اسکینر پر جائیں',
+        'action-view': 'علاج کی تفصیلات دیکھیں',
+        'action-monitor': 'نگرانی جاری رکھیں',
+        'action-scan': 'نئی تصویر اسکین کریں',
+        'threat-detected': 'خطرے کا پتہ چلا',
+        'healthy': 'صحت مند',
+        'analyzing-text': 'تصویر کا تجزیہ ہو رہا ہے...',
+        'ai-examining-text': 'ہمارا اے آئی آپ کے پودے کی جانچ کر رہا ہے',
+        'crop-modal-about-label': 'اس زمرے کے بارے میں',
+        'crop-modal-close-btn': 'ٹھیک ہے'
+    }
+};
+
+// ==================== TRANSLATION SYSTEM ====================
+let currentLang = 'en';
+let isTranslating = false;
+
+// Store original English text when page loads
+let originalData = {
+    diseaseName: '',
+    scientificName: '',
+    treatmentDescription: '',
+    modalTreatmentText: '',
+    severityValue: '',
+    urgencyValue: '',
+    spreadRiskValue: '',
+    statusBadgeText: '',
+    diseaseCardValue: '',
+    cropTypeCardValue: ''
+};
+
+function getCsrfToken() {
+    try {
+        const cookieToken = document.cookie.split('; ').find(row => row.startsWith('csrftoken='))?.split('=')[1];
+        if (cookieToken) return cookieToken;
+        const inputToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value;
+        return inputToken || "";
+    } catch (e) {
+        console.error("Error retrieving CSRF token:", e);
+        return "";
+    }
+}
+
+function showTranslateToast(message, isError = false) {
+    let toast = document.getElementById('translateToast');
+    if (!toast) return;
+    toast.innerHTML = `<div style="display: flex; align-items: center; gap: 10px;"><span class="material-symbols-outlined" style="color: ${isError ? '#e53e3e' : '#10b981'}">${isError ? 'error' : 'info'}</span><span>${message}</span></div>`;
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 5000);
+}
+
+function showTranslateLoading(show) {
+    const loader = document.getElementById('translateLoader');
+    if (loader) {
+        if (show) loader.classList.add('show');
+        else loader.classList.remove('show');
+    }
+}
+
+// Extract crop type from scientific name or disease name
+function extractCropType(diseaseName, scientificName) {
+    const cropMap = {
+        'Guava': ['Guava', 'Psidium guajava', 'امرود'],
+        'Apple': ['Apple', 'Malus domestica', 'سیب'],
+        'Banana': ['Banana', 'Musa', 'کیلا'],
+        'Orange': ['Orange', 'Citrus sinensis', 'نارنجی'],
+        'Lemon': ['Lemon', 'Citrus limon', 'لیموں'],
+        'Mango': ['Mango', 'Mangifera', 'آم'],
+        'Corn': ['Corn', 'Zea mays', 'مکئی'],
+        'Rice': ['Rice', 'Oryza sativa', 'چاول'],
+        'Pomegranate': ['Pomegranate', 'Punica granatum', 'انار']
+    };
+    
+    for (const [crop, keywords] of Object.entries(cropMap)) {
+        for (const keyword of keywords) {
+            if (diseaseName?.toLowerCase().includes(keyword.toLowerCase()) || 
+                scientificName?.toLowerCase().includes(keyword.toLowerCase())) {
+                return crop;
+            }
+        }
+    }
+    return 'Plant';
+}
+
+// Update Disease and Crop Type cards
+function updateDiseaseAndCropTypeCards() {
+    const diseaseCardEl = document.getElementById('disease-card-value');
+    const cropTypeEl = document.getElementById('crop-type-value');
+    
+    const modelLabel = document.getElementById('model-label');
+    const deviceLabel = document.getElementById('device-label');
+    
+    if (modelLabel) {
+        modelLabel.innerText = currentLang === 'ur' ? 'بیماری' : 'Disease';
+    }
+    if (deviceLabel) {
+        deviceLabel.innerText = currentLang === 'ur' ? 'فصل کی قسم' : 'Crop Type';
+    }
+    
+    const diseaseNameEl = document.getElementById('disease-name');
+    const scientificNameEl = document.getElementById('scientific-name');
+    
+    let diseaseName = diseaseNameEl ? diseaseNameEl.innerText.trim() : '';
+    let scientificName = scientificNameEl ? scientificNameEl.innerText.trim() : '';
+    
+    if (diseaseCardEl && diseaseName && diseaseName !== 'No Analysis Yet') {
+        let diseaseDisplay = diseaseName;
+        diseaseDisplay = diseaseDisplay.replace(/^Healthy\s+/, '');
+        if (diseaseDisplay.length > 25) {
+            diseaseDisplay = diseaseDisplay.substring(0, 22) + '...';
+        }
+        diseaseCardEl.innerText = diseaseDisplay;
+    } else if (diseaseCardEl && (!diseaseName || diseaseName === 'No Analysis Yet')) {
+        diseaseCardEl.innerText = originalData.diseaseCardValue || 'Unknown';
+    }
+    
+    if (cropTypeEl) {
+        let cropType = extractCropType(diseaseName, scientificName);
+        if (cropType && cropType !== 'Plant') {
+            cropTypeEl.innerText = cropType;
+        } else {
+            cropTypeEl.innerText = originalData.cropTypeCardValue || 'Plant';
+        }
+    }
+}
+
+// Store original values when page loads
+function storeOriginalValues() {
+    const diseaseNameEl = document.getElementById('disease-name');
+    const scientificNameEl = document.getElementById('scientific-name');
+    const treatmentDescEl = document.getElementById('treatment-description');
+    const modalTreatmentEl = document.getElementById('modal-treatment-text');
+    const severityValueEl = document.getElementById('severity-value');
+    const urgencyValueEl = document.getElementById('urgency-value');
+    const spreadRiskEl = document.getElementById('spread-risk-value');
+    const statusBadgeEl = document.getElementById('status-badge-text');
+    const diseaseCardEl = document.getElementById('disease-card-value');
+    const cropTypeEl = document.getElementById('crop-type-value');
+    
+    if (diseaseNameEl) originalData.diseaseName = diseaseNameEl.innerText;
+    if (scientificNameEl) originalData.scientificName = scientificNameEl.innerText;
+    if (treatmentDescEl) originalData.treatmentDescription = treatmentDescEl.innerText;
+    if (modalTreatmentEl) originalData.modalTreatmentText = modalTreatmentEl.innerText;
+    if (severityValueEl) originalData.severityValue = severityValueEl.innerText;
+    if (urgencyValueEl) originalData.urgencyValue = urgencyValueEl.innerText;
+    if (spreadRiskEl) originalData.spreadRiskValue = spreadRiskEl.innerText;
+    if (statusBadgeEl) originalData.statusBadgeText = statusBadgeEl.innerText;
+    if (diseaseCardEl) originalData.diseaseCardValue = diseaseCardEl.innerText;
+    if (cropTypeEl) originalData.cropTypeCardValue = cropTypeEl.innerText;
+}
+
+// Translate content from English to Urdu
+function translateToUrdu() {
+    const diseaseNameEl = document.getElementById('disease-name');
+    const modalDiseaseNameEl = document.getElementById('modal-disease-name');
+    const scientificNameEl = document.getElementById('scientific-name');
+
+    if (diseaseNameEl && originalData.diseaseName) {
+        let urduName = enToUrduDisease[originalData.diseaseName.trim()];
+        if (urduName) {
+            diseaseNameEl.innerText = urduName;
+            if (modalDiseaseNameEl) modalDiseaseNameEl.innerText = urduName;
+        }
+    }
+
+    if (scientificNameEl && originalData.scientificName) {
+        // Handle cases like "Malus domestica - Healthy"
+        let text = originalData.scientificName;
+        if (text.includes(' - Healthy')) {
+            scientificNameEl.innerText = text.replace(' - Healthy', ' - ' + (uiTranslations.ur['healthy'] || 'صحت مند'));
+        } else if (text.includes(' - Threat Detected')) {
+            scientificNameEl.innerText = text.replace(' - Threat Detected', ' - ' + (uiTranslations.ur['threat-detected'] || 'خطرے کا پتہ چلا'));
+        }
+    }
+    
+    const treatmentDescEl = document.getElementById('treatment-description');
+    const modalTreatmentEl = document.getElementById('modal-treatment-text');
+    
+    if (treatmentDescEl && originalData.diseaseName) {
+        let urduTreatment = enToUrduTreatment[originalData.diseaseName];
+        if (urduTreatment) {
+            treatmentDescEl.innerText = urduTreatment;
+            if (modalTreatmentEl) modalTreatmentEl.innerText = urduTreatment;
+        }
+    }
+    
+    const severityValueEl = document.getElementById('severity-value');
+    if (severityValueEl && originalData.severityValue) {
+        let urduSeverity = enToUrduSeverity[originalData.severityValue];
+        if (urduSeverity) severityValueEl.innerText = urduSeverity;
+    }
+    
+    const spreadRiskEl = document.getElementById('spread-risk-value');
+    if (spreadRiskEl && originalData.spreadRiskValue) {
+        let urduRisk = enToUrduSeverity[originalData.spreadRiskValue];
+        if (urduRisk) spreadRiskEl.innerText = urduRisk;
+    }
+    
+    const statusBadgeEl = document.getElementById('status-badge-text');
+    if (statusBadgeEl && originalData.statusBadgeText) {
+        const isThreat = originalData.statusBadgeText === 'Threat Detected';
+        statusBadgeEl.innerText = isThreat ? uiTranslations.ur['threat-detected'] : uiTranslations.ur['healthy'];
+    }
+    
+    setTimeout(() => {
+        updateDiseaseAndCropTypeCards();
+    }, 100);
+}
+
+// Revert content from Urdu to English
+function revertToEnglishContent() {
+    const diseaseNameEl = document.getElementById('disease-name');
+    const modalDiseaseNameEl = document.getElementById('modal-disease-name');
+    if (diseaseNameEl && originalData.diseaseName) {
+        diseaseNameEl.innerText = originalData.diseaseName;
+        if (modalDiseaseNameEl) modalDiseaseNameEl.innerText = originalData.diseaseName;
+    }
+    
+    const treatmentDescEl = document.getElementById('treatment-description');
+    const modalTreatmentEl = document.getElementById('modal-treatment-text');
+    if (treatmentDescEl && originalData.treatmentDescription) {
+        treatmentDescEl.innerText = originalData.treatmentDescription;
+        if (modalTreatmentEl) modalTreatmentEl.innerText = originalData.treatmentDescription;
+    }
+    
+    const severityValueEl = document.getElementById('severity-value');
+    if (severityValueEl && originalData.severityValue) {
+        severityValueEl.innerText = originalData.severityValue;
+    }
+    
+    const spreadRiskEl = document.getElementById('spread-risk-value');
+    if (spreadRiskEl && originalData.spreadRiskValue) {
+        spreadRiskEl.innerText = originalData.spreadRiskValue;
+    }
+    
+    const statusBadgeEl = document.getElementById('status-badge-text');
+    if (statusBadgeEl && originalData.statusBadgeText) {
+        statusBadgeEl.innerText = originalData.statusBadgeText;
+    }
+    
+    if (originalData.diseaseCardValue) {
+        const diseaseCardEl = document.getElementById('disease-card-value');
+        if (diseaseCardEl) diseaseCardEl.innerText = originalData.diseaseCardValue;
+    }
+    if (originalData.cropTypeCardValue) {
+        const cropTypeEl = document.getElementById('crop-type-value');
+        if (cropTypeEl) cropTypeEl.innerText = originalData.cropTypeCardValue;
+    }
+}
+
+// Translate UI elements (buttons, labels, etc.)
+function translateUIElements(lang) {
+    const t = uiTranslations[lang];
+    if (!t) return;
+    
+    const elementsToTranslate = [
+        'page-title', 'share-text', 'export-text', 'ai-analyzed-badge', 'ai-confidence-title',
+        'confidence-label', 'latency-label', 'location-label', 'severity-label',
+        'spread-risk-label', 'urgency-label', 'recommended-actions-title',
+        'edge-text', 'modal-title', 'modal-immediate-title', 'modal-immediate-text',
+        'modal-chemical-title', 'modal-close-btn', 'errorTitle', 'errorSubtitle',
+        'errorMessage', 'error-try-btn', 'error-scanner-btn', 'analyzing-text', 'ai-examining-text',
+        'crop-modal-about-label', 'crop-modal-close-btn'
+    ];
+    
+    elementsToTranslate.forEach(id => {
+        const el = document.getElementById(id);
+        if (el && t[id]) {
+            el.innerText = t[id];
+        }
+    });
+
+    // Update crop modal content specifically
+    const store = document.getElementById('crop-data-store');
+    const cropTitle = document.getElementById('crop-modal-title');
+    const cropDesc = document.getElementById('crop-modal-description');
+    
+    if (store && cropTitle && cropDesc) {
+        if (lang === 'ur') {
+            cropTitle.textContent = store.dataset.nameUr || store.dataset.nameEn;
+            cropDesc.textContent = store.dataset.descUr || store.dataset.descEn;
+        } else {
+            cropTitle.textContent = store.dataset.nameEn;
+            cropDesc.textContent = store.dataset.descEn;
+        }
+    }
+    
+    const actionBtn = document.getElementById('action-button-text');
+    if (actionBtn) {
+        const hasScan = document.getElementById('action-button')?.dataset.scan === 'true';
+        if (hasScan) {
+            const isThreat = originalData.statusBadgeText === 'Threat Detected';
+            if (lang === 'ur') {
+                actionBtn.innerText = isThreat ? t['action-view'] : t['action-monitor'];
+            } else {
+                actionBtn.innerText = isThreat ? 'View Treatment Details' : 'Continue Monitoring';
+            }
+        } else {
+            actionBtn.innerText = lang === 'ur' ? t['action-scan'] : 'Scan New Image';
+        }
+    }
+    
+    setTimeout(() => {
+        updateDiseaseAndCropTypeCards();
+    }, 50);
+}
+
+// Main translate function
+function translatePage() {
+    if (isTranslating) return;
+    isTranslating = true;
+    showTranslateLoading(true);
+    
+    setTimeout(() => {
+        if (currentLang === 'ur') {
+            translateUIElements('ur');
+            translateToUrdu();
+            showTranslateToast('✓ صفحہ اردو میں ترجمہ ہو گیا!');
+        } else {
+            translateUIElements('en');
+            revertToEnglishContent();
+            showTranslateToast('✓ Switched to English!');
+        }
+        showTranslateLoading(false);
+        isTranslating = false;
+    }, 100);
+}
+
+function updateLanguageUI() {
+    document.querySelectorAll('.language-option').forEach(opt => {
+        opt.classList.remove('active');
+        if (opt.dataset.lang === currentLang) opt.classList.add('active');
+    });
+    
+    const langSpan = document.getElementById('currentLanguage');
+    if (langSpan) langSpan.textContent = currentLang === 'en' ? 'English' : 'اردو';
+}
+
+function changeLanguage(lang) {
+    if (lang === currentLang) return;
+    
+    currentLang = lang;
+    localStorage.setItem('agrisense_language', lang);
+    updateLanguageUI();
+    
+    fetch('/api/set-language-preference/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrfToken() },
+        body: JSON.stringify({ language: lang })
+    }).catch(() => {});
+    
+    translatePage();
+}
+
+// Theme handling
+const body = document.body;
+function applyThemeFromSettings(theme) {
+    if (theme === 'dark') { body.classList.add('dark'); }
+    else { body.classList.remove('dark'); }
+}
+const savedTheme = localStorage.getItem('agrisense_theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+applyThemeFromSettings(savedTheme);
+
+function showToast(message, isSuccess = true) {
+    const toast = document.getElementById('toast');
+    const toastMessage = document.getElementById('toast-message');
+    const icon = toast.querySelector('.material-symbols-outlined');
+    toastMessage.textContent = message;
+    icon.textContent = isSuccess ? 'check_circle' : 'error';
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 3000);
+}
+
+function shareReport() {
+    const diseaseName = document.getElementById('disease-name')?.innerText || 'No Analysis';
+    const confidence = document.getElementById('confidence-percent')?.innerText || '0';
+    const scanData = { 
+        title: 'AgriSense Diagnosis Report', 
+        text: `Diagnosis: ${diseaseName}\nConfidence: ${confidence}\nDate: ${new Date().toLocaleDateString()}`, 
+        url: window.location.href 
+    };
+    if (navigator.share) { 
+        navigator.share(scanData).catch(() => fallbackShare()); 
+    } else { 
+        fallbackShare(); 
+    }
+}
+
+function fallbackShare() { 
+    navigator.clipboard.writeText(window.location.href)
+        .then(() => showToast('Link copied to clipboard!'))
+        .catch(() => showToast('Could not copy link', false)); 
+}
+
+function exportReport() {
+    showToast('Preparing diagnosis report...');
+    const exportBtn = document.querySelector('button[onclick="exportReport()"]');
+    const originalBtnText = exportBtn ? exportBtn.innerHTML : '';
+    if (exportBtn) { 
+        exportBtn.innerHTML = '<span class="material-symbols-outlined text-[18px] animate-spin">progress_activity</span><span>Generating...</span>'; 
+        exportBtn.disabled = true; 
+    }
+    try {
+        const imgElement = document.querySelector('#diagnosis-image');
+        if (!imgElement) throw new Error('Image not found');
+        const diagnosisCard = document.querySelector('.grid.grid-cols-1.lg\\:grid-cols-2 > div:last-child .rounded-2xl.p-6:first-child');
+        const cardToExport = diagnosisCard;
+        if (!cardToExport) throw new Error('Diagnosis card not found');
+        const cloneCard = cardToExport.cloneNode(true);
+        cloneCard.style.backgroundColor = '#ffffff';
+        cloneCard.style.border = '1px solid #d4e8ce';
+        cloneCard.style.borderRadius = '24px';
+        cloneCard.style.padding = '24px';
+        const exportWrapper = document.createElement('div');
+        exportWrapper.style.width = '1000px';
+        exportWrapper.style.backgroundColor = '#ffffff';
+        exportWrapper.style.padding = '30px';
+        exportWrapper.style.fontFamily = "'Inter', sans-serif";
+        exportWrapper.style.display = 'flex';
+        exportWrapper.style.gap = '30px';
+        exportWrapper.style.alignItems = 'flex-start';
+        const imgContainer = document.createElement('div');
+        imgContainer.style.flex = '1';
+        imgContainer.style.borderRadius = '16px';
+        imgContainer.style.overflow = 'hidden';
+        const imgClone = imgElement.cloneNode(true);
+        imgClone.style.width = '100%';
+        imgClone.style.height = 'auto';
+        imgClone.style.objectFit = 'cover';
+        imgContainer.appendChild(imgClone);
+        const cardContainer = document.createElement('div');
+        cardContainer.style.flex = '1';
+        cardContainer.appendChild(cloneCard);
+        exportWrapper.appendChild(imgContainer);
+        exportWrapper.appendChild(cardContainer);
+        const header = document.createElement('div');
+        header.style.marginBottom = '20px';
+        header.style.borderBottom = '2px solid #10b981';
+        header.style.paddingBottom = '12px';
+        header.innerHTML = `<div style="display: flex; align-items: center; gap: 12px;"><span style="font-size: 28px;">🌿</span><span style="font-size: 20px; font-weight: 800; color: #1a3a2a;">AgriSense Diagnosis Report</span><span style="margin-left: auto; font-size: 12px; color: #6b8c68;">${new Date().toLocaleDateString()}</span></div>`;
+        const finalContainer = document.createElement('div');
+        finalContainer.style.backgroundColor = '#ffffff';
+        finalContainer.style.padding = '20px';
+        finalContainer.appendChild(header);
+        finalContainer.appendChild(exportWrapper);
+        document.body.appendChild(finalContainer);
+        html2canvas(finalContainer, { scale: 2.5, backgroundColor: '#ffffff', logging: false, useCORS: true, allowTaint: false }).then((canvas) => {
+            document.body.removeChild(finalContainer);
+            const { jsPDF } = window.jspdf;
+            const imgData = canvas.toDataURL('image/jpeg', 0.95);
+            const imgWidth = 210;
+            const imgHeight = (canvas.height * imgWidth) / canvas.width;
+            const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+            pdf.addImage(imgData, 'JPEG', 0, 0, imgWidth, imgHeight);
+            pdf.save(`AgriSense_Diagnosis_${new Date().toISOString().slice(0,19).replace(/:/g, '-')}.pdf`);
+            showToast('Report exported successfully');
+        }).catch((error) => { 
+            document.body.removeChild(finalContainer); 
+            throw error; 
+        });
+    } catch (error) { 
+        console.error('Export error:', error); 
+        showToast('Failed to generate report', false); 
+        if (exportBtn) { 
+            exportBtn.innerHTML = originalBtnText; 
+            exportBtn.disabled = false; 
+        } 
+    }
+    if (exportBtn) { 
+        setTimeout(() => { 
+            exportBtn.innerHTML = originalBtnText; 
+            exportBtn.disabled = false; 
+        }, 3000); 
+    }
+}
+
+function updateLatencyDisplay(latencyMs) {
+    const el = document.getElementById('latency-value');
+    if (el && latencyMs) { 
+        el.textContent = latencyMs + ' ms'; 
+        el.style.transition = 'color 0.3s ease'; 
+        el.style.color = '#10b981'; 
+        setTimeout(() => { 
+            if (el) el.style.color = '#2d3e2d'; 
+        }, 500); 
+    }
+}
+
+// Map and Location Functions
+let map = null;
+function initMap(lat, lon, locationName) {
+    const container = document.getElementById('location-map-container');
+    if (container) container.style.display = 'block';
+    if (!map) { 
+        map = L.map('location-map').setView([lat, lon], 13); 
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', { 
+            attribution: '&copy; OpenStreetMap' 
+        }).addTo(map); 
+    } else { 
+        map.setView([lat, lon], 13); 
+    }
+    L.marker([lat, lon]).addTo(map).bindPopup(locationName).openPopup();
+    document.getElementById('location-name').textContent = locationName;
+}
+
+function isWebView() { 
+    const ua = navigator.userAgent.toLowerCase(); 
+    return ua.includes('wv') || ua.includes('; wv') || /android.*applewebkit(?=.*version\/?.*safari)/.test(ua) === false; 
+}
+
+function getLocationByIP() {
+    const el = document.getElementById('location-name');
+    if (el) el.textContent = 'Detecting by IP...';
+    fetch('https://ipapi.co/json/').then(r => r.json()).then(d => {
+        let name = 'Farm Location';
+        if (d.city && d.region) name = `${d.city}, ${d.region}`;
+        else if (d.country_name) name = d.country_name;
+        if (d.latitude && d.longitude) initMap(d.latitude, d.longitude, name);
+        else if (el) el.textContent = name;
+    }).catch(() => { 
+        fetch('https://ipinfo.io/json').then(r => r.json()).then(d => {
+            let name = 'Farm Location';
+            if (d.city && d.region) name = `${d.city}, ${d.region}`;
+            else if (d.country) name = d.country;
+            if (d.loc) { 
+                const [lat, lon] = d.loc.split(','); 
+                initMap(parseFloat(lat), parseFloat(lon), name); 
+            } else if (el) el.textContent = name;
+        }).catch(() => { 
+            if (el) el.textContent = 'Farm Location'; 
+        }); 
+    });
+}
+
+function getLocation() {
+    if (isWebView()) { 
+        getLocationByIP(); 
+        return; 
+    }
+    if (navigator.geolocation) {
+        const timeout = setTimeout(() => getLocationByIP(), 5000);
+        navigator.geolocation.getCurrentPosition(pos => {
+            clearTimeout(timeout);
+            const lat = pos.coords.latitude, lon = pos.coords.longitude;
+            document.getElementById('location-name').textContent = 'Getting location...';
+            fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=10`)
+                .then(r => r.json()).then(d => {
+                    let name = d.display_name ? d.display_name.split(',')[0] : 'Farm Location';
+                    if (d.address && d.address.state) name += ', ' + d.address.state;
+                    initMap(lat, lon, name);
+                }).catch(() => { 
+                    document.getElementById('location-name').textContent = `${lat.toFixed(2)}°, ${lon.toFixed(2)}°`; 
+                });
+        }, () => getLocationByIP(), { enableHighAccuracy: true, timeout: 5000 });
+    } else { 
+        getLocationByIP(); 
+    }
+}
+
+function openTreatmentModal() { 
+    const modal = document.getElementById('treatmentModal'); 
+    if (modal) { 
+        modal.classList.remove('hidden'); 
+        document.body.style.overflow = 'hidden'; 
+    } 
+}
+
+function closeTreatmentModal() { 
+    const modal = document.getElementById('treatmentModal'); 
+    if (modal) { 
+        modal.classList.add('hidden'); 
+        document.body.style.overflow = 'auto'; 
+    } 
+}
+
+function openCropInfoModal() {
+    const modal = document.getElementById('cropInfoModal');
+    if (modal) {
+        modal.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+    }
+}
+
+function closeCropInfoModal() {
+    const modal = document.getElementById('cropInfoModal');
+    if (modal) {
+        modal.classList.add('hidden');
+        document.body.style.overflow = 'auto';
+    }
+}
+
+function showErrorModal(title, message) { 
+    const modal = document.getElementById('errorModal'); 
+    document.getElementById('errorTitle').textContent = title; 
+    document.getElementById('errorMessage').textContent = message; 
+    modal.style.display = 'flex'; 
+    document.body.style.overflow = 'hidden'; 
+}
+
+function closeErrorModal() { 
+    const modal = document.getElementById('errorModal'); 
+    modal.style.display = 'none'; 
+    document.body.style.overflow = 'auto'; 
+}
+
+// ==================== MAIN INITIALIZATION - FORCE ENGLISH ====================
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize language from localStorage or server default
+    const savedLang = localStorage.getItem('agrisense_language');
+    const serverLang = '{{ user_language|default:"en" }}';
+    currentLang = savedLang || serverLang || 'en';
+    
+    updateLanguageUI();
+    
+    if (currentLang === 'ur') {
+        translateUIElements('ur');
+    } else {
+        translateUIElements('en');
+        revertToEnglishContent();
+    }
+    
+    storeOriginalValues();
+    
+    setTimeout(() => {
+        updateDiseaseAndCropTypeCards();
+    }, 200);
+    
+    console.log('Diagnosis page loaded in:', currentLang);
+    
+    const latencyEl = document.getElementById('latency-value');
+    const storedLatency = sessionStorage.getItem('lastScanLatency');
+    if (storedLatency && storedLatency !== 'undefined') { 
+        updateLatencyDisplay(storedLatency); 
+        sessionStorage.removeItem('lastScanLatency'); 
+    } else { 
+        if (latencyEl) latencyEl.textContent = '-- ms'; 
+    }
+    
+    getLocation();
+    
+    const errorData = sessionStorage.getItem('scanError');
+    if (errorData) { 
+        try { 
+            const error = JSON.parse(errorData); 
+            showErrorModal(error.title || 'Upload Failed', error.message || 'An error occurred'); 
+            sessionStorage.removeItem('scanError'); 
+        } catch(e) { 
+            console.error('Error parsing error data:', e); 
+        } 
+    }
+    
+    document.querySelectorAll('.language-option').forEach(opt => { 
+        opt.addEventListener('click', () => changeLanguage(opt.dataset.lang)); 
+    });
+    
+    const langBtn = document.getElementById('languageBtn');
+    const langDropdown = document.getElementById('languageDropdown');
+    if (langBtn && langDropdown) {
+        langBtn.addEventListener('click', (e) => { 
+            e.stopPropagation(); 
+            langDropdown.classList.toggle('active'); 
+        });
+        document.addEventListener('click', () => langDropdown.classList.remove('active'));
+    }
+    
+    document.getElementById('action-button')?.addEventListener('click', function() { 
+        const hasScan = this.dataset.scan === 'true'; 
+        if (hasScan) { 
+            openTreatmentModal(); 
+        } else { 
+            window.location.href = "{% url 'scanner' %}"; 
+        } 
+    });
+});
+
+document.addEventListener('keydown', function(e) { 
+    if (e.key === 'Escape') { 
+        closeTreatmentModal(); 
+        closeErrorModal(); 
+    } 
+});
+
+window.addEventListener('load', function() {
+    setTimeout(function() {
+        updateDiseaseAndCropTypeCards();
+    }, 300);
+});
+</script>
+</body>
+</html>

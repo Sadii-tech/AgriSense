@@ -1,0 +1,1835 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover" name="viewport"/>
+<title>AgriSense – Dashboard</title>
+<script src="{% static 'js/tailwind.min.js' %}"></script>
+<link href="{% static 'css/inter.css' %}" rel="stylesheet"/>
+<link href="{% static 'css/material-symbols.css' %}" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+    .language-switch {
+        position: relative;
+        display: inline-block;
+        z-index: 50;
+    }
+    
+    .language-btn {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 12px;
+        background: rgba(255,255,255,0.12);
+        border: 1px solid rgba(255,255,255,0.2);
+        border-radius: 0.75rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        color: white;
+        font-size: 0.875rem;
+        font-weight: 500;
+    }
+    
+    .language-btn:hover {
+        background: rgba(255,255,255,0.2);
+        border-color: rgba(255,255,255,0.3);
+    }
+    
+    .language-dropdown {
+        position: absolute;
+        top: 100%;
+        right: 0;
+        margin-top: 8px;
+        background: white;
+        border: 1px solid #d4e8ce;
+        border-radius: 0.75rem;
+        min-width: 140px;
+        overflow: hidden;
+        z-index: 1000;
+        box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1);
+        display: none;
+    }
+    
+    body.dark .language-dropdown {
+        background: #121a12;
+        border-color: #2a3a2a;
+    }
+    
+    .language-dropdown.active {
+        display: block;
+        animation: dropdownFadeIn 0.2s ease;
+    }
+    
+    @keyframes dropdownFadeIn {
+        from { opacity: 0; transform: translateY(-10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .language-option {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 16px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        font-size: 0.875rem;
+        color: #1a2c1e;
+    }
+    
+    body.dark .language-option {
+        color: #e5ede3;
+    }
+    
+    .language-option:hover {
+        background: #e8f4e4;
+    }
+    /* FIX: Proper sidebar sticky behavior */
+body {
+    height: 100vh;
+    overflow: hidden;
+}
+
+.flex-1.overflow-y-auto {
+    overflow-y: auto;
+    height: 100vh;
+}
+
+aside {
+    height: 100vh;
+    position: sticky;
+    top: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+aside nav {
+    flex: 1;
+    overflow-y: auto;
+    min-height: 0;
+}
+
+.sticky-bottom-section {
+    flex-shrink: 0;
+    margin-top: auto;
+}
+    body.dark .language-option:hover {
+        background: #1a241a;
+    }
+    
+    .language-option.active {
+        background: #10b981;
+        color: white;
+    }
+    
+    .language-option .material-symbols-outlined {
+        font-size: 18px;
+    }
+
+    .translate-loader {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: #10b981;
+        color: white;
+        padding: 12px 24px;
+        border-radius: 12px;
+        z-index: 10000;
+        display: none;
+        align-items: center;
+        gap: 10px;
+        font-family: 'Inter', sans-serif;
+        font-size: 14px;
+    }
+    
+    .translate-loader.show {
+        display: flex;
+    }
+    
+    .spinner {
+        width: 18px;
+        height: 18px;
+        border: 2px solid rgba(255,255,255,0.3);
+        border-top-color: white;
+        border-radius: 50%;
+        animation: spin 0.6s linear infinite;
+    }
+    
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+    
+    .translate-toast {
+        position: fixed;
+        bottom: 80px;
+        right: 20px;
+        background: white;
+        border: 1px solid #d4e8ce;
+        border-radius: 12px;
+        padding: 12px 20px;
+        z-index: 10000;
+        font-family: 'Inter', sans-serif;
+        font-size: 14px;
+        display: none;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    
+    body.dark .translate-toast {
+        background: #121a12;
+        border-color: #2a3a2a;
+        color: #e5ede3;
+    }
+    
+    .translate-toast.show {
+        display: block;
+    }
+
+    .no-translate {
+        -webkit-translate: none !important;
+        translate: none !important;
+    }
+    
+    .material-symbols-outlined,
+    .material-icons,
+    [class*="material-symbols"] {
+        -webkit-translate: none !important;
+        translate: none !important;
+    }
+</style>
+
+<script id="tailwind-config">
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        colors: {
+          "primary": "#10b981",
+          "primary-dark": "#059669",
+          "primary-light": "#34d399",
+          "background-dark": "#0a0f0a",
+          "surface-dark": "#121a12",
+          "surface-darker": "#0d130d",
+          "surface-accent": "#1a241a",
+        },
+        fontFamily: { 
+          "display": ["'Inter'", "sans-serif"], 
+          "body": ["'Inter'", "sans-serif"] 
+        },
+        boxShadow: {
+          "premium": "0 10px 30px -10px rgba(0, 0, 0, 0.5)",
+          "glow-primary": "0 0 20px rgba(16, 185, 129, 0.15)",
+        }
+      },
+    },
+  }
+</script>
+<style type="text/tailwindcss">
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  
+  html, body {
+    overflow-x: hidden !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+  
+  body { 
+    font-family: 'Inter', sans-serif; 
+    background: #f0f7f0 !important;
+    color: #1a2c1e !important;
+  }
+  
+  body.dark {
+    background: #0a0f0a !important;
+    color: #ffffff !important;
+  }
+  body.dark .glass-card { 
+    background: #121a12 !important;
+    border: 1px solid #2a3a2a !important;
+  }
+  body.dark .glass-card:hover {
+    background: #1a241a !important;
+    border-color: #3c553c !important;
+  }
+  
+  
+  aside.hidden {
+    background: #1a3a2a !important;
+    border-right-color: #2d5a3d !important;
+  }
+  body.dark aside.hidden {
+    background: #0b150b !important;
+    border-right-color: #1f2c1f !important;
+  }
+  
+  aside .text-white, aside .text-gray-500, aside .text-gray-400,
+  aside p, aside span, aside a, aside .font-bold {
+    color: white !important;
+  }
+  body.dark aside .text-white, body.dark aside .text-gray-500,
+  body.dark aside p, body.dark aside span, body.dark aside a {
+    color: #ffffff !important;
+  }
+  
+  .sidebar-link { 
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.6rem 1rem;
+    border-radius: 1rem;
+    font-weight: 500;
+    font-size: 0.875rem;
+    transition: all 0.2s ease;
+    width: 100%;
+    color: white !important;
+  }
+  .sidebar-link:hover { 
+    background: rgba(255,255,255,0.15) !important;
+    color: white !important;
+  }
+  .sidebar-link.active { 
+    background: rgba(255,255,255,0.25) !important;
+    color: white !important;
+    border: 1px solid rgba(255,255,255,0.3) !important;
+  }
+  body.dark .sidebar-link { color: #ffffff !important; }
+  body.dark .sidebar-link:hover { background: rgba(255,255,255,0.1) !important; }
+  body.dark .sidebar-link.active { background: rgba(255,255,255,0.15) !important; border-color: rgba(255,255,255,0.2) !important; }
+  
+  aside .glass-card {
+    background: rgba(255,255,255,0.1) !important;
+    border-color: rgba(255,255,255,0.2) !important;
+  }
+  body.dark aside .glass-card {
+    background: rgba(255,255,255,0.05) !important;
+  }
+  
+  aside .text-[10px].font-bold {
+    color: rgba(255,255,255,0.6) !important;
+  }
+  
+  .glass-card { 
+    background: #ffffff !important;
+    backdrop-filter: none !important;
+    border: 1px solid #d4e8ce !important;
+    transition: all 0.3s ease;
+  }
+  .glass-card:hover {
+    background: #ffffff !important;
+    border-color: #bcddae !important;
+    transform: translateY(-2px);
+  }
+  
+  .stat-badge { font-size: 0.65rem; font-weight: 700; padding: 0.2rem 0.65rem; border-radius: 999px; text-transform: uppercase; letter-spacing: 0.03em; border-width: 1px; }
+  .stat-badge-good  { background: #e0f2e0 !important; color: #166534 !important; border-color: #bbf7d0 !important; }
+  .stat-badge-danger { background: #fee2e2 !important; color: #b91c1c !important; border-color: #fecaca !important; }
+  
+  .fade-in { animation: fadeIn 0.6s ease-out forwards; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  
+  @keyframes fillGauge { from { stroke-dasharray: 0, 100; } to { stroke-dasharray: 91, 100; } }
+  .gauge-fill { animation: fillGauge 2s ease-out forwards; }
+
+  .live-indicator {
+    position: relative; display: inline-block; width: 8px; height: 8px;
+    background-color: #10b981; border-radius: 50%; margin-right: 6px;
+  }
+  .live-indicator::after {
+    content: ''; position: absolute; top: -2px; left: -2px;
+    width: 12px; height: 12px; background-color: rgba(16, 185, 129, 0.3);
+    border-radius: 50%; animation: pulse-ring 1.5s infinite;
+  }
+  @keyframes pulse-ring {
+    0% { transform: scale(0.8); opacity: 0.7; }
+    70% { transform: scale(1.4); opacity: 0; }
+    100% { transform: scale(1.4); opacity: 0; }
+  }
+
+  header.sticky {
+    background: #1a3a2a !important;
+    border-bottom-color: #2d5a3d !important;
+  }
+  body.dark header.sticky {
+    background: #0b150b !important;
+    border-bottom-color: #1f2c1f !important;
+  }
+  
+  header .text-white, header .font-bold.text-white {
+    color: white !important;
+  }
+  
+  #dashboard-search {
+    background: rgba(255,255,255,0.12) !important;
+    border-color: rgba(255,255,255,0.2) !important;
+    color: white !important;
+  }
+  #dashboard-search::placeholder {
+    color: rgba(255,255,255,0.5) !important;
+  }
+  
+  #notifications-btn {
+    background: rgba(255,255,255,0.12) !important;
+    border-color: rgba(255,255,255,0.2) !important;
+    color: white !important;
+  }
+  
+  a.bg-primary {
+    background: #2f8b5c !important;
+    color: white !important;
+  }
+  
+  #notification-dropdown {
+    background: #ffffff !important;
+    border-color: #d4e8ce !important;
+    position: fixed !important;
+    top: 70px !important;
+    right: 20px !important;
+    left: auto !important;
+    width: 380px !important;
+    max-width: calc(100vw - 40px) !important;
+    z-index: 1000 !important;
+  }
+  body.dark #notification-dropdown {
+    background: #121a12 !important;
+    border-color: #2a3a2a !important;
+    color: #ffffff !important;
+  }
+  
+  @media (max-width: 640px) {
+    #notification-dropdown {
+      right: 10px !important;
+      left: 10px !important;
+      width: auto !important;
+    }
+  }
+  
+  #mobileMenu {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    background: #1a3a2a !important;
+    z-index: 1000 !important;
+    overflow-y: auto !important;
+    display: none;
+  }
+  body.dark #mobileMenu {
+    background: #0b150b !important;
+  }
+  
+  #mobileMenu.show {
+    display: flex !important;
+    flex-direction: column;
+  }
+  
+  #mobileMenu .text-white, #mobileMenu .sidebar-link {
+    color: white !important;
+  }
+  
+  nav.lg\:hidden.fixed {
+    background: #1a3a2a !important;
+    border-top-color: #2d5a3d !important;
+  }
+  body.dark nav.lg\:hidden.fixed {
+    background: #0b150b !important;
+  }
+  
+  .search-highlight {
+    background-color: rgba(16, 185, 129, 0.08);
+    border-left: 3px solid #10b981;
+  }
+  
+  #trendChart {
+    max-height: 250px !important;
+    width: 100% !important;
+  }
+  
+  .toast {
+    position: fixed;
+    bottom: 80px;
+    right: 20px;
+    z-index: 1100;
+    background: white;
+    border: 1px solid #d4e8ce;
+    border-radius: 1rem;
+    padding: 0.75rem 1.25rem;
+    display: none;
+  }
+  body.dark .toast {
+    background: #121a12;
+    border-color: #2a3a2a;
+  }
+  .toast.show { display: flex; }
+  
+  .chart-container {
+    position: relative;
+    height: 250px;
+    width: 100%;
+  }
+  
+  .recent-scans-collapse {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow: hidden;
+  }
+  .recent-scans-collapse.collapsed {
+    max-height: 0 !important;
+    opacity: 0;
+    margin: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+  .recent-scans-collapse:not(.collapsed) {
+    max-height: 800px;
+    opacity: 1;
+  }
+</style>
+</head>
+
+<body class="min-h-screen flex" id="app" 
+      data-user-id="{{ user.id }}"
+      data-username="{{ user.username }}"
+      data-total-scans="{{ total_scans }}"
+      data-healthy-count="{{ healthy_count }}"
+      data-disease-count="{{ disease_count }}"
+      data-avg-confidence="{{ avg_confidence }}">
+
+<!-- SIDEBAR (DESKTOP) - NEVER TRANSLATE -->
+<aside class="hidden lg:flex flex-col w-64 xl:w-72 min-h-screen sticky top-0 shrink-0 no-translate" style="background: #1a3a2a; border-right: 1px solid #2d5a3d;">
+  <div class="flex items-center gap-3 px-6 py-6 border-b" style="border-color: #2d5a3d;">
+    <div class="w-9 h-9 rounded-xl bg-white/20 border border-white/30 flex items-center justify-center">
+      <span class="material-symbols-outlined text-primary text-xl">eco</span>
+    </div>
+    <div class="flex flex-col">
+      <span class="font-bold text-xl tracking-tight leading-none text-white">{{ branding.app_name|default:"AgriSense" }}</span>
+      <span class="text-[10px] text-primary/80 uppercase tracking-[0.2em] font-bold mt-1.5">
+        {{ branding.app_subtitle|default:"Edge Intelligence" }}
+      </span>
+    </div>
+  </div>
+  <nav class="flex-1 px-3 py-5 flex flex-col gap-1">
+    <a href="{% url 'dashboard' %}" class="sidebar-link active"><span class="material-symbols-outlined text-xl">dashboard</span>{{ ui_labels.nav_dashboard|default:"Dashboard" }}</a>
+    <a href="{% url 'scanner' %}" class="sidebar-link"><span class="material-symbols-outlined text-xl">center_focus_strong</span>{{ ui_labels.nav_scanner|default:"New Scan" }}</a>
+    <a href="{% url 'history' %}" class="sidebar-link"><span class="material-symbols-outlined text-xl">history</span>{{ ui_labels.nav_history|default:"History" }}</a>
+    <div class="pt-6 pb-2 px-3 text-[10px] font-bold uppercase tracking-widest text-white/50">Management</div>
+    <a href="{% url 'setting' %}" class="sidebar-link"><span class="material-symbols-outlined text-[20px]">settings</span> {{ ui_labels.nav_settings|default:"Settings" }}</a>
+    <!-- <a href="{% url 'profile_settings' %}" class="sidebar-link"><span class="material-symbols-outlined text-[20px]">account_circle</span> Profile</a> -->
+    <a href="{% url 'about' %}" class="sidebar-link"><span class="material-symbols-outlined">info</span> {{ ui_labels.nav_about|default:"About Us" }}</a>
+  </nav>
+  <div class="p-4 border-t" style="border-color: #2d5a3d;">
+   <a href="{% url 'profile_settings' %}" class="rounded-2xl flex items-center gap-3 p-3 transition-all hover:bg-white/15" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15); text-decoration: none;">
+  <div class="w-9 h-9 rounded-xl bg-white/20 border border-white/30 flex items-center justify-center shrink-0">
+    <span class="material-symbols-outlined text-white text-xl">account_circle</span>
+  </div>
+  <div class="flex-1 min-w-0">
+
+    <p class="text-sm font-bold truncate text-white">{{ user.get_full_name|default:user.username }}</p>
+    <p class="text-[10px] truncate uppercase tracking-tighter text-white/60">{{ user.email|default:"AgriSense User" }}</p>
+  </div>
+</a>
+    <a href="{% url 'logout' %}" class="flex items-center justify-center mt-1 gap-2 px-3 py-2 rounded-lg transition-all text-white/80 hover:text-rose-400 hover:bg-white/10" style="background: rgba(255,255,255,0.08);">
+      <span class="material-symbols-outlined text-sm">logout</span>
+      <span class="text-xs font-medium">Logout</span>
+    </a>
+  </div>
+</aside>
+
+<!-- MAIN CONTENT -->
+<div class="flex-1 flex flex-col min-h-screen overflow-y-auto">
+
+  <header class="sticky top-0 z-30 px-4 lg:px-8 py-4 flex items-center justify-between gap-4" style="background: #1a3a2a; border-bottom: 1px solid #2d5a3d;">
+    <div class="flex items-center gap-2.5 lg:hidden">
+      <div class="w-9 h-9 rounded-xl bg-white/15 border border-white/25 flex items-center justify-center">
+        <span class="material-symbols-outlined text-primary text-xl">eco</span>
+      </div>
+      <span class="font-bold text-lg tracking-tight text-white">{{ branding.app_name|default:"AgriSense" }}</span>
+    </div>
+    <div class="hidden md:flex items-center flex-1 max-w-lg">
+      <div class="relative w-full group">
+        <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-white/40 text-[20px]">search</span>
+        <input id="dashboard-search" type="text" placeholder="{{ ui_labels.search_placeholder|default:'Search insights, diseases, or sectors...' }}" onkeyup="searchDashboard()" class="w-full pl-12 pr-4 py-2.5 rounded-2xl text-white placeholder-white/40 text-sm focus:outline-none transition-all" style="background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.2);"/>
+      </div>
+    </div>
+    <div class="flex items-center gap-3 relative">
+      <div class="language-switch">
+        <button class="language-btn" id="languageBtn">
+          <span class="material-symbols-outlined text-[18px]">language</span>
+          <span id="currentLanguage">{% if user_language == 'ur' %}اردو (Urdu){% else %}English{% endif %}</span>
+          <span class="material-symbols-outlined text-[16px]">expand_more</span>
+        </button>
+        <div class="language-dropdown" id="languageDropdown">
+          <div class="language-option {% if user_language == 'en' %}active{% endif %}" data-lang="en"><span class="material-symbols-outlined">check_circle</span>English</div>
+          <div class="language-option {% if user_language == 'ur' %}active{% endif %}" data-lang="ur"><span class="material-symbols-outlined">translate</span>اردو (Urdu)</div>
+        </div>
+      </div>
+      <button id="notifications-btn" class="w-10 h-10 flex items-center justify-center rounded-xl transition-all relative" style="background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.2); color: white;">
+        <span class="material-symbols-outlined text-[22px]">notifications</span>
+        <span id="notification-count" class="absolute -top-1 -right-1 bg-rose-500 text-white text-[10px] font-bold min-w-[18px] h-[18px] flex items-center justify-center rounded-full px-1 shadow-glow-primary border-2 border-[#1a3a2a] transition-all hidden">0</span>
+      </button>
+      <div id="notification-dropdown" class="hidden rounded-3xl shadow-premium p-5 z-50" style="background: #ffffff; border: 1px solid #d4e8ce;">
+        <div class="flex items-center justify-between mb-4">
+          <div class="flex items-center gap-2 text-rose-500">
+            <span class="material-symbols-outlined">warning</span>
+            <span class="font-bold text-sm" id="alerts-title">{% if user_language == 'ur' %}بیماریوں کے انتباہات{% else %}Disease Alerts{% endif %}</span>
+          </div>
+          <span id="alert-count-in-dropdown" class="text-xs font-bold text-rose-500"></span>
+        </div>
+        <div id="alert-list" class="space-y-4 max-h-80 overflow-y-auto pr-2"></div>
+        <button id="mark-all-read-btn" class="mt-6 w-full py-3 font-bold text-sm rounded-2xl flex items-center justify-center gap-2 transition-all" style="background: #2f8b5c; color: white;">
+          <span class="material-symbols-outlined text-lg">done_all</span>
+          <span id="mark-read-text">{% if user_language == 'ur' %}سب کو پڑھا ہوا قرار دیں{% else %}Mark All as Read{% endif %}</span>
+        </button>
+      </div>
+      
+      <a href="{% url 'scanner' %}" class="hidden sm:flex items-center gap-2.5 font-bold text-sm px-5 py-2.5 rounded-xl transition-all shadow-premium hover:shadow-glow-primary active:scale-95" style="background: #2f8b5c; color: white;">
+        <span class="material-symbols-outlined text-[20px]">add_a_photo</span>
+        <span id="quick-scan-text">{{ ui_labels.quick_scan|default:"Quick Scan" }}</span>
+      </a>
+      <button id="mobileMenuBtn" class="lg:hidden w-10 h-10 flex items-center justify-center rounded-xl transition-all" style="background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.2); color: white;">
+        <span class="material-symbols-outlined">menu</span>
+      </button>
+    </div>
+  </header>
+
+
+
+  <div id="mobileMenu" class="lg:hidden no-translate">
+    <div class="flex flex-col h-full p-6">
+      <div class="flex items-center justify-between mb-8">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-2xl bg-white/20 border border-white/30 flex items-center justify-center">
+            <span class="material-symbols-outlined text-primary text-2xl">eco</span>
+          </div>
+          <span class="font-bold text-xl tracking-tight text-white">{{ branding.app_name|default:"AgriSense" }}</span>
+        </div>
+        <button id="closeMenu" class="w-10 h-10 flex items-center justify-center rounded-2xl transition-all bg-white/10 border border-white/20 text-white">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+      <div class="mb-4 px-3">
+        <div class="text-white text-xs font-bold mb-2 uppercase tracking-wider" id="mobile-lang-label">Language</div>
+        <div class="flex gap-2">
+          <button class="mobile-lang-option active px-4 py-2 rounded-xl text-sm font-medium transition-all" data-lang="en" style="background: rgba(255,255,255,0.2); color: white;">English</button>
+          <button class="mobile-lang-option px-4 py-2 rounded-xl text-sm font-medium transition-all" data-lang="ur" style="background: rgba(255,255,255,0.1); color: white;">اردو</button>
+        </div>
+      </div>
+      <nav class="flex flex-col gap-2 flex-1">
+        <a href="{% url 'dashboard' %}" class="sidebar-link active"><span class="material-symbols-outlined">grid_view</span> Dashboard</a>
+        <a href="{% url 'scanner' %}" class="sidebar-link"><span class="material-symbols-outlined">filter_center_focus</span> Smart Scan</a>
+        <a href="{% url 'history' %}" class="sidebar-link"><span class="material-symbols-outlined">restore</span> History</a>
+        <div class="pt-6 pb-2 px-3 text-[10px] font-bold uppercase tracking-widest text-white/50" id="mobile-mgmt-label">Management</div>
+        <a href="{% url 'setting' %}" class="sidebar-link"><span class="material-symbols-outlined text-[20px]">settings</span> Settings</a>
+        <a href="{% url 'profile_settings' %}" class="sidebar-link"><span class="material-symbols-outlined text-[20px]">account_circle</span> Profile</a>
+        <a href="{% url 'about' %}" class="sidebar-link"><span class="material-symbols-outlined">info</span> About Us</a>
+      </nav>
+      <div class="mt-auto pt-6 border-t" style="border-color: rgba(255,255,255,0.1);">
+        <div class="rounded-2xl mb-4 p-4" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15);">
+          <div class="flex items-center gap-4">
+            <div class="w-12 h-12 rounded-2xl bg-white/20 border border-white/30 flex items-center justify-center shrink-0">
+              <span class="material-symbols-outlined text-white text-2xl">person</span>
+            </div>
+            <div class="flex-1 min-w-0">
+              <p class="font-bold truncate text-white">{{ user.get_full_name|default:user.username }}</p>
+              <p class="text-xs truncate text-white/60">{{ user.email|default:"AgriSense User" }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <a href="{% url 'logout' %}" class="flex items-center justify-center mt-1 gap-2 px-3 py-2 rounded-lg transition-all text-white/80 hover:text-rose-400 hover:bg-white/10" style="background: rgba(255,255,255,0.08);">
+        <span class="material-symbols-outlined text-sm">logout</span>
+        <span class="text-xs font-medium" id="mobile-logout-text">Logout</span>
+      </a>
+    </div>
+  </div>
+
+  <main class="flex-1 p-4 lg:p-8 max-w-screen-2xl mx-auto w-full">
+    <div class="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-6 fade-in">
+      <div>
+        <h1 class="text-3xl lg:text-4xl font-extrabold tracking-tight" id="greeting-header">{% if user_language == 'ur' %}خوش آمدید{% else %}Welcome back{% endif %}, {{ user.username }} 👋</h1>
+        <p class="mt-2 text-sm md:text-base flex items-center gap-2" style="color: #6b8c68;">
+            <span id="current-date">{{ current_date }}</span> &nbsp;·&nbsp; 
+            <span id="current-time">{{ current_time }}</span> &nbsp;·&nbsp;
+            <span class="text-primary font-bold" id="system-status">{% if user_language == 'ur' %}سسٹم کی حالت: بہترین{% else %}System Status: Optimal{% endif %}</span>
+        </p>
+      </div>
+      <div class="glass-card px-6 py-4 rounded-2xl flex items-center gap-4">
+        <div class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center border border-primary/20">
+          <span class="material-symbols-outlined text-primary text-3xl">location_on</span>
+        </div>
+        <div>
+            <p class="font-black text-xl leading-none" id="location-name">Detecting...</p>
+            <p class="text-xs font-bold mt-1 uppercase tracking-wider" style="color: #6b8c68;" id="your-location-label">{% if user_language == 'ur' %}آپ کا مقام{% else %}Your Location{% endif %}</p>
+        </div>
+      </div>
+    </div>
+
+   <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-10 searchable-item">
+      <div class="glass-card p-6 rounded-3xl fade-in" style="animation-delay: 0.1s">
+        <div class="flex items-center justify-between mb-6">
+            <div class="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center border border-primary/20">
+                <span class="material-symbols-outlined text-primary text-2xl">analytics</span>
+            </div>
+        </div>
+        <p class="text-4xl font-extrabold" id="total-scans">{{ total_scans }}</p>
+        <p class="text-xs font-bold mt-2 uppercase tracking-widest" style="color: #6b8c68;" id="total-scans-label">{{ ui_labels.total_scans_label|default:"Total Scans" }}</p>
+      </div>
+      <div class="glass-card p-6 rounded-3xl fade-in searchable-item" style="animation-delay: 0.2s">
+        <div class="flex items-center justify-between mb-6">
+            <div class="w-12 h-12 rounded-2xl bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20">
+                <span class="material-symbols-outlined text-emerald-500 text-2xl">eco</span>
+            </div>
+        </div>
+        <p class="text-4xl font-extrabold" id="healthy-count">{{ healthy_count }}</p>
+        <p class="text-xs font-bold mt-2 uppercase tracking-widest" style="color: #6b8c68;" id="healthy-scans-label">{{ ui_labels.healthy_scans_label|default:"Healthy Scans" }}</p>
+      </div>
+      <div class="glass-card p-6 rounded-3xl fade-in searchable-item" style="animation-delay: 0.3s">
+        <div class="flex items-center justify-between mb-6">
+            <div class="w-12 h-12 rounded-2xl bg-rose-500/10 flex items-center justify-center border border-rose-500/20">
+                <span class="material-symbols-outlined text-rose-500 text-2xl">warning</span>
+            </div>
+        </div>
+        <p class="text-4xl font-extrabold" id="disease-count">{{ disease_count }}</p>
+        <p class="text-xs font-bold mt-2 uppercase tracking-widest" style="color: #6b8c68;" id="disease-detected-label">{{ ui_labels.disease_detected_label|default:"Disease Detected" }}</p>
+      </div>
+    </div>
+
+    <div id="search-results" class="hidden mb-4 text-sm" style="color: #6b8c68;"><span id="results-count">0</span> <span id="results-found-label">results found</span></div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div class="lg:col-span-2 space-y-6">
+        <div class="glass-card p-8 rounded-[2rem] relative overflow-hidden fade-in searchable-item" style="animation-delay: 0.5s">
+          <div class="absolute top-0 right-0 w-80 h-80 bg-primary/5 rounded-full blur-[100px] -mr-32 -mt-32 pointer-events-none"></div>
+          <div class="flex items-center justify-between mb-8">
+            <h2 class="font-black text-xl tracking-tight" id="farm-health-title">Farm Health Index</h2>
+            <button onclick="refreshData()" class="text-primary text-xs font-bold uppercase tracking-widest hover:text-primary-dark transition-colors"><span class="material-symbols-outlined text-sm align-middle mr-1">refresh</span> <span id="refresh-text">Refresh</span></button>
+          </div>
+          <div class="grid grid-cols-2 md:grid-cols-3 gap-8 mb-10">
+            <div class="flex flex-col gap-1">
+              <span class="text-xs font-bold uppercase tracking-widest" style="color: #6b8c68;" id="total-label">Total</span>
+              <p class="text-5xl font-black leading-none" id="health-total">{{ total_scans }}</p>
+            </div>
+            <div class="flex flex-col gap-1">
+              <span class="text-xs font-bold uppercase tracking-widest" style="color: #6b8c68;" id="healthy-label">Healthy</span>
+              <p class="text-5xl font-black leading-none text-primary" id="health-healthy">{{ healthy_count }}</p>
+            </div>
+            <div class="hidden md:flex flex-col gap-1">
+              <span class="text-xs font-bold uppercase tracking-widest" style="color: #6b8c68;" id="at-risk-label-farm">At Risk</span>
+              <p class="text-5xl font-black leading-none text-rose-500" id="health-risk">{{ disease_count }}</p>
+            </div>
+          </div>
+          {% widthratio healthy_count total_scans 100 as healthy_percent %}
+          {% widthratio disease_count total_scans 100 as disease_percent %}
+          <div class="space-y-3">
+            <div class="w-full rounded-full h-3 overflow-hidden flex shadow-inner" style="background: #e8f4e4;">
+              <div class="bg-primary h-full rounded-l-full" style="width: {{ healthy_percent }}%;" id="health-bar-healthy"></div>
+              <div class="bg-rose-500 h-full rounded-r-full" style="width: {{ disease_percent }}%;" id="health-bar-risk"></div>
+            </div>
+            <div class="flex justify-between items-center text-[11px] font-bold uppercase tracking-widest">
+              <span class="text-primary" id="health-percent-healthy">{{ healthy_percent }}% Optimal Health</span>
+              <span class="text-rose-500" id="health-percent-risk">{{ disease_percent }}% Risk Factor</span>
+            </div>
+          </div>
+          <div class="chart-container mt-8"><canvas id="trendChart"></canvas></div>
+        </div>
+
+        <div class="glass-card p-6 rounded-3xl fade-in" style="animation-delay: 0.6s">
+          <div class="flex items-center justify-between mb-4">
+            <div class="flex items-center gap-2">
+              <h2 class="font-black text-lg tracking-tight" id="recent-scans-title">{% if user_language == 'ur' %}حالیہ اسکینز{% else %}Recent Scans{% endif %}</h2>
+              <button id="recentScansToggleBtn" class="w-7 h-7 flex items-center justify-center rounded-lg text-primary transition-all hover:bg-primary/10"><span id="recentScansToggleIcon" class="material-symbols-outlined text-xl">expand_less</span></button>
+            </div>
+            <a href="{% url 'history' %}" class="text-primary text-[10px] font-black uppercase tracking-[0.2em] hover:text-primary-dark transition-colors" id="historical-data-link">{% if user_language == 'ur' %}تاریخی ڈیٹا ←{% else %}Historical Data →{% endif %}</a>
+          </div>
+          <div id="recentScansDropdownContent" class="recent-scans-collapse transition-all duration-300 ease-in-out">
+            <div class="space-y-4 pt-2" id="recent-scans-container">
+              {% for scan in recent_scans %}
+              <a href="{% url 'diagnosis' scan.id %}" class="flex items-center gap-4 p-4 rounded-2xl transition-all border border-transparent hover:border-white/5 group searchable-item" style="background: #f9fff8;" data-search="{{ scan.disease_name|default:'Unknown' }} {{ scan.crop_type|default:'Plant' }} {{ scan.severity|default:'' }} {% if scan.disease_detected %}threat disease{% else %}healthy{% endif %}">
+                <div class="w-16 h-16 rounded-2xl overflow-hidden relative shrink-0 shadow-lg" style="background: #e8f4e4;">
+                  {% if scan.image %}<img src="{{ scan.image.url }}" alt="{{ scan.disease_name }}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"/>{% else %}<div class="w-full h-full flex items-center justify-center" style="background: #e8f4e4;"><span class="material-symbols-outlined" style="color: #9bc48f;">image</span></div>{% endif %}
+                  <div class="absolute inset-0 {% if scan.disease_detected %}bg-rose-500/10{% else %}bg-primary/10{% endif %} mix-blend-overlay"></div>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <div class="flex justify-between items-start">
+                    <h4 class="font-bold truncate">Scan #{{ scan.id|stringformat:".6s" }}</h4>
+                    <span class="stat-badge {% if scan.disease_detected %}stat-badge-danger{% else %}stat-badge-good{% endif %}">
+                        {% if scan.disease_detected %}{% if user_language == 'ur' %}خطرہ{% else %}Threat{% endif %}{% else %}{% if user_language == 'ur' %}صحت مند{% else %}Healthy{% endif %}{% endif %}
+                    </span>
+                  </div>
+                  <p class="text-xs mt-1 font-medium" style="color: #6b8c68;">
+                    {% if user_language == 'ur' %}{{ scan.disease_name_ur|default:scan.disease_name }}{% else %}{{ scan.disease_name|default:"Unknown" }}{% endif %} 
+                    {% if scan.disease_detected %}<span class="text-rose-500">({{ scan.confidence|floatformat:1 }}%)</span>{% endif %}
+                  </p>
+                  <p class="text-[10px] font-bold uppercase tracking-widest mt-1.5 flex items-center gap-1.5" style="color: #9bc48f;">
+                    <span class="material-symbols-outlined text-[12px]">schedule</span> 
+                    {{ scan.created_at|timesince }} {% if user_language == 'ur' %}پہلے{% else %}ago{% endif %} · 
+                    {% if user_language == 'ur' %}{{ scan.crop_type_ur|default:scan.crop_type }}{% else %}{{ scan.crop_type|default:"Unknown" }}{% endif %}
+                  </p>
+                </div>
+                <span class="material-symbols-outlined transition-colors" style="color: #9bc48f;">arrow_forward_ios</span>
+              </a>
+              {% empty %}
+              <div class="text-center py-8" style="color: #6b8c68;"><span class="material-symbols-outlined text-4xl mb-2">scan_delete</span><p id="no-scans-text">{% if user_language == 'ur' %}ابھی تک کوئی اسکین نہیں ہے۔ اپنا پہلا اسکین شروع کریں!{% else %}No scans yet. Start your first scan!{% endif %}</p><a href="{% url 'scanner' %}" class="inline-block mt-4 px-4 py-2 rounded-xl font-bold text-sm" style="background: #2f8b5c; color: white;" id="start-scanning-btn">{% if user_language == 'ur' %}اسکیننگ شروع کریں{% else %}Start Scanning{% endif %}</a></div>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="space-y-6">
+        <div class="glass-card p-6 rounded-3xl text-center fade-in searchable-item" style="animation-delay: 0.7s">
+          <h3 class="text-[10px] font-black uppercase tracking-[0.2em] mb-6" style="color: #6b8c68;" id="ai-edge-title">{{ ui_labels.ai_performance_label|default:"AI Edge Precision" }}</h3>
+          <div class="relative w-40 h-20 mx-auto flex items-end justify-center">
+            <svg class="w-full h-full" viewBox="0 0 100 50"><path d="M 10 50 A 40 40 0 0 1 90 50" fill="none" stroke="#d4e8ce" stroke-linecap="round" stroke-width="10"></path><path class="gauge-fill" d="M 10 50 A 40 40 0 0 1 90 50" fill="none" stroke="url(#gradient-green)" stroke-dasharray="{{ avg_confidence }},100" stroke-linecap="round" stroke-width="10" stroke-dashoffset="0"></path><defs><linearGradient id="gradient-green" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#10b981"></stop><stop offset="100%" stop-color="#34d399"></stop></linearGradient></defs></svg>
+            <div class="absolute bottom-[-4px] flex flex-col items-center"><span class="text-2xl font-black leading-none" id="gauge-confidence">{{ avg_confidence }}<span class="text-lg text-primary">%</span></span><span class="text-[10px] font-bold uppercase tracking-widest mt-1" style="color: #6b8c68;" id="confidence-label">{{ ui_labels.avg_confidence_label|default:"Confidence" }}</span></div>
+          </div>
+        </div>
+
+        <div class="glass-card p-6 rounded-3xl fade-in searchable-item" style="animation-delay: 0.8s">
+          <h3 class="text-[10px] font-black uppercase tracking-[0.2em] mb-6" style="color: #6b8c68;" id="disease-dist-title">Disease Distribution</h3>
+          <div class="space-y-3" id="disease-distribution">
+            {% for disease in disease_distribution %}
+            <div class="searchable-item" data-search="{{ disease.name }} disease count {{ disease.count }}">
+              <div class="flex justify-between items-center mb-1.5"><span class="text-xs font-bold truncate">{% if user_language == 'ur' %}{{ disease.name_ur|default:disease.name }}{% else %}{{ disease.name }}{% endif %}</span><span class="text-[10px] font-black text-primary">{{ disease.percentage }}%</span></div>
+              <div class="h-2 rounded-full overflow-hidden" style="background: #e8f4e4;"><div class="h-full bg-primary rounded-full" style="width: {{ disease.percentage }}%;"></div></div>
+            </div>
+            {% empty %}
+            <p class="text-center py-4" style="color: #6b8c68;" id="no-disease-data">No disease data yet</p>
+            {% endfor %}
+          </div>
+        </div>
+
+        <div class="glass-card p-5 rounded-2xl flex items-center gap-4 mb-4 fade-in searchable-item" style="animation-delay: 1.0s">
+          <div class="w-10 h-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center"><span class="material-symbols-outlined text-primary text-xl">memory</span></div>
+          <div><p class="text-[10px] font-black uppercase tracking-widest text-primary" id="edge-engine-text">Edge Engine</p><p class="text-sm font-bold">Mobile Net V3 Active</p><p class="text-[10px] mt-0.5" style="color: #6b8c68;" id="tensorflow-text">TensorFlow · Pretrained</p></div>
+        </div>
+        <br><br><br><br>
+      </div>
+    </div>
+  </main>
+
+  <nav class="lg:hidden fixed bottom-0 left-0 right-0 z-30 no-translate" style="background: #1a3a2a; border-top: 1px solid #2d5a3d; height: 65px;">
+    <div class="flex justify-around items-center h-full px-4">
+      <a href="{% url 'dashboard' %}" class="flex flex-col items-center justify-center text-primary"><span class="material-symbols-outlined text-[24px]">grid_view</span><span class="text-[9px] font-black uppercase tracking-widest">HOME</span></a>
+      <a href="{% url 'scanner' %}" class="flex flex-col items-center justify-center -mt-8"><div class="w-14 h-14 rounded-xl flex items-center justify-center shadow-premium active:scale-90 transition-transform" style="background: #2f8b5c; border: 4px solid #1a3a2a;"><span class="material-symbols-outlined text-[24px] text-white">filter_center_focus</span></div></a>
+      <a href="{% url 'history' %}" class="flex flex-col items-center justify-center text-white/60"><span class="material-symbols-outlined text-[24px]">restore</span><span class="text-[9px] font-black uppercase tracking-widest">HISTORY</span></a>
+    </div>
+  </nav>
+</div>
+
+<!-- Translation Loader & Toast -->
+<div id="translateLoader" class="translate-loader"><div class="spinner"></div><span id="loader-text">Translating to Urdu...</span></div>
+<div id="translateToast" class="translate-toast"></div>
+
+<script src="{% static 'js/theme-manager.js' %}"></script>
+<script src="{% static 'js/agrisense_translations.js' %}"></script>
+<script>
+  // ==================== TRANSLATION SYSTEM ====================
+  let currentLang = '{{ user_language|default:"en" }}' || localStorage.getItem('agrisense_language') || 'en';
+  let isTranslating = false;
+  let originalTexts = new Map();
+  let dynamicItemsObserver = null;
+  let translationInProgress = false;
+  let notificationTextsTranslated = false;
+
+  // Sync currentLang with localStorage
+  if (!localStorage.getItem('agrisense_language')) {
+    localStorage.setItem('agrisense_language', currentLang);
+  } else {
+    currentLang = localStorage.getItem('agrisense_language');
+  }
+
+  function getCsrfToken() {
+    const name = 'csrftoken=';
+    const decodedCookie = decodeURIComponent(document.cookie);
+    const ca = decodedCookie.split(';');
+    for(let i = 0; i < ca.length; i++) {
+      let c = ca[i];
+      while (c.charAt(0) == ' ') c = c.substring(1);
+      if (c.indexOf(name) == 0) return c.substring(name.length, c.length);
+    }
+    // Fallback to hidden input if cookie fails
+    return document.querySelector('[name=csrfmiddlewaretoken]')?.value || '';
+  }
+
+  function showTranslateToast(message, isError = false) {
+    let toast = document.getElementById('translateToast');
+    if (!toast) return;
+    toast.innerHTML = `<div style="display: flex; align-items: center; gap: 10px;"><span class="material-symbols-outlined" style="color: ${isError ? '#e53e3e' : '#10b981'}">${isError ? 'error' : 'info'}</span><span>${message}</span></div>`;
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 5000);
+  }
+
+  function showTranslateLoading(show) {
+    const loader = document.getElementById('translateLoader');
+    if (loader) {
+      if (show) loader.classList.add('show');
+      else loader.classList.remove('show');
+    }
+  }
+
+  const translationCache = JSON.parse(localStorage.getItem('agrisense_translation_cache') || '{}');
+
+  function saveToTranslationCache(text, translated) {
+    translationCache[text] = translated;
+    // Keep cache reasonable size
+    if (Object.keys(translationCache).length > 500) {
+      const firstKey = Object.keys(translationCache)[0];
+      delete translationCache[firstKey];
+    }
+    localStorage.setItem('agrisense_translation_cache', JSON.stringify(translationCache));
+  }
+
+  async function translateText(text) {
+    if (!text || text.trim() === '') return text;
+    if (text.length < 2) return text;
+    
+    // 1. Check local dictionary
+    if (typeof getAgriSenseTranslation === 'function') {
+      const dictMatch = getAgriSenseTranslation(text);
+      if (dictMatch) return dictMatch;
+    }
+
+    // 2. Check local storage cache
+    if (translationCache[text]) return translationCache[text];
+    
+    // 3. API Fallback (try to avoid this for individual calls)
+    try {
+      const response = await fetch('/api/libre-translate/', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json', 
+          'X-CSRFToken': getCsrfToken() 
+        },
+        body: JSON.stringify({ 
+          text: text, 
+          target_lang: 'ur',
+          page: 'dashboard'
+        })
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        const translated = data.translated || text;
+        saveToTranslationCache(text, translated);
+        return translated;
+      }
+    } catch (error) {
+      console.log('Translation error:', error);
+    }
+    return text;
+  }
+
+  async function translateBatch(texts) {
+    if (!texts || texts.length === 0) return [];
+    
+    // Check local dictionary and cache first for all
+    const results = texts.map(t => {
+      // 1. Check hardcoded dictionary
+      const dictMatch = typeof getAgriSenseTranslation === 'function' ? getAgriSenseTranslation(t) : null;
+      if (dictMatch) return dictMatch;
+      
+      // 2. Check localStorage cache
+      if (translationCache && translationCache[t]) return translationCache[t];
+      
+      return null;
+    });
+    
+    const untranslatedIndices = results.map((res, i) => res === null ? i : -1).filter(i => i !== -1);
+    
+    if (untranslatedIndices.length === 0) return results;
+    
+    const untranslatedTexts = untranslatedIndices.map(i => texts[i]);
+    
+    try {
+      const response = await fetch('/api/libre-translate-batch/', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json', 
+          'X-CSRFToken': getCsrfToken() 
+        },
+        body: JSON.stringify({ 
+          texts: untranslatedTexts, 
+          target_lang: 'ur',
+          page: 'dashboard'
+        })
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        const translatedBatch = data.translated_texts || untranslatedTexts;
+        
+        untranslatedIndices.forEach((origIdx, batchIdx) => {
+          results[origIdx] = translatedBatch[batchIdx];
+          saveToTranslationCache(texts[origIdx], translatedBatch[batchIdx]);
+        });
+      }
+    } catch (error) {
+      console.error('Batch translation error:', error);
+    }
+    
+    // Fallback for any still null
+    return results.map((res, i) => res || texts[i]);
+  }
+
+
+  async function translateBackToEnglish(text) {
+    if (!text || text.trim() === '') return text;
+    if (text.length < 3) return text;
+    
+    try {
+      const response = await fetch('/api/libre-translate/', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json', 
+          'X-CSRFToken': getCsrfToken() 
+        },
+        body: JSON.stringify({ text: text, target_lang: 'en' })
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        return data.translated || text;
+      }
+    } catch (error) {
+      console.log('Reverse translation error:', error);
+    }
+    return text;
+  }
+
+  async function translateFarmHealthIndexLabels() {
+    const totalLabel = document.getElementById('total-label');
+    if (totalLabel && totalLabel.getAttribute('data-translated') !== 'true') {
+      totalLabel.innerText = 'کل';
+      totalLabel.setAttribute('data-translated', 'true');
+      if (!originalTexts.has(totalLabel)) originalTexts.set(totalLabel, 'Total');
+    }
+    
+    const healthyLabel = document.getElementById('healthy-label');
+    if (healthyLabel && healthyLabel.getAttribute('data-translated') !== 'true') {
+      healthyLabel.innerText = 'صحت مند';
+      healthyLabel.setAttribute('data-translated', 'true');
+      if (!originalTexts.has(healthyLabel)) originalTexts.set(healthyLabel, 'Healthy');
+    }
+    
+    const atRiskLabel = document.getElementById('at-risk-label-farm');
+    if (atRiskLabel && atRiskLabel.getAttribute('data-translated') !== 'true') {
+      atRiskLabel.innerText = 'خطرے میں';
+      atRiskLabel.setAttribute('data-translated', 'true');
+      if (!originalTexts.has(atRiskLabel)) originalTexts.set(atRiskLabel, 'At Risk');
+    }
+  }
+
+  async function translateNotificationContent() {
+    const alertsTitle = document.getElementById('alerts-title');
+    if (alertsTitle && alertsTitle.getAttribute('data-translated') !== 'true') {
+      const original = 'Disease Alerts';
+      const translated = getAgriSenseTranslation(original) || original;
+      alertsTitle.innerText = translated;
+      alertsTitle.setAttribute('data-translated', 'true');
+      if (!originalTexts.has(alertsTitle)) originalTexts.set(alertsTitle, original);
+    }
+    
+    const markReadText = document.getElementById('mark-read-text');
+    if (markReadText && markReadText.getAttribute('data-translated') !== 'true') {
+      const original = 'Mark All as Read';
+      const translated = getAgriSenseTranslation(original) || original;
+      markReadText.innerText = translated;
+      markReadText.setAttribute('data-translated', 'true');
+      if (!originalTexts.has(markReadText)) originalTexts.set(markReadText, original);
+    }
+    
+    const alertCountSpan = document.getElementById('alert-count-in-dropdown');
+    if (alertCountSpan && alertCountSpan.innerText && alertCountSpan.getAttribute('data-translated') !== 'true') {
+      const originalCountText = alertCountSpan.innerText;
+      if (originalCountText && originalCountText.includes('alerts')) {
+        const count = originalCountText.match(/\d+/);
+        if (count) {
+           alertCountSpan.innerText = `${count[0]} الرٹس`;
+           alertCountSpan.setAttribute('data-translated', 'true');
+        }
+      }
+    }
+    
+    const alertItems = document.querySelectorAll('#alert-list .font-bold.text-sm');
+    for (const item of alertItems) {
+      if (item.getAttribute('data-translated') === 'true') continue;
+      const originalText = item.innerText;
+      if (originalText && originalText !== 'No alerts') {
+        const translated = await translateText(originalText);
+        if (translated && translated !== originalText) {
+          item.innerText = translated;
+          item.setAttribute('data-translated', 'true');
+        }
+      }
+    }
+    
+    const confidenceTexts = document.querySelectorAll('#alert-list .text-xs');
+    for (const text of confidenceTexts) {
+      if (text.getAttribute('data-translated') === 'true') continue;
+      const originalText = text.innerText;
+      if (originalText && originalText.includes('Confidence:')) {
+        const translated = await translateText(originalText);
+        if (translated && translated !== originalText) {
+          text.innerText = translated;
+          text.setAttribute('data-translated', 'true');
+        }
+      }
+    }
+    
+    const noAlertsMsg = document.querySelector('#alert-list .text-center.py-8');
+    if (noAlertsMsg && noAlertsMsg.getAttribute('data-translated') !== 'true') {
+      const original = 'No alerts';
+      const translated = await translateText(original);
+      if (translated && translated !== original) {
+        noAlertsMsg.innerText = translated;
+        noAlertsMsg.setAttribute('data-translated', 'true');
+      }
+    }
+  }
+
+  function ensureEnglishStaticText() {
+    const staticLabels = {
+      'total-scans-label': 'Total Scans',
+      'healthy-plants-label': 'Healthy Plants',
+      'at-risk-label': 'At Risk Now',
+      'farm-health-title': 'Farm Health Index',
+      'refresh-text': 'Refresh',
+      'recent-scans-title': 'Recent Scans',
+      'historical-data-link': 'Historical Data →',
+      'ai-edge-title': 'AI Edge Precision',
+      'confidence-label': 'Confidence',
+      'disease-dist-title': 'Disease Distribution',
+      'edge-engine-text': 'Edge Engine',
+      'tensorflow-text': 'TensorFlow · Pretrained',
+      'quick-scan-text': 'Quick Scan',
+      'your-location-label': 'Your Location',
+      'system-status': 'System Status: Optimal',
+      'total-label': 'Total',
+      'healthy-label': 'Healthy',
+      'at-risk-label-farm': 'At Risk',
+      'alerts-title': 'Disease Alerts',
+      'mark-read-text': 'Mark All as Read',
+      'no-scans-text': 'No scans yet. Start your first scan!',
+      'start-scanning-btn': 'Start Scanning',
+      'no-disease-data': 'No disease data yet',
+      'results-found-label': 'results found'
+    };
+    
+    for (const [id, englishText] of Object.entries(staticLabels)) {
+      const el = document.getElementById(id);
+      if (el && el.innerText !== englishText && !el.getAttribute('data-translated')) {
+        el.innerText = englishText;
+      }
+    }
+  }
+
+  async function translateStaticElements() {
+    await translateFarmHealthIndexLabels();
+    
+    const labelIds = [
+      'total-scans-label', 'healthy-plants-label', 'at-risk-label', 
+      'farm-health-title', 'refresh-text', 'recent-scans-title', 
+      'historical-data-link', 'ai-edge-title', 'confidence-label', 
+      'disease-dist-title', 'edge-engine-text', 'tensorflow-text', 
+      'quick-scan-text', 'your-location-label', 'system-status', 
+      'no-scans-text', 'start-scanning-btn', 'no-disease-data', 'results-found-label',
+      'mobile-lang-label', 'mobile-mgmt-label', 'mobile-logout-text', 
+      'greeting-header'
+    ];
+    
+    const elementsToTranslate = [];
+    const textsToTranslate = [];
+    
+    for (const id of labelIds) {
+      const el = document.getElementById(id);
+      if (el && el.getAttribute('data-translated') !== 'true') {
+        const text = el.innerText.trim();
+        if (text && text.length > 0) {
+          if (!originalTexts.has(el)) originalTexts.set(el, text);
+          elementsToTranslate.push(el);
+          textsToTranslate.push(text);
+        }
+      }
+    }
+    
+    if (textsToTranslate.length > 0) {
+      const translatedTexts = await translateBatch(textsToTranslate);
+      elementsToTranslate.forEach((el, i) => {
+        if (translatedTexts[i] && translatedTexts[i] !== textsToTranslate[i]) {
+          el.innerText = translatedTexts[i];
+          el.setAttribute('data-translated', 'true');
+        }
+      });
+    }
+    const healthPercentHealthy = document.getElementById('health-percent-healthy');
+    const healthPercentRisk = document.getElementById('health-percent-risk');
+    
+    if (healthPercentHealthy && healthPercentHealthy.getAttribute('data-translated') !== 'true') {
+      const originalHealthy = healthPercentHealthy.innerText;
+      if (originalHealthy && !originalHealthy.match(/^\d+\.?\d*%$/)) {
+        if (!originalTexts.has(healthPercentHealthy)) originalTexts.set(healthPercentHealthy, originalHealthy);
+        const translated = await translateText(originalHealthy);
+        if (translated && translated !== originalHealthy) {
+          healthPercentHealthy.innerText = translated;
+          healthPercentHealthy.setAttribute('data-translated', 'true');
+        }
+        await new Promise(r => setTimeout(r, 30));
+      }
+    }
+    
+    if (healthPercentRisk && healthPercentRisk.getAttribute('data-translated') !== 'true') {
+      const originalRisk = healthPercentRisk.innerText;
+      if (originalRisk && !originalRisk.match(/^\d+\.?\d*%$/)) {
+        if (!originalTexts.has(healthPercentRisk)) originalTexts.set(healthPercentRisk, originalRisk);
+        const translated = await translateText(originalRisk);
+        if (translated && translated !== originalRisk) {
+          healthPercentRisk.innerText = translated;
+          healthPercentRisk.setAttribute('data-translated', 'true');
+        }
+        await new Promise(r => setTimeout(r, 30));
+      }
+    }
+    
+    const greetingEl = document.getElementById('greeting');
+    if (greetingEl && greetingEl.getAttribute('data-translated') !== 'true') {
+      const originalGreeting = greetingEl.innerText.trim();
+      if (originalGreeting && !originalTexts.has(greetingEl)) originalTexts.set(greetingEl, originalGreeting);
+      const translatedGreeting = await translateText(originalGreeting);
+      if (translatedGreeting && translatedGreeting !== originalGreeting) {
+        greetingEl.innerText = translatedGreeting;
+        greetingEl.setAttribute('data-translated', 'true');
+      }
+    }
+    await translateNotificationContent();
+  }
+
+  async function translateDiseaseDistribution() {
+    const diseaseNames = document.querySelectorAll('.disease-name-text');
+    for (const nameEl of diseaseNames) {
+      if (nameEl.getAttribute('data-translated') === 'true') continue;
+      const originalText = nameEl.innerText;
+      if (originalText && originalText.length > 2 && !originalText.match(/^\d+$/)) {
+        const translated = await translateText(originalText);
+        if (translated && translated !== originalText) nameEl.innerText = translated;
+        nameEl.setAttribute('data-translated', 'true');
+      }
+    }
+  }
+
+  async function translateScanRows() {
+    // SKIP IF URDU CONTENT IS ALREADY LOADED FROM BACKEND
+    if (currentLang === 'ur') {
+        document.querySelectorAll('#recent-scans-container .searchable-item').forEach(row => {
+            row.setAttribute('data-translated', 'true');
+        });
+        return;
+    }
+    
+    const scanRows = document.querySelectorAll('#recent-scans-container .searchable-item');
+    
+    for (const row of scanRows) {
+      if (row.getAttribute('data-translated') === 'true') continue;
+      
+      try {
+        const idTextEl = row.querySelector('h4');
+        if (idTextEl && idTextEl.innerText.trim() && !idTextEl.closest('.no-translate')) {
+          const originalId = idTextEl.innerText;
+          if (!originalTexts.has(idTextEl)) originalTexts.set(idTextEl, originalId);
+          if (idTextEl.innerText === originalTexts.get(idTextEl)) {
+            const translated = await translateText(originalId);
+            if (translated && translated !== originalId) idTextEl.innerText = translated;
+            await new Promise(r => setTimeout(r, 20));
+          }
+        }
+        
+        const statusBadge = row.querySelector('.stat-badge');
+        if (statusBadge && statusBadge.innerText.trim() && !statusBadge.closest('.no-translate')) {
+          const originalStatus = statusBadge.innerText;
+          if (!originalTexts.has(statusBadge)) originalTexts.set(statusBadge, originalStatus);
+          if (statusBadge.innerText === originalTexts.get(statusBadge)) {
+            const translated = await translateText(originalStatus);
+            if (translated && translated !== originalStatus) statusBadge.innerText = translated;
+            await new Promise(r => setTimeout(r, 20));
+          }
+        }
+        
+        const diseaseP = row.querySelector('p.text-xs.mt-1.font-medium');
+        if (diseaseP && diseaseP.innerText.trim() && !diseaseP.closest('.no-translate')) {
+          const originalDiseaseText = diseaseP.innerText;
+          if (!originalTexts.has(diseaseP)) originalTexts.set(diseaseP, originalDiseaseText);
+          if (diseaseP.innerText === originalTexts.get(diseaseP)) {
+            const confidenceMatch = originalDiseaseText.match(/\([\d.]+%\)/);
+            const diseaseNameOnly = originalDiseaseText.replace(/\([\d.]+%\)/, '').trim();
+            if (diseaseNameOnly && diseaseNameOnly !== 'Unknown') {
+              const translatedDisease = await translateText(diseaseNameOnly);
+              if (translatedDisease && translatedDisease !== diseaseNameOnly) {
+                diseaseP.innerHTML = translatedDisease + (confidenceMatch ? ' ' + confidenceMatch[0] : '');
+              }
+            }
+            await new Promise(r => setTimeout(r, 20));
+          }
+        }
+        
+        const timeP = row.querySelector('.text-\\[10px\\].font-bold.uppercase');
+        if (timeP && timeP.innerText.trim() && !timeP.closest('.no-translate')) {
+          const originalTimeText = timeP.innerText;
+          if (!originalTexts.has(timeP)) originalTexts.set(timeP, originalTimeText);
+          if (timeP.innerText === originalTexts.get(timeP) && originalTimeText.match(/[\d.]+ (s|m|h|d) ago/)) {
+            const translated = await translateText(originalTimeText);
+            if (translated && translated !== originalTimeText) timeP.innerText = translated;
+          }
+        }
+        row.setAttribute('data-translated', 'true');
+      } catch(e) { console.log('Error translating scan row:', e); }
+    }
+  }
+
+  async function translateLocationName() {
+    const locationEl = document.getElementById('location-name');
+    if (!locationEl || locationEl.getAttribute('data-translated') === 'true') return;
+    
+    let attempts = 0;
+    const checkAndTranslate = async () => {
+      const text = locationEl.innerText;
+      if (text && text !== 'Detecting location...' && text !== 'Detecting by IP...' && text !== 'Getting location...' && text !== 'Farm Location') {
+        if (!originalTexts.has(locationEl)) originalTexts.set(locationEl, text);
+        const translated = await translateText(text);
+        if (translated && translated !== text) locationEl.innerText = translated;
+        locationEl.setAttribute('data-translated', 'true');
+      } else if (text === 'Farm Location') {
+        locationEl.setAttribute('data-translated', 'true');
+      } else if (attempts < 15) {
+        attempts++;
+        setTimeout(checkAndTranslate, 1000);
+      }
+    };
+    setTimeout(checkAndTranslate, 2000);
+  }
+
+  async function translatePage() {
+    if (isTranslating) {
+      showTranslateToast('Translation already in progress...');
+      return;
+    }
+    isTranslating = true;
+    translationInProgress = true;
+    
+    showTranslateLoading(true);
+    showTranslateToast('Translating page to Urdu...');
+    
+    try {
+      await translateStaticElements();
+      await translateScanRows();
+      await translateDiseaseDistribution();
+      await translateLocationName();
+      
+      showTranslateLoading(false);
+      showTranslateToast('✓ Page translated to Urdu successfully!');
+      localStorage.setItem('agrisense_language', 'ur');
+      currentLang = 'ur';
+    } catch (error) {
+      console.error('Translation error:', error);
+      showTranslateLoading(false);
+      showTranslateToast('⚠️ Translation failed. Please try again.', true);
+    }
+    
+    isTranslating = false;
+    translationInProgress = false;
+    updateLanguageUI();
+    
+    if (dynamicItemsObserver) dynamicItemsObserver.disconnect();
+    dynamicItemsObserver = new MutationObserver((mutations) => {
+      for (const mutation of mutations) {
+        if (mutation.addedNodes.length && currentLang === 'ur' && !translationInProgress) {
+          for (const node of mutation.addedNodes) {
+            if (node.nodeType === 1 && (node.classList?.contains('searchable-item') || node.querySelector?.('.searchable-item'))) {
+              setTimeout(() => translateScanRows(), 300);
+              break;
+            }
+          }
+          if (mutation.target.id === 'alert-list' || mutation.target.closest?.('#alert-list')) {
+            setTimeout(() => translateNotificationContent(), 300);
+          }
+        }
+      }
+    });
+    const container = document.getElementById('recent-scans-container');
+    if (container) dynamicItemsObserver.observe(container, { childList: true, subtree: true });
+    
+    const alertList = document.getElementById('alert-list');
+    if (alertList) dynamicItemsObserver.observe(alertList, { childList: true, subtree: true });
+  }
+
+  function revertToEnglish() {
+    if (isTranslating) return;
+    isTranslating = true;
+    
+    showTranslateToast('Switching to English...');
+    
+    originalTexts.forEach((original, el) => {
+      if (el && el.innerText !== original && el.closest('.no-translate') === null) {
+        el.innerText = original;
+      }
+    });
+    
+    document.querySelectorAll('[data-translated]').forEach(el => {
+      el.removeAttribute('data-translated');
+    });
+    
+    ensureEnglishStaticText();
+    
+    const hour = new Date().getHours();
+    let greeting = hour < 12 ? 'Morning' : hour < 18 ? 'Afternoon' : 'Evening';
+    const greetingSpan = document.getElementById('greeting');
+    if (greetingSpan) {
+      greetingSpan.innerText = greeting;
+    }
+    
+    const greetingHeader = document.getElementById('greeting-header');
+    if (greetingHeader) {
+      const username = document.body.dataset.username || '';
+      greetingHeader.innerHTML = `Good <span id="greeting">${greeting}</span>, ${username} 👋`;
+    }
+    
+    originalTexts.clear();
+    
+    localStorage.setItem('agrisense_language', 'en');
+    currentLang = 'en';
+    updateLanguageUI();
+    
+    isTranslating = false;
+    showTranslateToast('✓ Switched to English successfully!');
+    
+    setTimeout(() => {
+      refreshData();
+    }, 100);
+  }
+
+  function updateLanguageUI() {
+    document.querySelectorAll('.language-option').forEach(opt => {
+      opt.classList.remove('active');
+      if (opt.dataset.lang === currentLang) opt.classList.add('active');
+    });
+    
+    document.querySelectorAll('.mobile-lang-option').forEach(opt => {
+      opt.classList.remove('active');
+      if (opt.dataset.lang === currentLang) {
+        opt.classList.add('active');
+        opt.style.background = 'rgba(255,255,255,0.2)';
+      } else {
+        opt.style.background = 'rgba(255,255,255,0.1)';
+      }
+    });
+    
+    const langSpan = document.getElementById('currentLanguage');
+    if (langSpan) langSpan.textContent = currentLang === 'en' ? 'English' : 'اردو';
+  }
+
+  async function changeLanguage(lang) {
+    console.log('changeLanguage called for:', lang);
+    if (lang === currentLang) {
+      console.log('Language already set to:', lang);
+      return;
+    }
+    
+    // Notify server of the preference change
+    try {
+      console.log('Notifying server of language change...');
+      const token = getCsrfToken();
+      console.log('CSRF Token found:', token ? 'Yes' : 'No');
+      
+      const response = await fetch('/api/set-language-preference/', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json', 
+          'X-CSRFToken': token
+        },
+        body: JSON.stringify({ language: lang })
+      });
+      console.log('Server notification status:', response.status);
+    } catch (e) {
+      console.error('Failed to notify server of language change:', e);
+    }
+
+    if (lang === 'ur') {
+      translatePage();
+    } else {
+      // For English, a reload is the most reliable way to clear all Urdu text
+      // if the server had previously rendered the page in Urdu.
+      localStorage.setItem('agrisense_language', 'en');
+      window.location.reload();
+    }
+    updateLanguageUI();
+  }
+
+  // ==================== DROPDOWN MENU ====================
+  const dropdownContent = document.getElementById('recentScansDropdownContent');
+  const toggleBtn = document.getElementById('recentScansToggleBtn');
+  const toggleIcon = document.getElementById('recentScansToggleIcon');
+  
+  function initRecentScansDropdown() {
+    if (!dropdownContent || !toggleBtn) return;
+    const isCollapsed = localStorage.getItem('recentScansCollapsed') === 'true';
+    if (isCollapsed) { dropdownContent.classList.add('collapsed'); if (toggleIcon) toggleIcon.textContent = 'expand_more'; }
+    else { dropdownContent.classList.remove('collapsed'); if (toggleIcon) toggleIcon.textContent = 'expand_less'; }
+    toggleBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      dropdownContent.classList.toggle('collapsed');
+      const nowCollapsed = dropdownContent.classList.contains('collapsed');
+      if (nowCollapsed) { if (toggleIcon) toggleIcon.textContent = 'expand_more'; localStorage.setItem('recentScansCollapsed', 'true'); }
+      else { if (toggleIcon) toggleIcon.textContent = 'expand_less'; localStorage.setItem('recentScansCollapsed', 'false'); }
+    });
+  }
+
+  // ==================== LOCATION ====================
+  function getLocation() {
+    const locationElement = document.getElementById('location-name');
+    if (!locationElement) return;
+    locationElement.textContent = 'Detecting location...';
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(async (position) => {
+        const lat = position.coords.latitude, lon = position.coords.longitude;
+        try {
+          const response = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=en`);
+          const data = await response.json();
+          if (data && data.city && data.principalSubdivision) locationElement.textContent = `${data.city}, ${data.principalSubdivision}, ${data.countryName}`;
+          else if (data && data.city && data.countryName) locationElement.textContent = `${data.city}, ${data.countryName}`;
+          else locationElement.textContent = `${lat.toFixed(4)}°, ${lon.toFixed(4)}°`;
+        } catch (error) { locationElement.textContent = `${lat.toFixed(4)}°, ${lon.toFixed(4)}°`; }
+        if (currentLang === 'ur') translateLocationName();
+      }, () => getLocationByIP());
+    } else { getLocationByIP(); }
+  }
+  
+  function getLocationByIP() {
+    const locationElement = document.getElementById('location-name');
+    fetch('https://ipapi.co/json/').then(r => r.json()).then(data => {
+      if (data && !data.error && data.city) locationElement.textContent = `${data.city}, ${data.country_name || 'Unknown'}`;
+      else locationElement.textContent = 'Farm Location';
+      if (currentLang === 'ur') translateLocationName();
+    }).catch(() => { locationElement.textContent = 'Farm Location'; if (currentLang === 'ur') translateLocationName(); });
+  }
+
+  // ==================== CHART ====================
+  let trendChart = null;
+  
+  function initChart() {
+    const canvas = document.getElementById('trendChart');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    if (trendChart) trendChart.destroy();
+    const labels = {{ chart_labels|safe }};
+    const chartData = {{ chart_data|safe }};
+    const finalLabels = labels.length > 0 ? labels : ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    const finalData = chartData.length > 0 ? chartData : [85, 88, 92, 90, 87, 91, 94];
+    trendChart = new Chart(ctx, {
+      type: 'line',
+      data: { labels: finalLabels, datasets: [{ label: 'Health Score', data: finalData, borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,0.1)', borderWidth: 3, pointRadius: 4, pointBackgroundColor: '#10b981', pointBorderColor: '#ffffff', pointBorderWidth: 2, tension: 0.4, fill: true }] },
+      options: { responsive: true, maintainAspectRatio: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, max: 100, grid: { color: 'rgba(0,0,0,0.05)' }, ticks: { stepSize: 20 } }, x: { grid: { display: false } } } }
+    });
+  }
+
+  // Mobile menu
+  const btn = document.getElementById('mobileMenuBtn'), menu = document.getElementById('mobileMenu'), close = document.getElementById('closeMenu');
+  function openMobileMenu() { menu.classList.add('show'); document.body.style.overflow = 'hidden'; }
+  function closeMobileMenu() { menu.classList.remove('show'); document.body.style.overflow = ''; }
+  btn?.addEventListener('click', openMobileMenu);
+  close?.addEventListener('click', closeMobileMenu);
+  document.querySelectorAll('#mobileMenu a').forEach(link => link.addEventListener('click', closeMobileMenu));
+
+  // Clock
+  function updateClock() {
+    const now = new Date();
+    const dateEl = document.getElementById('current-date'), timeEl = document.getElementById('current-time'), greetingEl = document.getElementById('greeting');
+    if (dateEl) dateEl.textContent = now.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+    if (timeEl) timeEl.textContent = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    const hour = now.getHours();
+    let greeting = hour < 12 ? 'Morning' : hour < 18 ? 'Afternoon' : 'Evening';
+    if (greetingEl && currentLang === 'en') greetingEl.textContent = greeting;
+  }
+  setInterval(updateClock, 1000);
+  updateClock();
+
+  // ==================== SEARCH ====================
+  function searchDashboard() {
+    const searchTerm = document.getElementById('dashboard-search')?.value.toLowerCase().trim() || '';
+    const items = document.querySelectorAll('.searchable-item');
+    const resultsCount = document.getElementById('results-count'), resultsDiv = document.getElementById('search-results');
+    let visibleCount = 0;
+    items.forEach(item => {
+      const searchData = item.dataset.search || '', itemText = item.textContent.toLowerCase();
+      const matches = searchTerm === '' || searchData.includes(searchTerm) || itemText.includes(searchTerm);
+      if (matches) { item.style.display = ''; visibleCount++; if (searchTerm !== '') item.classList.add('search-highlight'); else item.classList.remove('search-highlight'); }
+      else { item.style.display = 'none'; item.classList.remove('search-highlight'); }
+    });
+    if (resultsDiv && resultsCount) {
+      if (searchTerm !== '') { resultsDiv.classList.remove('hidden'); resultsCount.textContent = visibleCount; }
+      else { resultsDiv.classList.add('hidden'); }
+    }
+  }
+
+  // ==================== NOTIFICATIONS ====================
+  let recentScansData = [];
+  
+  function updateNotificationCount(count) { const badge = document.getElementById('notification-count'); if (badge) { badge.textContent = count; badge.classList.toggle('hidden', count === 0); } }
+  
+  function positionDropdown() {
+    const dropdown = document.getElementById('notification-dropdown'), bell = document.getElementById('notifications-btn');
+    if (!dropdown || !bell) return;
+    const rect = bell.getBoundingClientRect();
+    dropdown.style.right = (window.innerWidth - rect.right + 10) + 'px';
+    dropdown.style.top = (rect.bottom + 10) + 'px';
+  }
+  
+  function renderDiseaseAlerts() {
+    const container = document.getElementById('alert-list'), countEl = document.getElementById('alert-count-in-dropdown');
+    const alerts = recentScansData.filter(s => s.disease_detected);
+    if (countEl) countEl.textContent = alerts.length + ' alerts';
+    let html = '';
+    alerts.forEach(scan => { 
+      html += `<div class="flex gap-4 p-3 rounded-2xl" style="background:#e8f4e4;">
+          <div class="w-11 h-11 rounded-xl overflow-hidden"><img src="${scan.image_url || ''}" class="w-full h-full object-cover"></div>
+          <div><p class="font-bold text-sm alert-disease-name">${escapeHtml(scan.disease_name)}</p><p class="text-xs text-rose-500 alert-confidence-text">Confidence: ${scan.confidence}%</p></div>
+        </div>`; 
+    });
+    if (container) container.innerHTML = html || '<p class="text-center py-8">No alerts</p>';
+    
+    if (currentLang === 'ur' && !translationInProgress) {
+      setTimeout(() => translateNotificationContent(), 300);
+    }
+  }
+  
+  const bell = document.getElementById('notifications-btn'), dropdown = document.getElementById('notification-dropdown');
+  if (bell && dropdown) {
+    bell.addEventListener('click', (e) => { 
+      e.stopPropagation(); 
+      if (dropdown.classList.contains('hidden')) { 
+        positionDropdown(); 
+        fetchNotificationData(); 
+      } else { 
+        dropdown.classList.add('hidden'); 
+      } 
+    });
+    document.addEventListener('click', (e) => { if (bell && dropdown && !bell.contains(e.target) && !dropdown.contains(e.target)) dropdown.classList.add('hidden'); });
+    window.addEventListener('resize', () => { if (!dropdown.classList.contains('hidden')) positionDropdown(); });
+  }
+  
+  function fetchNotificationData() {
+    fetch('/api/dashboard-stats/').then(r => r.json()).then(data => { 
+      recentScansData = data.recent_scans || []; 
+      updateNotificationCount(data.unread_notifications || 0); 
+      renderDiseaseAlerts(); 
+      dropdown.classList.remove('hidden'); 
+      positionDropdown(); 
+    }).catch(() => { renderDiseaseAlerts(); dropdown.classList.remove('hidden'); positionDropdown(); });
+  }
+  
+  document.getElementById('mark-all-read-btn')?.addEventListener('click', async () => { await fetch('/api/mark-notifications-read/', { method: 'POST' }); dropdown.classList.add('hidden'); refreshData(); });
+
+  // ==================== REFRESH DATA ====================
+  function refreshData() {
+    return fetch('/api/dashboard-stats/')
+      .then(response => response.json())
+      .then(data => {
+        document.getElementById('total-scans').innerHTML = data.total_scans;
+        document.getElementById('healthy-count').innerHTML = data.healthy_count;
+        document.getElementById('disease-count').innerHTML = data.disease_count;
+        document.getElementById('health-total').innerHTML = data.total_scans;
+        document.getElementById('health-healthy').innerHTML = data.healthy_count;
+        document.getElementById('health-risk').innerHTML = data.disease_count;
+        
+        const healthyPercent = (data.healthy_count / data.total_scans * 100).toFixed(1);
+        const diseasePercent = (data.disease_count / data.total_scans * 100).toFixed(1);
+        document.getElementById('health-bar-healthy').style.width = healthyPercent + '%';
+        document.getElementById('health-bar-risk').style.width = diseasePercent + '%';
+        
+        const healthPercentHealthy = document.getElementById('health-percent-healthy');
+        const healthPercentRisk = document.getElementById('health-percent-risk');
+        if (healthPercentHealthy) {
+          healthPercentHealthy.removeAttribute('data-translated');
+          healthPercentHealthy.innerHTML = healthyPercent + '% Optimal Health';
+        }
+        if (healthPercentRisk) {
+          healthPercentRisk.removeAttribute('data-translated');
+          healthPercentRisk.innerHTML = diseasePercent + '% Risk Factor';
+        }
+        
+        document.getElementById('gauge-confidence').innerHTML = data.avg_confidence + '<span class="text-lg text-primary">%</span>';
+        
+        updateRecentScans(data.recent_scans);
+        updateDiseaseDistribution(data.disease_distribution);
+        updateNotificationCount(data.unread_notifications || 0);
+        recentScansData = data.recent_scans || [];
+        
+        if (data.chart_labels && data.chart_data && trendChart) {
+          trendChart.data.labels = data.chart_labels;
+          trendChart.data.datasets[0].data = data.chart_data;
+          trendChart.update();
+        }
+        
+        if (currentLang === 'ur' && !translationInProgress) {
+          setTimeout(() => {
+            translateFarmHealthIndexLabels();
+            translateScanRows();
+            translateDiseaseDistribution();
+            translateNotificationContent();
+          }, 500);
+        }
+      })
+      .catch(error => console.error('Error refreshing data:', error));
+  }
+
+  function updateRecentScans(scans) {
+    const container = document.getElementById('recent-scans-container');
+    if (!container) return;
+    
+    if (scans.length === 0) {
+      container.innerHTML = `<div class="text-center py-8" style="color: #6b8c68;"><span class="material-symbols-outlined text-4xl mb-2">scan_delete</span><p id="no-scans-text">No scans yet. Start your first scan!</p><a href="/scanner/" class="inline-block mt-4 px-4 py-2 rounded-xl font-bold text-sm" style="background: #2f8b5c; color: white;" id="start-scanning-btn">Start Scanning</a></div>`;
+      return;
+    }
+    let html = '';
+    scans.forEach(scan => {
+      const isUrdu = (typeof currentLang !== 'undefined' && currentLang === 'ur');
+      const timeAgoRaw = getTimeAgo(scan.created_at);
+      const timeAgo = isUrdu ? translateTimeAgo(timeAgoRaw) : timeAgoRaw + ' ago';
+      
+      const diseaseDisplay = isUrdu ? (scan.disease_name_ur || scan.disease_name) : scan.disease_name;
+      const cropDisplay = isUrdu ? (scan.crop_type_ur || scan.crop_type) : scan.crop_type;
+      
+      const statusClass = scan.disease_detected ? 'stat-badge-danger' : 'stat-badge-good';
+      const statusText = isUrdu ? (scan.disease_detected ? 'خطرہ' : 'صحت مند') : (scan.disease_detected ? 'Threat' : 'Healthy');
+      
+      const confidenceHtml = scan.disease_detected ? `<span class="text-rose-500">(${scan.confidence}%)</span>` : '';
+      html += `<a href="/diagnosis/${scan.id}/" class="flex items-center gap-4 p-4 rounded-2xl transition-all border border-transparent hover:border-white/5 group searchable-item" style="background: #f9fff8;"
+           data-search="${escapeHtml(scan.disease_name || 'Unknown')} ${escapeHtml(scan.crop_type || 'Plant')} ${escapeHtml(scan.severity || '')} ${scan.disease_detected ? 'threat disease' : 'healthy'}">
+          <div class="w-16 h-16 rounded-2xl overflow-hidden relative shrink-0 shadow-lg" style="background: #e8f4e4;">
+            <img src="${scan.image_url || '/static/images/placeholder.jpg'}" alt="${escapeHtml(diseaseDisplay)}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"/>
+            <div class="absolute inset-0 ${scan.disease_detected ? 'bg-rose-500/10' : 'bg-primary/10'} mix-blend-overlay"></div>
+          </div>
+          <div class="flex-1 min-w-0">
+            <div class="flex justify-between items-start">
+              <h4 class="font-bold truncate" style="color: #6b8c68;">Scan #${scan.id.substring(0,6)}</h4>
+              <span class="stat-badge ${statusClass}">${statusText}</span>
+            </div>
+            <p class="text-xs mt-1 font-medium" style="color: #6b8c68;">${escapeHtml(diseaseDisplay || 'Unknown')} ${confidenceHtml}</p>
+            <p class="text-[10px] font-bold uppercase tracking-widest mt-1.5 flex items-center gap-1.5" style="color: #9bc48f;">
+              <span class="material-symbols-outlined text-[12px]">schedule</span> ${timeAgo} · ${escapeHtml(cropDisplay || 'Unknown')}
+            </p>
+          </div>
+          <span class="material-symbols-outlined transition-colors" style="color: #9bc48f;">arrow_forward_ios</span>
+        </a>`;
+    });
+    container.innerHTML = html;
+  }
+
+  function updateDiseaseDistribution(diseases) {
+    const container = document.getElementById('disease-distribution');
+    if (!container) return;
+    
+    if (diseases.length === 0) {
+      container.innerHTML = '<p class="text-center py-4" style="color: #6b8c68;" id="no-disease-data">No disease data yet</p>';
+      return;
+    }
+    let html = '';
+    diseases.forEach(disease => {
+      html += `<div class="searchable-item" data-search="${escapeHtml(disease.name)} disease count ${disease.count}">
+          <div class="flex justify-between text-xs mb-1">
+            <span style="color: #6b8c68;" class="disease-name-text">${escapeHtml(disease.name)}</span>
+            <span class="text-primary font-bold">${disease.count}</span>
+          </div>
+          <div class="h-2 rounded-full overflow-hidden" style="background: #e8f4e4;">
+            <div class="h-full bg-primary rounded-full" style="width:${disease.percentage}%"></div>
+          </div>
+        </div>`;
+    });
+    container.innerHTML = html;
+  }
+
+  function escapeHtml(str) {
+    if (!str) return '';
+    return str.replace(/[&<>]/g, function(m) {
+      if (m === '&') return '&amp;';
+      if (m === '<') return '&lt;';
+      if (m === '>') return '&gt;';
+      return m;
+    });
+  }
+
+  function getTimeAgo(timestamp) {
+    const now = new Date(), past = new Date(timestamp), diff = Math.floor((now - past) / 1000);
+    if (diff < 60) return diff + 's';
+    if (diff < 3600) return Math.floor(diff / 60) + 'm';
+    if (diff < 86400) return Math.floor(diff / 3600) + 'h';
+    return Math.floor(diff / 86400) + 'd';
+  }
+
+  // ==================== INITIALIZATION - ALWAYS ENGLISH FIRST ====================
+  document.addEventListener('DOMContentLoaded', function() {
+    console.log('Initializing Dashboard components...');
+    
+    // 1. Language button handlers
+    try {
+      const langBtn = document.getElementById('languageBtn'), langDropdown = document.getElementById('languageDropdown');
+      if (langBtn && langDropdown) {
+        langBtn.addEventListener('click', (e) => { 
+          e.stopPropagation(); 
+          langDropdown.classList.toggle('active'); 
+        });
+        document.addEventListener('click', () => langDropdown.classList.remove('active'));
+      }
+
+      document.querySelectorAll('.language-option, .mobile-lang-option').forEach(opt => {
+        opt.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const lang = opt.dataset.lang;
+          console.log('Language selection:', lang);
+          changeLanguage(lang);
+        });
+      });
+    } catch (e) { console.error('Language UI error:', e); }
+
+    // 2. Component Initialization
+    try { if (typeof initRecentScansDropdown === 'function') initRecentScansDropdown(); } catch (e) { console.error('Dropdown init error:', e); }
+    try { if (typeof getLocation === 'function') getLocation(); } catch (e) { console.error('Location init error:', e); }
+    try { if (typeof initChart === 'function') initChart(); } catch (e) { console.error('Chart init error:', e); }
+    
+    // 3. Restore language preference
+    try {
+      const savedLang = localStorage.getItem('agrisense_language') || '{{ user_language|default:"en" }}';
+      if (savedLang === 'ur') {
+        translatePage();
+      } else {
+        updateLanguageUI();
+      }
+    } catch (e) { console.error('Language restoration error:', e); }
+    
+    // 4. Set greeting
+    try {
+      const hour = new Date().getHours();
+      let greeting = hour < 12 ? 'Morning' : hour < 18 ? 'Afternoon' : 'Evening';
+      const greetingHeader = document.getElementById('greeting-header');
+      if (greetingHeader) {
+        const username = document.body.dataset.username || '';
+        greetingHeader.innerHTML = `Good <span id="greeting">${greeting}</span>, ${username} 👋`;
+      }
+    } catch (e) { console.error('Greeting error:', e); }
+    
+    // 5. Initial Data Sync
+    setTimeout(() => {
+      try { refreshData(); } catch (e) { console.error('Initial refresh error:', e); }
+    }, 500);
+  });
+
+  // Refresh data every 15 minutes
+  setInterval(refreshData, 900000);
+</script>
+  {% include 'includes/floating_video_button.html' %}
+</body>
+</html>

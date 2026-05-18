@@ -1,0 +1,217 @@
+<!-- ==================== TUTORIAL POPUP - RIGHT SIDE FLOATING ==================== -->
+{% load static %}
+<style>
+    /* Floating Container - Positioned on the right side */
+    .tutorial-side-popup {
+        position: fixed;
+        right: 0;
+        top: 50%;
+        transform: translateY(-50%);
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        padding-right: 20px;
+        pointer-events: none; /* Allow clicks through to background where there's no image */
+        animation: slideInRight 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    /* Content Container */
+    .popup-content-box {
+        position: relative;
+        width: 450px; /* Large size like in image */
+        max-width: 80vw;
+        pointer-events: auto; /* Enable clicks for the content */
+    }
+
+    .popup-image-click {
+        width: 100%;
+        height: auto;
+        display: block;
+        cursor: pointer;
+        filter: drop-shadow(0 15px 40px rgba(0,0,0,0.2));
+        transition: all 0.3s ease;
+    }
+
+    .popup-image-click:hover {
+        transform: scale(1.03) translateX(-5px);
+    }
+
+    /* Clickable Close Area (X in image) */
+    .popup-close-hitbox {
+        position: absolute;
+        top: 5%;
+        right: 5%;
+        width: 12%;
+        height: 12%;
+        border-radius: 50%;
+        cursor: pointer;
+        z-index: 100;
+        /* background: rgba(255,0,0,0.2); /* For debugging */
+    }
+
+    /* Video Modal Styles */
+    .video-modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.95);
+        z-index: 10001;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        backdrop-filter: blur(10px);
+    }
+    
+    .video-modal-overlay.active {
+        display: flex;
+    }
+    
+    .video-modal-inner {
+        position: relative;
+        width: 90%;
+        max-width: 1100px;
+        background: #000;
+        border-radius: 24px;
+        overflow: hidden;
+        box-shadow: 0 0 50px rgba(16, 185, 129, 0.3);
+    }
+    
+    .video-ratio-box {
+        position: relative;
+        width: 100%;
+        padding-bottom: 56.25%;
+    }
+    
+    .video-ratio-box video {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+    }
+
+    /* Animations */
+    @keyframes slideInRight {
+        from { transform: translate(100%, -50%); opacity: 0; }
+        to { transform: translate(0, -50%); opacity: 1; }
+    }
+
+    /* Hidden State */
+    .tutorial-side-popup.hidden {
+        display: none;
+    }
+
+    /* Mobile Responsiveness */
+    @media (max-width: 768px) {
+        .tutorial-side-popup {
+            right: 0;
+            padding-right: 10px;
+            top: auto;
+            bottom: 80px;
+            transform: none;
+        }
+        @keyframes slideInRight {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        .popup-content-box {
+            width: 300px;
+        }
+    }
+</style>
+
+{% if tutorial_video and tutorial_video.is_active and tutorial_video.video_file %}
+<!-- Floating Side Popup -->
+<div class="tutorial-side-popup" id="sidePopup">
+    <div class="popup-content-box">
+        <!-- Main Image -->
+        <img src="{% static 'image/popup_image.png' %}" alt="Tutorial" class="popup-image-click" id="triggerVideo">
+        
+        <!-- Hitbox for X -->
+        <div class="popup-close-hitbox" id="closeSidePopup" title="Close"></div>
+    </div>
+</div>
+
+<!-- Video Player Modal -->
+<div class="video-modal-overlay" id="sideVideoModal">
+    <div class="video-modal-inner">
+        <div class="p-4 bg-[#1a3a2a] text-white font-bold flex items-center gap-3">
+            <span class="material-symbols-outlined text-primary">smart_display</span>
+            {{ tutorial_video.title }}
+        </div>
+        <div class="video-ratio-box">
+            <video id="sideVideoPlayer" controls>
+                <source src="{{ tutorial_video.video_file.url }}" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+        </div>
+        <button class="absolute top-4 right-4 w-10 h-10 bg-red-600 rounded-full flex items-center justify-center text-white hover:bg-red-700 transition-all shadow-xl z-[101]" id="closeSideVideo">
+            <span class="material-symbols-outlined">close</span>
+        </button>
+    </div>
+</div>
+
+<script>
+(function() {
+    const popup = document.getElementById('sidePopup');
+    const trigger = document.getElementById('triggerVideo');
+    const closeBtn = document.getElementById('closeSidePopup');
+    const modal = document.getElementById('sideVideoModal');
+    const closeModal = document.getElementById('closeSideVideo');
+    const player = document.getElementById('sideVideoPlayer');
+
+    // Show logic
+    window.addEventListener('DOMContentLoaded', () => {
+        const path = window.location.pathname;
+        const allowedPaths = ['/login/', '/register/', '/'];
+        
+        // Show only on specific pages
+        if (allowedPaths.includes(path)) {
+            setTimeout(() => {
+                popup.style.display = 'flex';
+            }, 500);
+        } else {
+            popup.style.display = 'none';
+        }
+    });
+
+    // Launch Video
+    trigger.addEventListener('click', (e) => {
+        if (e.target === closeBtn) return;
+        modal.classList.add('active');
+        if (player) player.play();
+    });
+
+    // Close Popup (Temporary for current session, will reappear on refresh)
+    closeBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        popup.style.display = 'none';
+        // Note: No longer setting sessionStorage, so it reappears on next refresh
+    });
+
+    // Close Video Modal
+    function hideModal() {
+        modal.classList.remove('active');
+        if (player) {
+            player.pause();
+            player.currentTime = 0;
+        }
+    }
+
+    if (closeModal) closeModal.addEventListener('click', hideModal);
+    
+    if (modal) {
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) hideModal();
+        });
+    }
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') hideModal();
+    });
+})();
+</script>
+{% endif %}

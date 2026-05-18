@@ -1,0 +1,364 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>AgriSense – Login</title>
+<script src="{% static 'js/tailwind.min.js' %}"></script>
+<link href="{% static 'css/inter.css' %}" rel="stylesheet"/>
+<link href="{% static 'css/material-symbols.css' %}" rel="stylesheet"/>
+<script>tailwind.config={darkMode:"class",theme:{extend:{colors:{"primary":"#10b981","primary-dark":"#059669","background-dark":"#0a0f0a","surface-dark":"#121a12","surface-darker":"#0d130d","input-bg":"#1a241a"},fontFamily:{display:["Inter","sans-serif"]},boxShadow:{"glow-green":"0 0 20px rgba(16,185,129,0.2)"}}}}</script>
+<style>
+  /* LIGHT THEME OVERRIDES - White/Mint Background, Light Sage Cards, Dark Gray/Black Text */
+  body {
+    font-family: 'Inter', sans-serif;
+    background: #f0f7f0 !important;
+    color-scheme: light;
+  }
+  
+  /* Override dark class behavior */
+  .dark body, body.dark {
+    background: #f0f7f0 !important;
+  }
+  
+  /* Text colors - Dark Gray/Black */
+  .text-white {
+    color: #2d3e2d !important;
+  }
+  
+  .text-gray-400 {
+    color: #6b8c68 !important;
+  }
+  
+  .text-gray-500 {
+    color: #9bc48f !important;
+  }
+  
+  .text-primary {
+    color: #10b981 !important;
+  }
+  
+  .text-rose-400 {
+    color: #e53e3e !important;
+  }
+  
+  /* Card background - Light Sage */
+  .bg-surface-dark {
+    background: #ffffff !important;
+    border: 1px solid #d4e8ce !important;
+    backdrop-filter: none !important;
+    box-shadow: 0 8px 25px -10px rgba(0, 0, 0, 0.08);
+  }
+  
+  /* Input background */
+  .bg-input-bg {
+    background: #f9fff8 !important;
+  }
+  
+  /* Input border */
+  .border-white\/10 {
+    border-color: #d4e8ce !important;
+  }
+  
+  .border-white\/20 {
+    border-color: #bcddae !important;
+  }
+  
+  /* Input focus ring */
+  .input-focus-ring:focus-within {
+    box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.15);
+    border-color: #10b981 !important;
+  }
+  
+  /* Input text */
+  input {
+    color: #1a2c1e !important;
+  }
+  
+  input::placeholder {
+    color: #c8dbc2 !important;
+  }
+  
+  /* Icons in inputs */
+  .material-symbols-outlined.text-gray-500 {
+    color: #9bc48f !important;
+  }
+  
+  .group-focus-within\:text-primary:focus-within .material-symbols-outlined {
+    color: #10b981 !important;
+  }
+  
+  /* Logo container */
+  .bg-primary\/20 {
+    background-color: rgba(16, 185, 129, 0.1) !important;
+  }
+  
+  .border-primary\/30 {
+    border-color: rgba(16, 185, 129, 0.2) !important;
+  }
+  
+  /* Button */
+  .bg-primary {
+    background: #2f8b5c !important;
+    color: white !important;
+  }
+  
+  .bg-primary:hover {
+    background: #246e48 !important;
+  }
+  
+  /* Message containers */
+  .bg-rose-500\/10 {
+    background-color: rgba(229, 62, 62, 0.08) !important;
+  }
+  
+  .border-rose-500\/20 {
+    border-color: #fecaca !important;
+  }
+  
+  .text-rose-400 {
+    color: #e53e3e !important;
+  }
+  
+  .bg-primary\/10 {
+    background-color: rgba(16, 185, 129, 0.08) !important;
+  }
+  
+  .border-primary\/20 {
+    border-color: #bbf7d0 !important;
+  }
+  
+  /* Checkbox styling */
+  .custom-checkbox {
+    position: relative;
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background-color: #f9fff8;
+    border: 2px solid #d4e8ce;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+  }
+  
+  .custom-checkbox:checked {
+    background-color: #10b981;
+    border-color: #10b981;
+  }
+  
+  .custom-checkbox:checked::after {
+    content: '✓';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    font-size: 12px;
+    font-weight: bold;
+  }
+  
+  .custom-checkbox:hover {
+    border-color: #10b981;
+  }
+  
+  .custom-checkbox:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
+  }
+  
+  /* Links */
+  a.text-primary {
+    color: #10b981 !important;
+  }
+  
+  a.text-primary:hover {
+    color: #059669 !important;
+  }
+  
+  /* Background glow effects - muted for light theme */
+  .absolute.bg-primary\/5 {
+    background: rgba(16, 185, 129, 0.05) !important;
+  }
+  
+  .absolute.bg-emerald-900\/10 {
+    background: rgba(16, 185, 129, 0.03) !important;
+  }
+  
+  /* Remember me label */
+  .text-xs.text-gray-400 {
+    color: #6b8c68 !important;
+  }
+  
+  /* Keep white text on button */
+  button.bg-primary span, button.bg-primary {
+    color: white !important;
+  }
+  
+  /* Hover effect on button arrow */
+  .group-hover\:translate-x-1:hover {
+    transform: translateX(4px);
+  }
+  
+  /* Eye icon button styles */
+  .toggle-password-btn {
+    cursor: pointer;
+    background: transparent;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    margin-right: 12px;
+  }
+  
+  .toggle-password-btn:hover .material-symbols-outlined {
+    color: #10b981 !important;
+  }
+  
+  /* Password container relative positioning */
+  .password-container {
+    position: relative;
+  }
+</style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
+
+<!-- Background glow effects - muted for light theme -->
+<div class="absolute top-0 left-1/4 w-96 h-96 bg-primary/5 rounded-full blur-3xl pointer-events-none"></div>
+<div class="absolute bottom-0 right-1/4 w-96 h-96 bg-emerald-900/10 rounded-full blur-3xl pointer-events-none"></div>
+
+<div class="w-full max-w-md relative z-10">
+  <!-- Logo -->
+  <div class="text-center mb-8">
+    <div class="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-primary/20 border border-primary/30 mb-4 shadow-glow-green">
+      <span class="material-symbols-outlined text-primary text-3xl">eco</span>
+    </div>
+    <h1 class="text-3xl font-bold" style="color: #2d3e2d;">Welcome Back</h1>
+    <p class="text-sm mt-2" style="color: #6b8c68;">Log in to your AgriSense account</p>
+  </div>
+
+  <!-- Messages -->
+  {% if messages %}
+    <div class="mb-4 space-y-2">
+      {% for message in messages %}
+        <div class="p-4 rounded-xl {% if message.tags == 'error' %}bg-rose-500/10 text-rose-400 border border-rose-500/20{% else %}bg-primary/10 text-primary border border-primary/20{% endif %} text-sm">
+          {{ message }}
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <!-- Card -->
+  <div class="rounded-2xl p-8 shadow-xl" style="background: #ffffff; border: 1px solid #d4e8ce;">
+    <form class="space-y-5" method="POST" id="login-form">
+      {% csrf_token %}
+      
+      <!-- Username Field -->
+      <div class="space-y-1.5">
+        <label class="text-xs font-semibold uppercase tracking-wider ml-1" style="color: #6b8c68;">Username</label>
+        <div class="relative group input-focus-ring rounded-xl border transition-colors" style="border-color: #d4e8ce; background: #f9fff8;">
+          <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+            <span class="material-symbols-outlined transition-colors" style="color: #9bc48f;">person</span>
+          </div>
+          <input name="username" class="block w-full pl-12 pr-4 py-4 bg-transparent border-none focus:ring-0 text-sm" style="color: #1a2c1e;" placeholder="Enter your username" type="text" required/>
+        </div>
+      </div>
+      <!-- Password Field with Eye Icon -->
+      <div class="space-y-1.5">
+        <label class="text-xs font-semibold uppercase tracking-wider ml-1" style="color: #6b8c68;">Password</label>
+        <div class="relative group input-focus-ring rounded-xl border transition-colors" style="border-color: #d4e8ce; background: #f9fff8;">
+          <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+            <span class="material-symbols-outlined transition-colors" style="color: #9bc48f;">lock</span>
+          </div>
+          <input name="password" id="password" class="block w-full pl-12 pr-12 py-4 bg-transparent border-none focus:ring-0 text-sm" style="color: #1a2c1e;" placeholder="Enter your password" type="password" required/>
+          <button type="button" class="toggle-password-btn absolute inset-y-0 right-0 flex items-center" id="togglePassword">
+            <span class="material-symbols-outlined" style="color: #9bc48f; font-size: 20px;">visibility_off</span>
+          </button>
+        </div>
+      </div>
+      
+      <!-- Remember Me and Forgot Password -->
+      <div class="flex items-center justify-between pt-1">
+        <div class="flex items-center gap-2">
+          <input id="remember" name="remember" type="checkbox" class="custom-checkbox"/>
+          <label class="text-xs" style="color: #6b8c68;" for="remember">Remember me</label>
+        </div>
+        <a href="{% url 'password_reset' %}" class="text-xs transition-colors hover:underline" style="color: #10b981;">Forgot password?</a>
+      </div>
+
+      <!-- Login Button -->
+      <button type="submit" class="w-full font-bold text-lg py-4 rounded-xl shadow-glow-green flex items-center justify-center gap-2 transition-all active:scale-[0.98] group mt-2" style="background: #2f8b5c; color: white;">
+        Log In
+        <span class="material-symbols-outlined group-hover:translate-x-1 transition-transform" style="color: white;">login</span>
+      </button>
+    </form>
+  </div>
+
+  <!-- Sign Up Link -->
+  <p class="text-center text-sm mt-6" style="color: #6b8c68;">
+    Don't have an account?
+    <a class="font-semibold transition-colors ml-1 hover:underline" href="{% url 'register' %}" style="color: #10b981;">Sign Up</a>
+  </p>
+</div>
+
+<script>
+  (function() {
+    // Toggle password visibility
+    const togglePasswordBtn = document.getElementById('togglePassword');
+    const passwordInput = document.getElementById('password');
+    
+    if (togglePasswordBtn && passwordInput) {
+      togglePasswordBtn.addEventListener('click', function() {
+        // Toggle the type attribute
+        const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+        passwordInput.setAttribute('type', type);
+        
+        // Toggle the eye icon
+        const iconSpan = this.querySelector('.material-symbols-outlined');
+        if (type === 'password') {
+          iconSpan.textContent = 'visibility_off';
+        } else {
+          iconSpan.textContent = 'visibility';
+        }
+      });
+    }
+    
+    // Optional: Form validation before submit
+    const form = document.getElementById('login-form');
+    if (form) {
+      form.addEventListener('submit', function(e) {
+        const username = form.querySelector('input[name="username"]').value.trim();
+        const password = form.querySelector('input[name="password"]').value;
+        
+        if (!username || !password) {
+          e.preventDefault();
+          // Show a simple alert or you can create a toast message
+          const errorDiv = document.createElement('div');
+          errorDiv.className = 'p-4 rounded-xl bg-rose-500/10 text-rose-400 border border-rose-500/20 text-sm mb-4';
+          errorDiv.innerHTML = 'Please fill in both username and password fields.';
+          
+          const messagesContainer = document.querySelector('.mb-4.space-y-2');
+          if (messagesContainer) {
+            messagesContainer.insertBefore(errorDiv, messagesContainer.firstChild);
+          } else {
+            const card = document.querySelector('.rounded-2xl');
+            if (card) {
+              card.insertAdjacentHTML('beforebegin', '<div class="mb-4 space-y-2"><div class="p-4 rounded-xl bg-rose-500/10 text-rose-400 border border-rose-500/20 text-sm">Please fill in both username and password fields.</div></div>');
+            }
+          }
+          
+          setTimeout(() => {
+            errorDiv.remove();
+          }, 3000);
+        }
+      });
+    }
+  })();
+</script>
+  {% include 'includes/floating_video_button.html' %}
+</body>
+</html>

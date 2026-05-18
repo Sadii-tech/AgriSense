@@ -1,0 +1,1054 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover" name="viewport"/>
+<title>AgriSense – About Us</title>
+<script src="{% static 'js/tailwind.min.js' %}"></script>
+<link href="{% static 'css/inter.css' %}" rel="stylesheet"/>
+<link href="{% static 'css/material-symbols.css' %}" rel="stylesheet"/>
+
+<style>
+  .language-switch {
+    position: relative;
+    display: inline-block;
+  }
+  
+  .language-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    background: rgba(255,255,255,0.12);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: white;
+    font-size: 0.875rem;
+    font-weight: 500;
+  }
+  
+  .language-btn:hover {
+    background: rgba(255,255,255,0.2);
+    border-color: rgba(255,255,255,0.3);
+  }
+  
+  .language-dropdown {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 8px;
+    background: white;
+    border: 1px solid #d4e8ce;
+    border-radius: 0.75rem;
+    min-width: 140px;
+    overflow: hidden;
+    z-index: 1000;
+    box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1);
+    display: none;
+  }
+  /* FIX: Proper sidebar sticky behavior */
+body {
+    height: 100vh;
+    overflow: hidden;
+}
+
+.flex-1.overflow-y-auto {
+    overflow-y: auto;
+    height: 100vh;
+}
+
+aside {
+    height: 100vh;
+    position: sticky;
+    top: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+aside nav {
+    flex: 1;
+    overflow-y: auto;
+    min-height: 0;
+}
+
+.sticky-bottom-section {
+    flex-shrink: 0;
+    margin-top: auto;
+}
+  
+  body.dark .language-dropdown {
+    background: #121a12;
+    border-color: #2a3a2a;
+  }
+  
+  .language-dropdown.active {
+    display: block;
+    animation: dropdownFadeIn 0.2s ease;
+  }
+  
+  @keyframes dropdownFadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  
+  .language-option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 16px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 0.875rem;
+    color: #1a2c1e;
+  }
+  
+  body.dark .language-option {
+    color: #e5ede3;
+  }
+  
+  .language-option:hover {
+    background: #e8f4e4;
+  }
+  
+  body.dark .language-option:hover {
+    background: #1a241a;
+  }
+  
+  .language-option.active {
+    background: #10b981;
+    color: white;
+  }
+  
+  .language-option .material-symbols-outlined {
+    font-size: 18px;
+  }
+
+  .translate-loader {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: #10b981;
+    color: white;
+    padding: 12px 24px;
+    border-radius: 12px;
+    z-index: 10000;
+    display: none;
+    align-items: center;
+    gap: 10px;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+  }
+  
+  .translate-loader.show {
+    display: flex;
+  }
+  
+  .spinner {
+    width: 18px;
+    height: 18px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+  }
+  
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+  
+  .translate-toast {
+    position: fixed;
+    bottom: 80px;
+    right: 20px;
+    background: white;
+    border: 1px solid #d4e8ce;
+    border-radius: 12px;
+    padding: 12px 20px;
+    z-index: 10000;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    display: none;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  }
+  
+  body.dark .translate-toast {
+    background: #121a12;
+    border-color: #2a3a2a;
+    color: #e5ede3;
+  }
+  
+  .translate-toast.show {
+    display: block;
+  }
+</style>
+
+<script id="tailwind-config">
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        colors: {
+          "primary": "#10b981",
+          "primary-dark": "#059669",
+          "primary-light": "#34d399",
+          "background-dark": "#0a0f0a",
+          "surface-dark": "#121a12",
+          "surface-darker": "#0d130d",
+          "surface-accent": "#1a241a",
+        },
+        fontFamily: { 
+          "display": ["'Inter'", "sans-serif"], 
+          "body": ["'Inter'", "sans-serif"] 
+        },
+      },
+    },
+  }
+</script>
+<style type="text/tailwindcss">
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  
+  html, body {
+    overflow-x: hidden !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+  
+  body { 
+    font-family: 'Inter', sans-serif; 
+    background: #f0f7f0 !important;
+    color: #1a2c1e !important;
+  }
+  
+  body.dark {
+    background: #0a0f0a !important;
+    color: #e5ede3 !important;
+  }
+  body.dark .glass-card { 
+    background: #121a12 !important;
+    border: 1px solid #2a3a2a !important;
+  }
+  body.dark .glass-card:hover {
+    background: #1a241a !important;
+    border-color: #3c553c !important;
+  }
+  
+  aside.hidden {
+    background: #1a3a2a !important;
+    border-right-color: #2d5a3d !important;
+  }
+  body.dark aside.hidden {
+    background: #0b150b !important;
+    border-right-color: #1f2c1f !important;
+  }
+  
+  aside .text-white, aside .text-gray-500, aside .text-gray-400,
+  aside p, aside span, aside a, aside .font-bold {
+    color: white !important;
+  }
+  
+  .sidebar-link { 
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.6rem 1rem;
+    border-radius: 1rem;
+    font-weight: 500;
+    font-size: 0.875rem;
+    transition: all 0.2s ease;
+    width: 100%;
+    color: white !important;
+  }
+  .sidebar-link:hover { 
+    background: rgba(255,255,255,0.15) !important;
+    color: white !important;
+  }
+  .sidebar-link.active { 
+    background: rgba(255,255,255,0.25) !important;
+    color: white !important;
+    border: 1px solid rgba(255,255,255,0.3) !important;
+  }
+  
+  .glass-card { 
+    background: #ffffff !important;
+    border: 1px solid #d4e8ce !important;
+    transition: all 0.3s ease;
+  }
+  .glass-card:hover {
+    background: #ffffff !important;
+    border-color: #bcddae !important;
+    transform: translateY(-2px);
+  }
+  
+  .stat-badge-good {
+    background: #e0f2e0 !important;
+    color: #166534 !important;
+    border-color: #bbf7d0 !important;
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 0.2rem 0.65rem;
+    border-radius: 999px;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    border-width: 1px;
+  }
+  body.dark .stat-badge-good {
+    background: #1a3a2a !important;
+    color: #34d399 !important;
+    border-color: #2d6a4f !important;
+  }
+  
+  .live-indicator {
+    position: relative;
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    background-color: #10b981;
+    border-radius: 50%;
+    margin-right: 6px;
+  }
+  .live-indicator::after {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    width: 12px;
+    height: 12px;
+    background-color: rgba(16, 185, 129, 0.3);
+    border-radius: 50%;
+    animation: pulse-ring 1.5s infinite;
+  }
+  @keyframes pulse-ring {
+    0% { transform: scale(0.8); opacity: 0.7; }
+    70% { transform: scale(1.4); opacity: 0; }
+    100% { transform: scale(1.4); opacity: 0; }
+  }
+
+  .gradient-text {
+    background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  header.sticky {
+    background: #1a3a2a !important;
+    border-bottom-color: #2d5a3d !important;
+  }
+  body.dark header.sticky {
+    background: #0b150b !important;
+    border-bottom-color: #1f2c1f !important;
+  }
+  
+  #mobileMenu {
+    background: #1a3a2a !important;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1000;
+    overflow-y: auto;
+    display: none;
+    flex-direction: column;
+  }
+  body.dark #mobileMenu {
+    background: #0b150b !important;
+  }
+  #mobileMenu.show { display: flex !important; }
+  #mobileMenu .text-white, #mobileMenu .sidebar-link {
+    color: white !important;
+  }
+  
+  nav.lg\:hidden.fixed {
+    background: #1a3a2a !important;
+    border-top-color: #2d5a3d !important;
+  }
+  body.dark nav.lg\:hidden.fixed {
+    background: #0b150b !important;
+  }
+  
+  .toast {
+    position: fixed;
+    bottom: 80px;
+    right: 20px;
+    z-index: 1100;
+    background: white;
+    border: 1px solid #d4e8ce;
+    border-radius: 1rem;
+    padding: 0.75rem 1.25rem;
+    display: none;
+  }
+  body.dark .toast {
+    background: #121a12;
+    border-color: #2a3a2a;
+  }
+  .toast.show { display: flex; }
+  
+  .modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 2000;
+    align-items: center;
+    justify-content: center;
+  }
+  .modal.active {
+    display: flex;
+  }
+  .modal-content {
+    background: white;
+    border-radius: 2rem;
+    max-width: 500px;
+    width: 90%;
+    padding: 2rem;
+    border: 1px solid #d4e8ce;
+  }
+  body.dark .modal-content {
+    background: #121a12;
+    border-color: #2a3a2a;
+  }
+  .modal-input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border-radius: 0.75rem;
+    background: #f9fff8;
+    border: 1px solid #d4e8ce;
+    color: #1a2c1e;
+  }
+  body.dark .modal-input {
+    background: #0f160f;
+    border-color: #2a3a2a;
+    color: #e5ede3;
+  }
+  
+  .fade-in { animation: fadeIn 0.6s ease-out forwards; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+</style>
+</head>
+
+<body class="min-h-screen flex">
+
+<aside class="hidden lg:flex flex-col w-64 xl:w-72 min-h-screen sticky top-0 shrink-0 z-40" style="background: #1a3a2a; border-right: 1px solid #2d5a3d;">
+  <div class="flex items-center gap-3 px-6 py-8 border-b" style="border-color: #2d5a3d;">
+    <div class="w-10 h-10 rounded-2xl bg-white/20 border border-white/30 flex items-center justify-center">
+      <span class="material-symbols-outlined text-primary text-2xl">eco</span>
+    </div>
+    <div class="flex flex-col">
+      <span class="font-bold text-xl tracking-tight leading-none text-white">{{ branding.app_name|default:"AgriSense" }}</span>
+      <span class="text-[10px] text-primary/80 uppercase tracking-[0.2em] font-bold mt-1.5">
+        {{ branding.app_subtitle|default:"Edge Intelligence" }}
+      </span>
+    </div>
+  </div>
+  <nav class="flex-1 px-4 py-4 flex flex-col gap-1.5">
+    <a href="{% url 'dashboard' %}" class="sidebar-link"><span class="material-symbols-outlined text-[20px]">grid_view</span> Dashboard</a>
+    <a href="{% url 'scanner' %}" class="sidebar-link"><span class="material-symbols-outlined text-[20px]">filter_center_focus</span> Smart Scan</a>
+    <a href="{% url 'history' %}" class="sidebar-link"><span class="material-symbols-outlined text-[20px]">restore</span> History</a>
+    <div class="pt-6 pb-2 px-3 text-[10px] font-bold uppercase tracking-widest text-white/50">Management</div>
+    <a href="{% url 'setting' %}" class="sidebar-link"><span class="material-symbols-outlined text-[20px]">settings</span> Settings</a>
+    <!-- <a href="{% url 'profile_settings' %}" class="sidebar-link"><span class="material-symbols-outlined text-[20px]">account_circle</span> Profile</a> -->
+    <a href="{% url 'about' %}" class="sidebar-link active"><span class="material-symbols-outlined">info</span> About Us</a>
+  </nav>
+  <div class="p-4 mt-auto border-t" style="border-color: #2d5a3d;">
+   <a href="{% url 'profile_settings' %}" class="rounded-2xl flex items-center gap-3 p-3 transition-all hover:bg-white/15" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15); text-decoration: none;">
+  <div class="w-9 h-9 rounded-xl bg-white/20 border border-white/30 flex items-center justify-center shrink-0">
+    <span class="material-symbols-outlined text-white text-xl">account_circle</span>
+  </div>
+  <div class="flex-1 min-w-0">
+    <p class="text-sm font-bold truncate text-white">{{ user.get_full_name|default:user.username }}</p>
+    <p class="text-[10px] truncate uppercase tracking-tighter text-white/60">{{ user.email|default:"AgriSense User" }}</p>
+  </div>
+</a>
+    <a href="{% url 'logout' %}" class="flex items-center justify-center mt-1 gap-2 px-3 py-2 rounded-lg transition-all text-white/80 hover:text-rose-400 hover:bg-white/10" style="background: rgba(255,255,255,0.08);">
+      <span class="material-symbols-outlined text-sm">logout</span>
+      <span class="text-xs font-medium">Logout</span>
+    </a>
+  </div>
+</aside>
+
+<div class="flex-1 flex flex-col min-h-screen overflow-y-auto">
+  <header class="sticky top-0 z-30 px-4 lg:px-8 py-4 flex items-center justify-between gap-4" style="background: #1a3a2a; border-bottom: 1px solid #2d5a3d;">
+    <div class="flex items-center gap-2.5 lg:hidden">
+      <div class="w-9 h-9 rounded-xl bg-white/15 border border-white/25 flex items-center justify-center">
+        <span class="material-symbols-outlined text-primary text-xl">eco</span>
+      </div>
+      <span class="font-bold text-lg tracking-tight text-white">{{ branding.app_name|default:"AgriSense" }}</span>
+    </div>
+    <div class="flex items-center gap-2 px-3 py-1.5 rounded-full border" style="background: rgba(255,255,255,0.12); border-color: rgba(255,255,255,0.25);">
+      <span class="live-indicator"></span>
+      <span class="text-[10px] font-bold uppercase tracking-wider text-primary">Live</span>
+    </div>
+    <div class="flex items-center gap-3">
+      <div class="language-switch">
+        <button class="language-btn" id="languageBtn">
+          <span class="material-symbols-outlined text-[18px]">language</span>
+          <span id="currentLanguage">English</span>
+          <span class="material-symbols-outlined text-[16px]">expand_more</span>
+        </button>
+        <div class="language-dropdown" id="languageDropdown">
+          <div class="language-option active" data-lang="en"><span class="material-symbols-outlined">check_circle</span>English</div>
+          <div class="language-option" data-lang="ur"><span class="material-symbols-outlined">translate</span>اردو (Urdu)</div>
+        </div>
+      </div>
+      <a href="{% url 'scanner' %}" class="hidden sm:flex items-center gap-2.5 font-bold text-sm px-5 py-2.5 rounded-xl transition-all" style="background: #2f8b5c; color: white;">
+        <span class="material-symbols-outlined text-[20px]">add_a_photo</span>
+        <span>Quick Scan</span>
+      </a>
+      <button id="mobileMenuBtn" class="lg:hidden w-10 h-10 flex items-center justify-center rounded-xl transition-all" style="background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.2); color: white;">
+        <span class="material-symbols-outlined">menu</span>
+      </button>
+    </div>
+  </header>
+
+  <div id="mobileMenu" class="lg:hidden">
+    <div class="flex flex-col h-full p-6">
+      <div class="flex items-center justify-between mb-8">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-2xl bg-white/20 border border-white/30 flex items-center justify-center">
+            <span class="material-symbols-outlined text-primary text-2xl">eco</span>
+          </div>
+          <span class="font-bold text-xl tracking-tight text-white">{{ branding.app_name|default:"AgriSense" }}</span>
+        </div>
+        <button id="closeMenu" class="w-10 h-10 flex items-center justify-center rounded-2xl transition-all bg-white/10 border border-white/20 text-white">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+      <div class="mb-4 px-3">
+        <div class="text-white text-xs font-bold mb-2 uppercase tracking-wider">Language</div>
+        <div class="flex gap-2">
+          <button class="mobile-lang-option active px-4 py-2 rounded-xl text-sm font-medium transition-all" data-lang="en" style="background: rgba(255,255,255,0.2); color: white;">English</button>
+          <button class="mobile-lang-option px-4 py-2 rounded-xl text-sm font-medium transition-all" data-lang="ur" style="background: rgba(255,255,255,0.1); color: white;">اردو</button>
+        </div>
+      </div>
+      <nav class="flex-1 flex flex-col gap-2">
+        <a href="{% url 'dashboard' %}" class="sidebar-link">Dashboard</a>
+        <a href="{% url 'scanner' %}" class="sidebar-link">New Scan</a>
+        <a href="{% url 'history' %}" class="sidebar-link">History</a>
+        <div class="pt-6 pb-2 px-3 text-[10px] font-bold uppercase tracking-widest text-white/50">Management</div>
+        <a href="{% url 'setting' %}" class="sidebar-link">Settings</a>
+        <a href="{% url 'profile_settings' %}" class="sidebar-link">Profile</a>
+        <a href="{% url 'about' %}" class="sidebar-link active">About Us</a>
+      </nav>
+      <div class="mt-auto pt-6 border-t" style="border-color: rgba(255,255,255,0.1);">
+        <div class="rounded-2xl mb-4 p-4" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15);">
+          <div class="flex items-center gap-4">
+            <div class="w-12 h-12 rounded-2xl bg-white/20 border border-white/30 flex items-center justify-center shrink-0">
+              <span class="material-symbols-outlined text-white text-2xl">person</span>
+            </div>
+            <div class="flex-1 min-w-0">
+              <p class="font-bold truncate text-white">{{ user.get_full_name|default:user.username }}</p>
+              <p class="text-xs truncate text-white/60">{{ user.email|default:"—" }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <a href="{% url 'logout' %}" class="flex items-center justify-center mt-1 gap-2 px-3 py-2 rounded-lg transition-all text-white/80 hover:text-rose-400 hover:bg-white/10" style="background: rgba(255,255,255,0.08);">
+        <span class="material-symbols-outlined text-sm">logout</span>
+        <span class="text-xs font-medium">Logout</span>
+      </a>
+    </div>
+  </div>
+
+  <main class="flex-1 p-4 lg:p-8 max-w-screen-2xl mx-auto w-full">
+    <div class="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-6 fade-in">
+      <div>
+        <h1 class="text-3xl lg:text-4xl font-extrabold tracking-tight">About <span class="gradient-text">Us</span></h1>
+        <p class="mt-2 text-sm md:text-base flex items-center gap-2" style="color: #6b8c68;"><span class="material-symbols-outlined text-primary text-sm">radar</span> Edge Intelligence for Sustainable Farming</p>
+      </div>
+      <div class="glass-card px-6 py-4 rounded-2xl flex items-center gap-4">
+        <div class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center border border-primary/20"><span class="material-symbols-outlined text-primary text-3xl">eco</span></div>
+        <div><p class="font-black text-xl leading-none">AI AgriSense</p><p class="text-xs font-bold mt-1 uppercase tracking-wider" style="color: #6b8c68;">Since 2026</p></div>
+      </div>
+    </div>
+
+    <div class="glass-card p-8 rounded-[2rem] mb-6 fade-in">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div class="text-center"><p class="text-4xl font-black text-primary">10K+</p><p class="text-xs uppercase tracking-widest mt-2" style="color: #6b8c68;">Farmers Protected</p></div>
+        <div class="text-center"><p class="text-4xl font-black text-primary">90%</p><p class="text-xs uppercase tracking-widest mt-2" style="color: #6b8c68;">Avg. Accuracy</p></div>
+        <div class="text-center"><p class="text-4xl font-black text-primary">15+</p><p class="text-xs uppercase tracking-widest mt-2" style="color: #6b8c68;">Disease Types</p></div>
+        <div class="text-center"><p class="text-4xl font-black text-primary">24/7</p><p class="text-xs uppercase tracking-widest mt-2" style="color: #6b8c68;">Edge AI Active</p></div>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div class="lg:col-span-2 space-y-6">
+        <div class="glass-card p-8 rounded-[2rem] fade-in">
+          <h2 class="font-black text-2xl tracking-tight mb-6 flex items-center gap-3"><span class="material-symbols-outlined text-primary text-3xl">history</span> Our Story</h2>
+          <p class="leading-relaxed text-lg" style="color: #4a6747;">AgriSense AI was developed in 2026 by a team focused on combining artificial intelligence with practical agricultural solutions. The system is designed to provide fast and accurate plant health insights through image-based analysis.</p>
+          <p class="text-lg font-bold mt-4">Version-1.0 Initial Academic Release</p>
+          <div class="mt-8 grid grid-cols-2 gap-6">
+            <div class="glass-card p-6 rounded-2xl"><span class="material-symbols-outlined text-primary text-4xl">eco</span><p class="font-bold mt-4">10,000+ farmers protected</p><p class="text-xs mt-2" style="color: #6b8c68;">Growing community</p></div>
+            <div class="glass-card p-6 rounded-2xl"><span class="material-symbols-outlined text-primary text-4xl">psychology</span><p class="font-bold mt-4">90% average accuracy</p><p class="text-xs mt-2" style="color: #6b8c68;">Validated by experts</p></div>
+          </div>
+        </div>
+
+        <div class="glass-card p-8 rounded-[2rem] fade-in">
+          <h2 class="font-black text-2xl tracking-tight mb-6 flex items-center gap-3"><span class="material-symbols-outlined text-primary text-3xl">target</span> Our Mission</h2>
+          <div class="flex flex-col md:flex-row gap-8 items-center">
+            <div class="flex-1"><p class="text-4xl md:text-5xl font-black text-primary leading-none">Empower every farmer</p><p class="mt-4 text-lg" style="color: #4a6747;">with AI that works efficiently, detects diseases in seconds, and helps grow healthier crops sustainably.</p><div class="mt-6 flex gap-3"><span class="stat-badge-good">AI-Powered</span><span class="stat-badge-good">Easy To Use</span><span class="stat-badge-good">Privacy Focused</span></div></div>
+            <div class="w-40 h-40 bg-primary/10 rounded-3xl flex items-center justify-center border border-primary/20"><span class="material-symbols-outlined text-primary text-8xl">public</span></div>
+          </div>
+        </div>
+
+        <div class="glass-card p-8 rounded-[2rem] fade-in">
+          <div class="flex items-center justify-between mb-6">
+            <h2 class="font-black text-2xl tracking-tight flex items-center gap-3"><span class="material-symbols-outlined text-primary text-3xl">diversity_3</span> Our Team</h2>
+            <button id="joinTeamBtn" class="px-4 py-2 rounded-xl font-bold text-sm flex items-center gap-2 transition-all" style="background: #2f8b5c; color: white;">
+              <span class="material-symbols-outlined text-[18px]">person_add</span>
+              Join Team
+            </button>
+          </div>
+          <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+            {% for member in team_members %}
+            <div class="text-center team-member-card" 
+                 data-name="{{ member.name }}" 
+                 data-name-ur="{{ member.name_ur }}"
+                 data-role="{{ member.role }}" 
+                 data-role-ur="{{ member.role_ur }}">
+              <div class="w-24 h-24 mx-auto rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/20 flex items-center justify-center mb-3"><span class="material-symbols-outlined text-primary text-5xl">person</span></div>
+              <p class="font-bold team-member-name">{{ member.name }}</p>
+              <p class="text-xs team-member-role" style="color: #6b8c68;">{{ member.role }}</p>
+            </div>
+            {% empty %}
+            <div class="text-center">
+              <div class="w-24 h-24 mx-auto rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/20 flex items-center justify-center mb-3"><span class="material-symbols-outlined text-primary text-5xl">person</span></div>
+              <p class="font-bold">Asma Ramzan</p>
+              <p class="text-xs" style="color: #6b8c68;">Developer</p>
+            </div>
+            <div class="text-center">
+              <div class="w-24 h-24 mx-auto rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/20 flex items-center justify-center mb-3"><span class="material-symbols-outlined text-primary text-5xl">person</span></div>
+              <p class="font-bold">Sadia</p>
+              <p class="text-xs" style="color: #6b8c68;">Developer</p>
+            </div>
+            <div class="text-center">
+              <div class="w-24 h-24 mx-auto rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/20 flex items-center justify-center mb-3"><span class="material-symbols-outlined text-primary text-5xl">person_add</span></div>
+              <p class="font-bold">Open Position</p>
+              <p class="text-xs" style="color: #6b8c68;">Join Us!</p>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+
+      <div class="space-y-6">
+        <div class="glass-card p-8 rounded-3xl fade-in">
+          <h3 class="uppercase text-[10px] font-bold tracking-widest text-primary mb-6">Built With</h3>
+          <div class="space-y-6">
+            <div class="flex gap-4 p-4 rounded-2xl"><span class="material-symbols-outlined text-primary text-3xl">memory</span><div><p class="font-bold">MobileNet V3 + TensorFlow Lite</p><p class="text-xs mt-1" style="color: #6b8c68;">Runs 100% on-device, no cloud needed</p></div></div>
+            <div class="flex gap-4 p-4 rounded-2xl"><span class="material-symbols-outlined text-primary text-3xl">shield</span><div><p class="font-bold">Privacy First</p><p class="text-xs mt-1" style="color: #6b8c68;">Your farm photos never leave your device</p></div></div>
+            <div class="flex gap-4 p-4 rounded-2xl"><span class="material-symbols-outlined text-primary text-3xl">bolt</span><div><p class="font-bold">Real-time Inference</p><p class="text-xs mt-1" style="color: #6b8c68;">Results in under 2 seconds</p></div></div>
+          </div>
+        </div>
+
+       
+
+        <div class="glass-card p-8 rounded-3xl border" style="background: #e8f4e4; border-color: #bcddae;">
+          <h3 class="text-xl font-black mb-4">Join the movement</h3>
+          <p class="text-sm mb-6" style="color: #4a6747;">Be part of the agricultural AI revolution. Start protecting your crops today.</p>
+          <a href="{% url 'scanner' %}" class="block font-bold text-center py-4 rounded-2xl transition-all" style="background: #2f8b5c; color: white;">Start Scanning Today →</a>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <nav class="lg:hidden fixed bottom-0 left-0 right-0 z-30" style="background: #1a3a2a; border-top: 1px solid #2d5a3d;">
+    <div class="flex justify-around items-center px-4 py-3">
+      <a href="{% url 'dashboard' %}" class="flex flex-col items-center gap-1 text-white/60"><span class="material-symbols-outlined text-[24px]">grid_view</span><span class="text-[9px] font-black uppercase">Home</span></a>
+      <a href="{% url 'scanner' %}" class="flex flex-col items-center -mt-8"><div class="w-14 h-14 rounded-2xl flex items-center justify-center" style="background: #2f8b5c; border: 4px solid #1a3a2a;"><span class="material-symbols-outlined text-[28px] text-white">filter_center_focus</span></div></a>
+      <a href="{% url 'history' %}" class="flex flex-col items-center gap-1 text-white/60"><span class="material-symbols-outlined text-[24px]">restore</span><span class="text-[9px] font-black uppercase">History</span></a>
+    </div>
+  </nav>
+</div>
+
+<div id="joinTeamModal" class="modal">
+  <div class="modal-content">
+    <div class="flex justify-between items-center mb-6">
+      <h2 class="text-2xl font-black">Join Our Team</h2>
+      <button id="closeModalBtn" class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-black/5"><span class="material-symbols-outlined">close</span></button>
+    </div>
+    <form id="joinTeamForm">
+      {% csrf_token %}
+      <div class="space-y-4">
+        <div><label class="text-sm font-bold mb-2 block">Full Name</label><input type="text" name="name" id="memberName" required class="modal-input" placeholder="Enter your full name"></div>
+        <div><label class="text-sm font-bold mb-2 block">Email Address</label><input type="email" name="email" id="memberEmail" required class="modal-input" placeholder="you@example.com"></div>
+        <div><label class="text-sm font-bold mb-2 block">Role / Position</label><input type="text" name="role" id="memberRole" required class="modal-input" placeholder="e.g., ML Engineer, Frontend Developer"></div>
+        <div><label class="text-sm font-bold mb-2 block">Brief Introduction</label><textarea name="message" id="memberMessage" rows="3" class="modal-input" placeholder="Tell us about your experience and why you want to join..."></textarea></div>
+        <button type="submit" class="w-full py-3 rounded-xl font-bold text-sm transition-all" style="background: #2f8b5c; color: white;">Submit Application</button>
+      </div>
+    </form>
+  </div>
+</div>
+ {% include 'includes/floating_video_button.html' %}
+<div id="toast" class="toast"><div class="flex items-center gap-3"><span class="material-symbols-outlined text-primary">check_circle</span><span id="toastMessage"></span></div></div>
+
+<div id="translateLoader" class="translate-loader">
+  <div class="spinner"></div>
+  <span>Translating to Urdu...</span>
+</div>
+<div id="translateToast" class="translate-toast"></div>
+
+<script src="{% static 'js/theme-manager.js' %}"></script>
+
+<script>
+// Theme Handling
+const body = document.body;
+
+function applyTheme(theme) {
+  if (theme === 'dark') {
+    body.classList.add('dark');
+    localStorage.setItem('agrisense_theme', 'dark');
+  } else {
+    body.classList.remove('dark');
+    localStorage.setItem('agrisense_theme', 'light');
+  }
+}
+const savedTheme = localStorage.getItem('agrisense_theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+applyTheme(savedTheme);
+
+// ============================================
+// WORKING LIBRETRANSLATE INTEGRATION
+// ============================================
+
+let currentLang = localStorage.getItem('agrisense_language') || 'en';
+let isTranslating = false;
+let originalTexts = new Map();
+
+function getCsrfToken() {
+  const name = 'csrftoken=';
+  const decodedCookie = decodeURIComponent(document.cookie);
+  const ca = decodedCookie.split(';');
+  for(let i = 0; i < ca.length; i++) {
+    let c = ca[i];
+    while (c.charAt(0) == ' ') c = c.substring(1);
+    if (c.indexOf(name) == 0) return c.substring(name.length, c.length);
+  }
+  return document.querySelector('[name=csrfmiddlewaretoken]')?.value || '';
+}
+
+function showTranslateToast(message, isError = false) {
+  let toast = document.getElementById('translateToast');
+  if (!toast) return;
+  toast.innerHTML = `<div style="display: flex; align-items: center; gap: 10px;"><span class="material-symbols-outlined" style="color: ${isError ? '#e53e3e' : '#10b981'}">${isError ? 'error' : 'info'}</span><span>${message}</span></div>`;
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 5000);
+}
+
+function showTranslateLoading(show) {
+  const loader = document.getElementById('translateLoader');
+  if (loader) {
+    if (show) loader.classList.add('show');
+    else loader.classList.remove('show');
+  }
+}
+
+async function translateText(text) {
+  if (!text || text.trim() === '') return text;
+  if (text.length < 3) return text;
+  
+  try {
+    const response = await fetch('/api/libre-translate/', {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json', 
+        'X-CSRFToken': getCsrfToken() 
+      },
+      body: JSON.stringify({ 
+        text: text, 
+        target_lang: 'ur',
+        page: 'about'
+      })
+    });
+    
+    if (response.ok) {
+      const data = await response.json();
+      return data.translated || text;
+    }
+  } catch (error) {
+    console.log('Translation error:', error);
+  }
+  return text;
+}
+
+// Optimized translation dictionary for About Page
+const aboutTranslations = {
+    "About Us": "ہمارے بارے میں",
+    "Edge Intelligence for Sustainable Farming": "پائیدار کھیتی باڑی کے لیے ایج انٹیلی جنس",
+    "Since 2026": "2026 سے",
+    "Farmers Protected": "کسانوں کا تحفظ",
+    "Avg. Accuracy": "اوسط درستگی",
+    "Disease Types": "بیماریوں کی اقسام",
+    "Edge AI Active": "ایج اے آئی فعال",
+    "Our Story": "ہماری کہانی",
+    "AgriSense AI was developed in 2026 by a team focused on combining artificial intelligence with practical agricultural solutions. The system is designed to provide fast and accurate plant health insights through image-based analysis.": "ایگری سینس اے آئی کو 2026 میں ایک ایسی ٹیم نے تیار کیا تھا جو مصنوعی ذہانت کو عملی زرعی حل کے ساتھ جوڑنے پر مرکوز تھی۔ یہ نظام امیج پر مبنی تجزیہ کے ذریعے پودوں کی صحت کے بارے میں تیز اور درست معلومات فراہم کرنے کے لیے ڈیزائن کیا گیا ہے۔",
+    "Version-1.0 Initial Academic Release": "ورژن 1.0 ابتدائی تعلیمی ریلیز",
+    "10,000+ farmers protected": "10,000 سے زیادہ کسانوں کا تحفظ",
+    "Growing community": "بڑھتی ہوئی کمیونٹی",
+    "90% average accuracy": "90% اوسط درستگی",
+    "Validated by experts": "ماہرین کے ذریعہ تصدیق شدہ",
+    "Our Mission": "ہمارا مقصد",
+    "Empower every farmer": "ہر کسان کو بااختیار بنانا",
+    "with AI that works efficiently, detects diseases in seconds, and helps grow healthier crops sustainably.": "ایسی اے آئی کے ساتھ جو مؤثر طریقے سے کام کرتی ہے، سیکنڈوں میں بیماریوں کا پتہ لگاتی ہے، اور پائیدار طریقے سے صحت مند فصلیں اگانے میں مدد کرتی ہے۔",
+    "AI-Powered": "اے آئی سے لیس",
+    "Easy To Use": "استعمال میں آسان",
+    "Privacy Focused": "پرائیویسی پر مبنی",
+    "Our Team": "ہماری ٹیم",
+    "Join Team": "ٹیم میں شامل ہوں",
+    "Built With": "کے ساتھ بنایا گیا",
+    "MobileNet V3 + TensorFlow Lite": "موبائل نیٹ V3 + ٹینسرفلو لائٹ",
+    "Runs 100% on-device, no cloud needed": "100٪ ڈیوائس پر چلتا ہے، کلاؤڈ کی ضرورت نہیں",
+    "Privacy First": "پرائیویسی پہلے",
+    "Your farm photos never leave your device": "آپ کے فارم کی تصاویر کبھی بھی آپ کے آلے سے باہر نہیں جاتی ہیں",
+    "Real-time Inference": "ریئل ٹائم انفرنس",
+    "Results in under 2 seconds": "2 سیکنڈ سے کم وقت میں نتائج",
+    "Join the movement": "تحریک میں شامل ہوں",
+    "Be part of the agricultural AI revolution. Start protecting your crops today.": "زرعی اے آئی انقلاب کا حصہ بنیں۔ اپنی فصلوں کی حفاظت آج ہی شروع کریں۔",
+    "Start Scanning Today →": "آج ہی اسکیننگ شروع کریں ←",
+    "Join Our Team": "ہماری ٹیم میں شامل ہوں",
+    "Full Name": "پورا نام",
+    "Email Address": "ای میل ایڈریس",
+    "Role / Position": "عہدہ / پوزیشن",
+    "Brief Introduction": "مختصر تعارف",
+    "Submit Application": "درخواست جمع کروائیں",
+    "Enter your full name": "اپنا پورا نام درج کریں",
+    "you@example.com": "you@example.com",
+    "e.g., ML Engineer, Frontend Developer": "مثال کے طور پر، ایم ایل انجینئر، فرنٹ اینڈ ڈویلپر",
+    "Tell us about your experience and why you want to join...": "ہمیں اپنے تجربے کے بارے میں بتائیں اور آپ کیوں شامل ہونا چاہتے ہیں...",
+    "Dashboard": "ڈیش بورڈ",
+    "Smart Scan": "اسمارٹ اسکین",
+    "History": "ہسٹری",
+    "Settings": "سیٹنگز",
+    "About Us": "ہمارے بارے میں",
+    "Logout": "لاگ آؤٹ",
+    "Quick Scan": "فوری اسکین",
+    "New Scan": "نیا اسکین",
+    "Home": "ہوم"
+};
+
+async function translatePage() {
+  if (isTranslating) return;
+  isTranslating = true;
+  
+  showTranslateLoading(true);
+  showTranslateToast(`Translating to Urdu...`);
+  
+  // 1. Translate team members using stored fields
+  document.querySelectorAll('.team-member-card').forEach(card => {
+    const nameEl = card.querySelector('.team-member-name');
+    const roleEl = card.querySelector('.team-member-role');
+    
+    if (nameEl && card.dataset.nameUr) {
+      if (!originalTexts.has(nameEl)) originalTexts.set(nameEl, nameEl.innerText);
+      nameEl.innerText = card.dataset.nameUr;
+    }
+    
+    if (roleEl && card.dataset.roleUr) {
+      if (!originalTexts.has(roleEl)) originalTexts.set(roleEl, roleEl.innerText);
+      roleEl.innerText = card.dataset.roleUr;
+    }
+  });
+
+  // 2. Translate other elements using dictionary
+  const elements = document.querySelectorAll('h1, h2, h3, p, .sidebar-link, .glass-card p, button:not(.language-btn), label, span:not(.material-symbols-outlined), a:not(.sidebar-link)');
+  
+  const untranslatedTexts = [];
+  const untranslatedElements = [];
+
+  elements.forEach(el => {
+    if (el.closest('.language-switch') || el.closest('#toast') || el.querySelector('.material-symbols-outlined') || el.classList.contains('material-symbols-outlined')) return;
+    
+    const text = el.innerText.trim();
+    if (!text || text.length < 2) return;
+
+    if (aboutTranslations[text]) {
+      if (!originalTexts.has(el)) originalTexts.set(el, text);
+      el.innerText = aboutTranslations[text];
+    } else {
+      // If not in dictionary and not already translated, add to list for API
+      if (!originalTexts.has(el)) {
+        originalTexts.set(el, text);
+        untranslatedTexts.push(text);
+        untranslatedElements.push(el);
+      }
+    }
+  });
+  
+  // API Fallback is disabled to prevent latency. Everything should be in dictionary or stored in DB.
+  /*
+  if (untranslatedTexts.length > 0) {
+    for (let i = 0; i < untranslatedTexts.length; i++) {
+        try {
+            const translated = await translateText(untranslatedTexts[i]);
+            if (translated && translated !== untranslatedTexts[i]) {
+                untranslatedElements[i].innerText = translated;
+            }
+        } catch(e) {}
+    }
+  }
+  */
+  
+  showTranslateLoading(false);
+  showTranslateToast(`✓ Page translated to Urdu`);
+  localStorage.setItem('agrisense_language', 'ur');
+  currentLang = 'ur';
+  isTranslating = false;
+  updateLanguageUI();
+}
+
+function revertToEnglish() {
+  let restoredCount = 0;
+  originalTexts.forEach((original, el) => {
+    if (el.innerText !== original) {
+      el.innerText = original;
+      restoredCount++;
+    }
+  });
+  if (restoredCount > 0) showTranslateToast(`✓ Reverted to English`);
+  localStorage.setItem('agrisense_language', 'en');
+  currentLang = 'en';
+  updateLanguageUI();
+}
+
+function updateLanguageUI() {
+  document.querySelectorAll('.language-option').forEach(opt => {
+    opt.classList.remove('active');
+    if (opt.dataset.lang === currentLang) opt.classList.add('active');
+  });
+  
+  document.querySelectorAll('.mobile-lang-option').forEach(opt => {
+    opt.classList.remove('active');
+    if (opt.dataset.lang === currentLang) {
+      opt.classList.add('active');
+      opt.style.background = 'rgba(255,255,255,0.2)';
+    } else {
+      opt.style.background = 'rgba(255,255,255,0.1)';
+    }
+  });
+  
+  const langSpan = document.getElementById('currentLanguage');
+  if (langSpan) langSpan.textContent = currentLang === 'en' ? 'English' : 'اردو';
+}
+
+async function changeLanguage(lang) {
+  if (lang === currentLang) return;
+  
+  // Notify server of the preference change
+  try {
+    await fetch('/api/set-language-preference/', {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json', 
+        'X-CSRFToken': getCsrfToken() 
+      },
+      body: JSON.stringify({ language: lang })
+    });
+  } catch (e) {
+    console.error('Failed to notify server of language change:', e);
+  }
+
+  if (lang === 'ur') {
+    translatePage();
+  } else {
+    // For English, a reload is the most reliable way to clear all Urdu text
+    localStorage.setItem('agrisense_language', 'en');
+    window.location.reload();
+  }
+  updateLanguageUI();
+}
+
+// Initialize
+document.addEventListener('DOMContentLoaded', () => {
+  // Sync language from localStorage or server default
+  const savedLang = localStorage.getItem('agrisense_language') || '{{ user_language|default:"en" }}';
+  currentLang = savedLang;
+  
+  updateLanguageUI();
+  
+  if (currentLang === 'ur') {
+    translatePage();
+  }
+  
+  document.querySelectorAll('.language-option, .mobile-lang-option').forEach(opt => {
+    opt.addEventListener('click', () => changeLanguage(opt.dataset.lang));
+  });
+  
+  const langBtn = document.getElementById('languageBtn');
+  const langDropdown = document.getElementById('languageDropdown');
+  if (langBtn && langDropdown) {
+    langBtn.addEventListener('click', (e) => { e.stopPropagation(); langDropdown.classList.toggle('active'); });
+    document.addEventListener('click', () => langDropdown.classList.remove('active'));
+  }
+});
+
+// Modal handling
+const modal = document.getElementById('joinTeamModal');
+const joinBtn = document.getElementById('joinTeamBtn');
+const closeModalBtn = document.getElementById('closeModalBtn');
+
+joinBtn?.addEventListener('click', () => modal.classList.add('active'));
+closeModalBtn?.addEventListener('click', () => modal.classList.remove('active'));
+modal?.addEventListener('click', (e) => { if(e.target === modal) modal.classList.remove('active'); });
+
+// Form submission
+const joinForm = document.getElementById('joinTeamForm');
+function showToast(message, isError = false) {
+  const toastDiv = document.getElementById('toast');
+  const msgSpan = document.getElementById('toastMessage');
+  const icon = toastDiv?.querySelector('.material-symbols-outlined');
+  if(!toastDiv) return;
+  msgSpan.innerText = message;
+  icon.textContent = isError ? 'error' : 'check_circle';
+  icon.style.color = isError ? '#e53e3e' : '#10b981';
+  toastDiv.classList.add('show');
+  setTimeout(() => toastDiv.classList.remove('show'), 3000);
+}
+
+joinForm?.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const csrf = document.querySelector('[name=csrfmiddlewaretoken]')?.value || '';
+  try {
+    const response = await fetch('{% url "join_team" %}', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrf },
+      body: JSON.stringify({
+        name: document.getElementById('memberName').value,
+        email: document.getElementById('memberEmail').value,
+        role: document.getElementById('memberRole').value,
+        message: document.getElementById('memberMessage').value
+      })
+    });
+    const data = await response.json();
+    if(data.success) {
+      showToast('Application submitted! We\'ll contact you soon.');
+      modal.classList.remove('active');
+      joinForm.reset();
+    } else {
+      showToast(data.error || 'Submission failed', true);
+    }
+  } catch(err) {
+    showToast('Network error, please try again', true);
+  }
+});
+
+// Mobile menu
+const btn = document.getElementById('mobileMenuBtn');
+const menu = document.getElementById('mobileMenu');
+const close = document.getElementById('closeMenu');
+btn?.addEventListener('click', () => menu.classList.add('show'));
+close?.addEventListener('click', () => menu.classList.remove('show'));
+document.querySelectorAll('#mobileMenu a').forEach(link => link.addEventListener('click', () => menu.classList.remove('show')));
+</script>
+</body>
+</html>

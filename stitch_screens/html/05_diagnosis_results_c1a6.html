@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>AgriSense Login Screen</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#13ec13",
+                        "primary-dark": "#0fa80f",
+                        "background-light": "#f6f8f6",
+                        "background-dark": "#102210",
+                        "surface-dark": "#1a331a",
+                        "surface-darker": "#112211",
+                    },
+                    fontFamily: {
+                        "display": ["Space Grotesk", "sans-serif"],
+                        "body": ["Space Grotesk", "sans-serif"],
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "2xl": "1rem",
+                        "3xl": "1.5rem",
+                        "full": "9999px"
+                    },
+                    backgroundImage: {
+                        'leaf-pattern': "url(\"data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%2313ec13' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E\")",
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+            min-height: max(884px, 100dvh);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-dark min-h-screen flex justify-center w-full overflow-hidden font-body">
+<div class="relative flex h-full min-h-screen w-full max-w-md flex-col bg-background-dark shadow-2xl overflow-hidden">
+<div class="absolute inset-0 bg-leaf-pattern pointer-events-none opacity-50"></div>
+<div class="absolute inset-0 bg-gradient-to-b from-background-dark via-background-dark/95 to-background-dark pointer-events-none"></div>
+<div class="relative z-10 flex flex-col h-full px-8 pt-12 pb-8">
+<div class="flex-1 flex flex-col items-center justify-center pt-8">
+<div class="w-20 h-20 rounded-2xl bg-gradient-to-br from-primary to-primary-dark flex items-center justify-center shadow-[0_0_30px_rgba(19,236,19,0.3)] mb-6">
+<span class="material-symbols-outlined text-background-dark text-5xl">eco</span>
+</div>
+<h1 class="text-3xl font-bold text-white tracking-tight">AgriSense <span class="text-primary">AI</span></h1>
+<p class="text-gray-400 mt-2 text-sm text-center max-w-[200px]">Advanced Plant Disease Detection</p>
+</div>
+<div class="w-full mb-8">
+<form class="space-y-5">
+<div class="space-y-1.5">
+<label class="text-xs font-medium text-primary ml-1 uppercase tracking-wide" for="email">Email Address</label>
+<div class="relative group">
+<div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+<span class="material-symbols-outlined text-gray-500 group-focus-within:text-primary transition-colors">mail</span>
+</div>
+<input class="block w-full pl-12 pr-4 py-4 bg-surface-dark border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-transparent transition-all" id="email" placeholder="farmer@example.com" type="email"/>
+</div>
+</div>
+<div class="space-y-1.5">
+<label class="text-xs font-medium text-primary ml-1 uppercase tracking-wide" for="password">Password</label>
+<div class="relative group">
+<div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+<span class="material-symbols-outlined text-gray-500 group-focus-within:text-primary transition-colors">lock</span>
+</div>
+<input class="block w-full pl-12 pr-12 py-4 bg-surface-dark border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-transparent transition-all" id="password" placeholder="••••••••" type="password"/>
+<button class="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-500 hover:text-white transition-colors" type="button">
+<span class="material-symbols-outlined text-xl">visibility_off</span>
+</button>
+</div>
+</div>
+<div class="flex justify-end pt-1">
+<a class="text-sm font-medium text-gray-400 hover:text-primary transition-colors" href="#">Forgot Password?</a>
+</div>
+<button class="w-full bg-primary hover:bg-primary-dark text-background-dark font-bold text-lg py-4 rounded-xl shadow-[0_4px_20px_rgba(19,236,19,0.25)] hover:shadow-[0_6px_25px_rgba(19,236,19,0.35)] transition-all active:scale-[0.98] mt-4" type="button">
+                        Log In
+                    </button>
+</form>
+<div class="mt-8 relative flex items-center justify-center">
+<div class="absolute inset-x-0 h-px bg-white/10"></div>
+<span class="relative bg-background-dark px-4 text-sm text-gray-500">Or continue with</span>
+</div>
+<div class="grid grid-cols-2 gap-4 mt-8">
+<button class="flex items-center justify-center gap-3 py-3.5 px-4 bg-surface-dark hover:bg-surface-darker border border-white/10 rounded-xl transition-all group active:scale-[0.98]">
+<svg class="w-5 h-5 text-white group-hover:text-white/90" fill="currentColor" viewBox="0 0 24 24">
+<path d="M12.545,10.239v3.821h5.445c-0.712,2.315-2.647,3.972-5.445,3.972c-3.332,0-6.033-2.701-6.033-6.032s2.701-6.032,6.033-6.032c1.498,0,2.866,0.549,3.921,1.453l2.814-2.814C17.503,2.988,15.139,2,12.545,2C7.021,2,2.543,6.477,2.543,12s4.478,10,10.002,10c8.396,0,10.249-7.85,9.426-11.748L12.545,10.239z"></path>
+</svg>
+<span class="text-white font-medium text-sm">Google</span>
+</button>
+<button class="flex items-center justify-center gap-3 py-3.5 px-4 bg-surface-dark hover:bg-surface-darker border border-white/10 rounded-xl transition-all group active:scale-[0.98]">
+<svg class="w-5 h-5 text-white group-hover:text-white/90" fill="currentColor" viewBox="0 0 24 24">
+<path d="M17.05 20.28c-.98.95-2.05.88-3.08.4-.63-.3-1.42-.6-2.18-.6-.79 0-1.63.32-2.32.64-1.12.48-1.95.45-2.91-.49C3.49 17.2 2 13.06 2 9.53 2 6.08 4.21 4 6.88 4c1.03 0 1.93.39 2.53.81.56.39 1.13.43 1.58.43.52 0 1.14-.09 1.76-.47.88-.54 1.86-.81 2.91-.77 1.25.04 2.45.54 3.2 1.5-2.85 1.58-2.33 5.48.51 6.64-.69 2.1-1.74 4.54-2.32 8.14zm-2.04-16.7c.48-1.55 1.89-2.64 3.4-2.58.12 1.63-.99 3.09-2.5 3.63-.52.19-1.07.24-1.58.19-.07-.63.14-1.44.68-2.24z"></path>
+</svg>
+<span class="text-white font-medium text-sm">Apple</span>
+</button>
+</div>
+</div>
+<div class="mt-auto text-center pb-4">
+<p class="text-gray-400 text-sm">
+                    Don't have an account? 
+                    <a class="text-primary font-bold hover:text-primary-dark transition-colors ml-1" href="#">Sign Up</a>
+</p>
+<div class="w-32 h-1 bg-white/20 rounded-full mx-auto mt-6"></div>
+</div>
+</div>
+</div>
+</body></html>

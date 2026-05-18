@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>AgriSense History</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#13ec13",
+                        "primary-dark": "#0fa80f",
+                        "background-light": "#f6f8f6",
+                        "background-dark": "#102210",
+                        "surface-dark": "#1a331a",
+                        "surface-darker": "#112211",
+                    },
+                    fontFamily: {
+                        "display": ["Space Grotesk", "sans-serif"],
+                        "body": ["Space Grotesk", "sans-serif"],
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "2xl": "1rem",
+                        "3xl": "1.5rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+            min-height: max(884px, 100dvh);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark min-h-screen flex justify-center w-full overflow-hidden">
+<div class="relative flex h-full min-h-screen w-full max-w-md flex-col bg-background-light dark:bg-background-dark shadow-2xl overflow-hidden">
+<div class="flex items-center justify-between px-4 pt-6 pb-4 z-10">
+<button class="flex items-center justify-center w-10 h-10 rounded-full bg-surface-dark/50 text-white backdrop-blur-sm hover:bg-surface-dark/80 transition-colors">
+<span class="material-symbols-outlined">arrow_back</span>
+</button>
+<h1 class="text-white text-lg font-bold tracking-wide">Scan History</h1>
+<button class="flex items-center justify-center w-10 h-10 rounded-full bg-surface-dark/50 text-white backdrop-blur-sm hover:bg-surface-dark/80 transition-colors">
+<span class="material-symbols-outlined">filter_list</span>
+</button>
+</div>
+<div class="px-4 mb-4">
+<div class="relative">
+<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+<span class="material-symbols-outlined text-gray-400">search</span>
+</div>
+<input class="w-full pl-10 pr-4 py-3 bg-surface-dark border border-white/10 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-all" placeholder="Search by plant or disease..." type="text"/>
+</div>
+</div>
+<div class="flex-1 overflow-y-auto pb-32 scrollbar-hide px-4">
+<div class="flex flex-col gap-3">
+<div class="flex items-center gap-2 mt-2 mb-1">
+<div class="h-[1px] bg-white/10 flex-1"></div>
+<span class="text-xs font-medium text-gray-400 uppercase tracking-wider">Today</span>
+<div class="h-[1px] bg-white/10 flex-1"></div>
+</div>
+<div class="bg-surface-dark rounded-xl p-3 border border-white/5 flex gap-3 hover:bg-white/5 transition-colors cursor-pointer group">
+<div class="relative w-20 h-20 rounded-lg overflow-hidden flex-shrink-0">
+<img alt="Tomato leaf with early blight spots" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBF41Zl0zUGftOx83tkbEuGX3UyEh0mNRQxbhqJMECGx6cnl6wc1Bav4gO4GM0uQjeqP9ANst-NRH9onBvZ4XxPNIeaUKs-w3tFKWAtQBenCOwUB-sGEFSaaGl-xG3mxOTCvIsJNMuV9i6fh85iCbuPGinUlb5GtZp6W1pYhXVxLf8T47kF17zopVzsFn08qGR-xoR5oUHdTkfwLgt24C2cdas61TTUsTgH5KXhmWKcvLOX8bPUQsjM2G7oPXgLCJv_Dv569YSNKao"/>
+<div class="absolute bottom-0 left-0 w-full h-1/2 bg-gradient-to-t from-black/80 to-transparent"></div>
+</div>
+<div class="flex-1 flex flex-col justify-between py-0.5">
+<div class="flex justify-between items-start">
+<div>
+<h3 class="text-white font-bold text-lg leading-tight">Tomato</h3>
+<p class="text-red-400 text-sm font-medium">Early Blight</p>
+</div>
+<span class="text-xs text-gray-500 font-mono">14:30</span>
+</div>
+<div class="flex justify-between items-end">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-red-500 text-sm">warning</span>
+<span class="text-xs text-gray-400">Confidence</span>
+</div>
+<div class="px-2 py-1 rounded bg-red-500/10 border border-red-500/20">
+<span class="text-red-400 text-xs font-bold">94%</span>
+</div>
+</div>
+</div>
+</div>
+<div class="bg-surface-dark rounded-xl p-3 border border-white/5 flex gap-3 hover:bg-white/5 transition-colors cursor-pointer group">
+<div class="relative w-20 h-20 rounded-lg overflow-hidden flex-shrink-0">
+<div class="w-full h-full bg-surface-darker flex items-center justify-center">
+<span class="material-symbols-outlined text-green-700 text-3xl">spa</span>
+</div>
+</div>
+<div class="flex-1 flex flex-col justify-between py-0.5">
+<div class="flex justify-between items-start">
+<div>
+<h3 class="text-white font-bold text-lg leading-tight">Bell Pepper</h3>
+<p class="text-primary text-sm font-medium">Healthy</p>
+</div>
+<span class="text-xs text-gray-500 font-mono">11:15</span>
+</div>
+<div class="flex justify-between items-end">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-primary text-sm">check_circle</span>
+<span class="text-xs text-gray-400">Status</span>
+</div>
+<div class="px-2 py-1 rounded bg-primary/10 border border-primary/20">
+<span class="text-primary text-xs font-bold">99%</span>
+</div>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-2 mt-4 mb-1">
+<div class="h-[1px] bg-white/10 flex-1"></div>
+<span class="text-xs font-medium text-gray-400 uppercase tracking-wider">Yesterday</span>
+<div class="h-[1px] bg-white/10 flex-1"></div>
+</div>
+<div class="bg-surface-dark rounded-xl p-3 border border-white/5 flex gap-3 hover:bg-white/5 transition-colors cursor-pointer group">
+<div class="relative w-20 h-20 rounded-lg overflow-hidden flex-shrink-0">
+<div class="w-full h-full bg-surface-darker flex items-center justify-center">
+<span class="material-symbols-outlined text-yellow-700 text-3xl">pest_control</span>
+</div>
+</div>
+<div class="flex-1 flex flex-col justify-between py-0.5">
+<div class="flex justify-between items-start">
+<div>
+<h3 class="text-white font-bold text-lg leading-tight">Potato</h3>
+<p class="text-yellow-400 text-sm font-medium">Leaf Spot</p>
+</div>
+<span class="text-xs text-gray-500 font-mono">16:45</span>
+</div>
+<div class="flex justify-between items-end">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-yellow-500 text-sm">info</span>
+<span class="text-xs text-gray-400">Confidence</span>
+</div>
+<div class="px-2 py-1 rounded bg-yellow-500/10 border border-yellow-500/20">
+<span class="text-yellow-400 text-xs font-bold">82%</span>
+</div>
+</div>
+</div>
+</div>
+<div class="bg-surface-dark rounded-xl p-3 border border-white/5 flex gap-3 hover:bg-white/5 transition-colors cursor-pointer group">
+<div class="relative w-20 h-20 rounded-lg overflow-hidden flex-shrink-0">
+<div class="w-full h-full bg-surface-darker flex items-center justify-center">
+<span class="material-symbols-outlined text-green-800 text-3xl">energy_savings_leaf</span>
+</div>
+</div>
+<div class="flex-1 flex flex-col justify-between py-0.5">
+<div class="flex justify-between items-start">
+<div>
+<h3 class="text-white font-bold text-lg leading-tight">Cucumber</h3>
+<p class="text-primary text-sm font-medium">Healthy</p>
+</div>
+<span class="text-xs text-gray-500 font-mono">09:20</span>
+</div>
+<div class="flex justify-between items-end">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-primary text-sm">check_circle</span>
+<span class="text-xs text-gray-400">Status</span>
+</div>
+<div class="px-2 py-1 rounded bg-primary/10 border border-primary/20">
+<span class="text-primary text-xs font-bold">96%</span>
+</div>
+</div>
+</div>
+</div>
+<div class="bg-surface-dark rounded-xl p-3 border border-white/5 flex gap-3 hover:bg-white/5 transition-colors cursor-pointer group">
+<div class="relative w-20 h-20 rounded-lg overflow-hidden flex-shrink-0">
+<div class="w-full h-full bg-surface-darker flex items-center justify-center">
+<span class="material-symbols-outlined text-orange-700 text-3xl">coronavirus</span>
+</div>
+</div>
+<div class="flex-1 flex flex-col justify-between py-0.5">
+<div class="flex justify-between items-start">
+<div>
+<h3 class="text-white font-bold text-lg leading-tight">Strawberry</h3>
+<p class="text-orange-400 text-sm font-medium">Leaf Scorch</p>
+</div>
+<span class="text-xs text-gray-500 font-mono">08:10</span>
+</div>
+<div class="flex justify-between items-end">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-orange-500 text-sm">warning</span>
+<span class="text-xs text-gray-400">Confidence</span>
+</div>
+<div class="px-2 py-1 rounded bg-orange-500/10 border border-orange-500/20">
+<span class="text-orange-400 text-xs font-bold">75%</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="flex items-center justify-center mt-6 mb-8 text-gray-500 text-sm">
+<span class="material-symbols-outlined text-sm mr-2">history_toggle_off</span> End of history
+            </div>
+</div>
+<div class="absolute bottom-0 w-full bg-surface-darker/95 backdrop-blur-lg border-t border-white/5 z-20">
+<div class="flex justify-between items-center px-6 py-3">
+<a class="flex flex-col items-center gap-1 group" href="#">
+<span class="material-symbols-outlined text-gray-400 group-hover:text-primary transition-colors">home</span>
+<span class="text-[10px] font-medium text-gray-400 group-hover:text-primary transition-colors">Home</span>
+</a>
+<a class="flex flex-col items-center -mt-8" href="#">
+<div class="w-14 h-14 rounded-full bg-primary flex items-center justify-center shadow-[0_0_20px_rgba(19,236,19,0.4)] border-4 border-surface-darker transition-transform active:scale-95">
+<span class="material-symbols-outlined text-background-dark text-2xl font-bold">center_focus_strong</span>
+</div>
+</a>
+<a class="flex flex-col items-center gap-1 group" href="#">
+<span class="material-symbols-outlined text-primary transition-colors">history</span>
+<span class="text-[10px] font-medium text-primary transition-colors">History</span>
+</a>
+</div>
+<div class="w-full flex justify-center pb-2">
+<div class="w-32 h-1 bg-white/20 rounded-full"></div>
+</div>
+</div>
+</div>
+</body></html>

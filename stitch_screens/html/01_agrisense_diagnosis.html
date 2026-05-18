@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>AgriSense - Diagnosis Results and Actions</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#13ec13",
+                        "primary-dark": "#0fa80f",
+                        "background-light": "#f6f8f6",
+                        "background-dark": "#102210",
+                        "surface-dark": "#1a331a",
+                        "surface-darker": "#112211",
+                    },
+                    fontFamily: {
+                        "display": ["Space Grotesk", "sans-serif"],
+                        "body": ["Space Grotesk", "sans-serif"],
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "2xl": "1rem",
+                        "3xl": "1.5rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        /* Custom gauge animation */
+        @keyframes fillGauge {
+            from { stroke-dasharray: 0, 100; }
+            to { stroke-dasharray: 94, 100; }
+        }
+        .gauge-fill {
+            animation: fillGauge 1.5s ease-out forwards;
+        }
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark min-h-screen flex justify-center w-full overflow-hidden">
+<!-- Mobile Container -->
+<div class="relative flex h-full min-h-screen w-full max-w-md flex-col bg-background-light dark:bg-background-dark shadow-2xl overflow-hidden">
+<!-- Header -->
+<div class="flex items-center justify-between px-4 pt-6 pb-2 z-10">
+<button class="flex items-center justify-center w-10 h-10 rounded-full bg-surface-dark/50 text-white backdrop-blur-sm hover:bg-surface-dark/80 transition-colors">
+<span class="material-symbols-outlined">arrow_back</span>
+</button>
+<h1 class="text-white text-lg font-bold tracking-wide">Diagnosis Result</h1>
+<button class="flex items-center justify-center w-10 h-10 rounded-full bg-surface-dark/50 text-white backdrop-blur-sm hover:bg-surface-dark/80 transition-colors">
+<span class="material-symbols-outlined">info</span>
+</button>
+</div>
+<!-- Scrollable Content -->
+<div class="flex-1 overflow-y-auto pb-24 scrollbar-hide">
+<!-- Image Section -->
+<div class="px-4 mt-2">
+<div class="relative w-full aspect-[4/3] rounded-2xl overflow-hidden shadow-lg border border-primary/20">
+<img alt="Close up of a diseased green leaf with brown spots" class="w-full h-full object-cover" data-alt="Close up of a diseased green leaf with brown spots" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBF41Zl0zUGftOx83tkbEuGX3UyEh0mNRQxbhqJMECGx6cnl6wc1Bav4gO4GM0uQjeqP9ANst-NRH9onBvZ4XxPNIeaUKs-w3tFKWAtQBenCOwUB-sGEFSaaGl-xG3mxOTCvIsJNMuV9i6fh85iCbuPGinUlb5GtZp6W1pYhXVxLf8T47kF17zopVzsFn08qGR-xoR5oUHdTkfwLgt24C2cdas61TTUsTgH5KXhmWKcvLOX8bPUQsjM2G7oPXgLCJv_Dv569YSNKao"/>
+<div class="absolute bottom-3 right-3 bg-black/60 backdrop-blur-md px-3 py-1 rounded-full border border-primary/30 flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+<span class="text-xs font-medium text-primary tracking-wide uppercase">AI Analyzed</span>
+</div>
+</div>
+</div>
+<!-- Gauge Section -->
+<div class="flex flex-col items-center justify-center mt-8 px-6">
+<div class="relative w-64 h-32 flex items-end justify-center overflow-hidden">
+<!-- Gauge Background -->
+<svg class="w-full h-full transform overflow-visible" viewbox="0 0 100 50">
+<!-- Track -->
+<path d="M 10 50 A 40 40 0 0 1 90 50" fill="none" stroke="#1a331a" stroke-linecap="round" stroke-width="8"></path>
+<!-- Progress (94%) -->
+<path class="gauge-fill" d="M 10 50 A 40 40 0 0 1 90 50" fill="none" stroke="#13ec13" stroke-dasharray="94, 100" stroke-linecap="round" stroke-width="8"></path>
+</svg>
+<!-- Centered Score Text inside Gauge -->
+<div class="absolute bottom-0 flex flex-col items-center mb-1">
+<span class="text-5xl font-bold text-white tracking-tighter">94<span class="text-2xl text-primary">%</span></span>
+<span class="text-xs text-gray-400 uppercase tracking-widest mt-1">Confidence</span>
+</div>
+</div>
+<!-- Diagnosis Status -->
+<div class="mt-6 text-center">
+<div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-red-500/10 border border-red-500/30 mb-3">
+<span class="material-symbols-outlined text-red-400 text-lg">warning</span>
+<span class="text-red-400 text-sm font-bold uppercase tracking-wide">Threat Detected</span>
+</div>
+<h2 class="text-3xl font-bold text-white leading-tight">Early Blight</h2>
+<p class="text-gray-400 text-sm mt-2 max-w-[280px] mx-auto">High probability of Alternaria solani infection based on leaf lesion patterns.</p>
+</div>
+</div>
+<!-- Detailed Stats Grid -->
+<div class="grid grid-cols-2 gap-3 px-4 mt-8">
+<div class="bg-surface-dark rounded-xl p-4 border border-white/5">
+<div class="flex items-center gap-2 mb-2">
+<span class="material-symbols-outlined text-primary text-xl">dataset</span>
+<span class="text-gray-400 text-xs font-medium uppercase">Model</span>
+</div>
+<p class="text-white font-semibold">ResNet-50</p>
+</div>
+<div class="bg-surface-dark rounded-xl p-4 border border-white/5">
+<div class="flex items-center gap-2 mb-2">
+<span class="material-symbols-outlined text-primary text-xl">bolt</span>
+<span class="text-gray-400 text-xs font-medium uppercase">Latency</span>
+</div>
+<p class="text-white font-semibold">42ms</p>
+</div>
+</div>
+<!-- Action Sheet (Slide up visual) -->
+<div class="mt-8 bg-surface-dark rounded-t-3xl border-t border-white/10 p-6 pb-8 shadow-[0_-10px_40px_rgba(0,0,0,0.5)]">
+<div class="w-12 h-1 bg-white/10 rounded-full mx-auto mb-6"></div>
+<h3 class="text-white font-bold text-lg mb-4 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">healing</span>
+                    Recommended Actions
+                </h3>
+<div class="flex flex-col gap-3">
+<button class="w-full bg-primary hover:bg-primary-dark text-background-dark font-bold py-4 rounded-xl flex items-center justify-center gap-3 transition-all active:scale-[0.98]">
+<span class="material-symbols-outlined">medication_liquid</span>
+                        Apply Fungicide
+                    </button>
+<button class="w-full bg-transparent border border-white/20 hover:border-white/40 text-white font-semibold py-4 rounded-xl flex items-center justify-center gap-3 transition-all active:scale-[0.98]">
+<span class="material-symbols-outlined">fence</span>
+                        Isolate Plant
+                    </button>
+</div>
+<div class="mt-6 flex items-center justify-center gap-2 text-white/40">
+<span class="material-symbols-outlined text-sm">memory</span>
+<span class="text-xs font-mono">Processed locally on Edge Device</span>
+</div>
+</div>
+</div>
+<!-- Bottom Navigation -->
+<div class="absolute bottom-0 w-full bg-surface-darker/95 backdrop-blur-lg border-t border-white/5">
+<div class="flex justify-between items-center px-6 py-3">
+<a class="flex flex-col items-center gap-1 group" href="#">
+<span class="material-symbols-outlined text-gray-400 group-hover:text-primary transition-colors">home</span>
+<span class="text-[10px] font-medium text-gray-400 group-hover:text-primary transition-colors">Home</span>
+</a>
+<!-- Center Scan Button -->
+<a class="flex flex-col items-center -mt-8" href="#">
+<div class="w-14 h-14 rounded-full bg-primary flex items-center justify-center shadow-[0_0_20px_rgba(19,236,19,0.4)] border-4 border-surface-darker transition-transform active:scale-95">
+<span class="material-symbols-outlined text-background-dark text-2xl font-bold">center_focus_strong</span>
+</div>
+</a>
+<a class="flex flex-col items-center gap-1 group" href="#">
+<span class="material-symbols-outlined text-primary transition-colors">history</span>
+<span class="text-[10px] font-medium text-primary transition-colors">History</span>
+</a>
+</div>
+<!-- Home Indicator (iOS style) -->
+<div class="w-full flex justify-center pb-2">
+<div class="w-32 h-1 bg-white/20 rounded-full"></div>
+</div>
+</div>
+</div>
+</body></html>
